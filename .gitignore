@@ -1,0 +1,10 @@
+# Ignorar todo por defecto
+/*
+
+# No ignorar estos archivos y carpetas
+!.gitignore
+!pom.xml
+!/src/
+
+# Ignorar carpeta de compilación
+target/
