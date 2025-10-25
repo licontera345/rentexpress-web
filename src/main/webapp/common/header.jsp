@@ -24,7 +24,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="${pageContext.request.contextPath}/public/index.jsp#destacados">
+                    <a class="nav-link" href="${pageContext.request.contextPath}/public/VehicleServlet?action=list">
                         <fmt:message key="nav.vehiculos" />
                     </a>
                 </li>
