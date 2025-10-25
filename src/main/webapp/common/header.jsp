@@ -41,7 +41,7 @@
                     <div class="dropdown-menu dropdown-menu-end p-3 shadow-sm" aria-labelledby="dropdownIdioma">
                         <form action="${pageContext.request.contextPath}/public/UsuarioServlet" method="get" class="d-flex flex-column gap-2">
                             <input type="hidden" name="action" value="changeLocale" />
-                            <button type="submit" name="lenguage" value="es" class="btn btn-outline-brand d-flex align-items-center justify-content-between">
+                            <button type="submit" name="language" value="es" class="btn btn-outline-brand d-flex align-items-center justify-content-between">
                                 <span class="d-flex align-items-center gap-2">
                                     <span class="fi fi-es language-flag"></span>
                                     Español
@@ -50,7 +50,7 @@
                                     <i class="bi bi-check-circle-fill text-brand"></i>
                                 </c:if>
                             </button>
-                            <button type="submit" name="lenguage" value="en" class="btn btn-outline-brand d-flex align-items-center justify-content-between">
+                            <button type="submit" name="language" value="en" class="btn btn-outline-brand d-flex align-items-center justify-content-between">
                                 <span class="d-flex align-items-center gap-2">
                                     <span class="fi fi-gb language-flag"></span>
                                     English
@@ -59,7 +59,7 @@
                                     <i class="bi bi-check-circle-fill text-brand"></i>
                                 </c:if>
                             </button>
-                            <button type="submit" name="lenguage" value="fr" class="btn btn-outline-brand d-flex align-items-center justify-content-between">
+                            <button type="submit" name="language" value="fr" class="btn btn-outline-brand d-flex align-items-center justify-content-between">
                                 <span class="d-flex align-items-center gap-2">
                                     <span class="fi fi-fr language-flag"></span>
                                     Français
