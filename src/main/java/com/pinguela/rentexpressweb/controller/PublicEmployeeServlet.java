@@ -47,40 +47,17 @@ public class PublicEmployeeServlet extends HttpServlet {
                 this.vehicleService = new VehicleServiceImpl();
         }
 
-	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+        @Override
+        protected void doGet(HttpServletRequest request, HttpServletResponse response)
+                        throws ServletException, IOException {
 
-		// Restore locale from cookie if exists
-		Cookie[] cookies = request.getCookies();
-		if (cookies != null) {
-			for (Cookie c : cookies) {
-				if ("locale".equals(c.getName())) {
-					request.getSession().setAttribute("locale", new Locale(c.getValue()));
-				}
-			}
-		}
+                String action = request.getParameter("action");
+                String destination = Views.INDEX;
 
-		String action = request.getParameter("action");
-		String destination = Views.INDEX;
-
-		try {
-			if ("changeLocale".equals(action)) {
-				String language = request.getParameter("language");
-				if (language != null && !language.trim().isEmpty()) {
-					Locale locale = new Locale(language);
-					request.getSession().setAttribute("locale", locale);
-
-					Cookie cookie = new Cookie("locale", language);
-					cookie.setMaxAge(60 * 60 * 24 * 30);
-					cookie.setPath(request.getContextPath());
-					response.addCookie(cookie);
-				}
-				destination = Views.INDEX;
-
-			} else if ("logout".equals(action)) {
-				SessionManager.logout(request);
-				destination = Views.LOGIN;
+                try {
+                        if ("logout".equals(action)) {
+                                SessionManager.logout(request);
+                                destination = Views.LOGIN;
 
 			} else if ("detail".equals(action)) {
 				int id = Integer.parseInt(request.getParameter("id"));
