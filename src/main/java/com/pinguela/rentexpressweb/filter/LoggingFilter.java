@@ -41,13 +41,15 @@ public class LoggingFilter implements Filter {
 		HttpServletRequest req = (HttpServletRequest) request;
 		String uri = req.getRequestURI();
 		String method = req.getMethod();
-		HttpSession session = req.getSession(false);
+                HttpSession session = req.getSession(false);
                 EmployeeDTO employee = (session != null) ? (EmployeeDTO) session.getAttribute("employee") : null;
                 String employeeStr = (employee != null) ? employee.getEmployeeName() : "anónimo";
-		String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+                String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 
-		chain.doFilter(request, response);
-	}
+                System.out.printf("[%s] %s %s - empleado: %s%n", timestamp, method, uri, employeeStr);
+
+                chain.doFilter(request, response);
+        }
 
 	/**
 	 * @see Filter#destroy()
