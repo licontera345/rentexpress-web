@@ -63,6 +63,17 @@ public class CookieManagerTest {
     }
 
     @Test
+    public void testGetCookieValueReturnsNullWhenCookiesArrayEmpty() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getCookies()).thenReturn(new Cookie[0]);
+
+        String value = cookieManager.getCookieValue(request, "session");
+
+        assertNull(value);
+        assertNull(cookieManager.getCookie(request, "session"));
+    }
+
+    @Test
     public void testGetCookieValueReturnsCookieValueWhenPresent() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         Cookie targetCookie = new Cookie("session", "abc123");
