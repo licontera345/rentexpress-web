@@ -22,12 +22,12 @@ public class PrivateUsuarioServlet extends HttpServlet {
 		//
 		// Verificar si el usuario ha iniciado sesión
 		HttpSession session = request.getSession(false);
-                // Si no hay sesión o no hay usuario en la sesión, redirigir a /index.jsp
-                if (session == null || session.getAttribute("usuario") == null) {
-                        // Redirigir a /index.jsp
-                        response.sendRedirect(request.getContextPath() + "/index.jsp");
-                        return;
-                }
+		// Si no hay sesión o no hay usuario en la sesión, redirigir al login
+                if (session == null || session.getAttribute("employee") == null) {
+			// Redirigir a la página de inicio de sesión
+			response.sendRedirect(request.getContextPath() + "/index.jsp");
+			return;
+		}
 		// LOGOUT
 		String action = request.getParameter("action");
 		if ("logout".equals(action)) {

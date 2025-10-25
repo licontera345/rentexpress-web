@@ -26,7 +26,7 @@
                     <h1 class="fw-bold mb-1"><fmt:message key="usuario.list.title" /></h1>
                     <p class="text-muted mb-0"><fmt:message key="usuario.list.subtitle" /></p>
                 </div>
-                <a href="${pageContext.request.contextPath}/public/UsuarioServlet?action=create" class="btn btn-brand d-flex align-items-center gap-2">
+                <a href="${pageContext.request.contextPath}/public/EmployeeServlet?action=create" class="btn btn-brand d-flex align-items-center gap-2">
                     <i class="bi bi-plus-circle"></i>
                     <fmt:message key="action.new" />
                 </a>
@@ -44,22 +44,23 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <c:forEach var="u" items="${usuarios}">
+                            <c:forEach var="employee" items="${employees}">
+                                <c:set var="employeeId" value="${not empty employee.id ? employee.id : (not empty employee.employeeId ? employee.employeeId : employee.idEmployee)}" />
                                 <tr>
-                                    <td>${u.id}</td>
-                                    <td><c:out value="${u.nombreUsuario}" /></td>
-                                    <td><c:out value="${u.email}" /></td>
+                                    <td>${employeeId}</td>
+                                    <td><c:out value="${employee.employeeName}" /></td>
+                                    <td><c:out value="${employee.email}" /></td>
                                     <td class="text-end">
                                         <div class="btn-group" role="group">
-                                            <a href="${pageContext.request.contextPath}/public/UsuarioServlet?action=detail&id=${u.id}" class="btn btn-outline-brand btn-sm">
+                                            <a href="${pageContext.request.contextPath}/public/EmployeeServlet?action=detail&id=${employeeId}" class="btn btn-outline-brand btn-sm">
                                                 <i class="bi bi-eye"></i>
                                                 <span class="visually-hidden"><fmt:message key="action.view" /></span>
                                             </a>
-                                            <a href="${pageContext.request.contextPath}/public/UsuarioServlet?action=edit&id=${u.id}" class="btn btn-outline-secondary btn-sm">
+                                            <a href="${pageContext.request.contextPath}/public/EmployeeServlet?action=edit&id=${employeeId}" class="btn btn-outline-secondary btn-sm">
                                                 <i class="bi bi-pencil"></i>
                                                 <span class="visually-hidden"><fmt:message key="action.edit" /></span>
                                             </a>
-                                            <a href="${pageContext.request.contextPath}/public/UsuarioServlet?action=delete&id=${u.id}" class="btn btn-outline-danger btn-sm" data-confirm="<fmt:message key='usuario.delete.confirm' />">
+                                            <a href="${pageContext.request.contextPath}/public/EmployeeServlet?action=deactivate&id=${employeeId}" class="btn btn-outline-danger btn-sm" data-confirm="<fmt:message key='usuario.delete.confirm' />">
                                                 <i class="bi bi-trash"></i>
                                                 <span class="visually-hidden"><fmt:message key="action.delete" /></span>
                                             </a>
@@ -67,7 +68,7 @@
                                     </td>
                                 </tr>
                             </c:forEach>
-                            <c:if test="${empty usuarios}">
+                            <c:if test="${empty employees}">
                                 <tr>
                                     <td colspan="4" class="text-center py-4 text-muted"><fmt:message key="usuario.list.empty" /></td>
                                 </tr>

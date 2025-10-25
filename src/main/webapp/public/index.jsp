@@ -114,7 +114,7 @@
                         <p class="text-muted mb-0"><fmt:message key="home.featured.subtitle" /></p>
                     </div>
                     <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                        <a href="${pageContext.request.contextPath}/public/UsuarioServlet?action=list" class="btn btn-outline-brand px-4">
+                        <a href="${pageContext.request.contextPath}/public/EmployeeServlet?action=list" class="btn btn-outline-brand px-4">
                             <i class="bi bi-grid me-2"></i>
                             <fmt:message key="search.cta.fleet" />
                         </a>

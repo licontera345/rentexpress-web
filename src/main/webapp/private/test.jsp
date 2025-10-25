@@ -21,8 +21,8 @@
 		<fmt:message key="private.test.content" />
 	</p>
 
-	<form action="${pageContext.request.contextPath}/public/UsuarioServlet"
-		method="get">
+        <form action="${pageContext.request.contextPath}/public/EmployeeServlet"
+                method="get">
 		<input type="hidden" name="action" value="index" />
 		<button type="submit">
 			<fmt:message key="back.index" />

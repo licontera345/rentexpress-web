@@ -21,7 +21,8 @@
 
     <main class="flex-grow-1 py-5">
         <div class="container">
-            <c:if test="${not empty usuario}">
+            <c:if test="${not empty employee}">
+                <c:set var="employeeId" value="${not empty employee.id ? employee.id : (not empty employee.employeeId ? employee.employeeId : employee.idEmployee)}" />
                 <div class="row g-4">
                     <div class="col-lg-4">
                         <div class="card card-common h-100">
@@ -29,27 +30,27 @@
                                 <c:set var="PH_SVG" value="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'><rect width='100%' height='100%' fill='%23f2f2f2'/><circle cx='120' cy='90' r='44' fill='%23c2c2c2'/><rect x='40' y='150' width='160' height='60' rx='30' fill='%23c2c2c2'/></svg>" />
                                 <div class="avatar-wrapper mb-3">
                                     <c:choose>
-                                        <c:when test="${tieneImagen}">
-                                            <img alt="Foto de usuario" loading="lazy" src="${pageContext.request.contextPath}/DownloadImageServlet?id=${usuario.id}">
+                                        <c:when test="${hasImage}">
+                                            <img alt="Foto de usuario" loading="lazy" src="${pageContext.request.contextPath}/DownloadImageServlet?id=${employeeId}">
                                         </c:when>
                                         <c:otherwise>
                                             <img alt="Placeholder" loading="lazy" src="${PH_SVG}">
                                         </c:otherwise>
                                     </c:choose>
                                     <form action="${pageContext.request.contextPath}/UploadImageServlet" method="post" enctype="multipart/form-data" class="avatar-edit-btn" title="<fmt:message key='profile.avatar.change' />">
-                                        <input type="hidden" name="idUsuario" value="${usuario.id}" />
+                                        <input type="hidden" name="idUsuario" value="${employeeId}" />
                                         <label for="avatarFile" class="text-white"><i class="bi bi-camera-fill"></i></label>
                                         <input type="file" id="avatarFile" name="imagen" accept=".jpg,.jpeg,.png" class="d-none" onchange="this.form.submit()" />
                                     </form>
                                 </div>
-                                <h4 class="fw-semibold mb-1"><c:out value="${usuario.nombreUsuario}" /></h4>
-                                <p class="text-muted mb-3"><c:out value="${usuario.email}" /></p>
+                                <h4 class="fw-semibold mb-1"><c:out value="${employee.employeeName}" /></h4>
+                                <p class="text-muted mb-3"><c:out value="${employee.email}" /></p>
                                 <div class="d-grid gap-2">
-                                    <a href="${pageContext.request.contextPath}/public/UsuarioServlet?action=edit&id=${usuario.id}" class="btn btn-outline-brand">
+                                    <a href="${pageContext.request.contextPath}/public/EmployeeServlet?action=edit&id=${employeeId}" class="btn btn-outline-brand">
                                         <i class="bi bi-pencil-square me-2"></i>
                                         <fmt:message key="action.edit" />
                                     </a>
-                                    <a href="${pageContext.request.contextPath}/public/UsuarioServlet?action=list" class="btn btn-outline-secondary">
+                                    <a href="${pageContext.request.contextPath}/public/EmployeeServlet?action=list" class="btn btn-outline-secondary">
                                         <i class="bi bi-arrow-left-circle me-2"></i>
                                         <fmt:message key="back.index" />
                                     </a>
@@ -65,15 +66,15 @@
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <p class="text-muted mb-1"><fmt:message key="usuario.detail.id" /></p>
-                                        <p class="fw-semibold mb-0">${usuario.id}</p>
+                                        <p class="fw-semibold mb-0">${employeeId}</p>
                                     </div>
                                     <div class="col-md-6">
                                         <p class="text-muted mb-1"><fmt:message key="usuario.detail.name" /></p>
-                                        <p class="fw-semibold mb-0"><c:out value="${usuario.nombreUsuario}" /></p>
+                                        <p class="fw-semibold mb-0"><c:out value="${employee.employeeName}" /></p>
                                     </div>
                                     <div class="col-md-6">
                                         <p class="text-muted mb-1"><fmt:message key="usuario.detail.email" /></p>
-                                        <p class="fw-semibold mb-0"><c:out value="${usuario.email}" /></p>
+                                        <p class="fw-semibold mb-0"><c:out value="${employee.email}" /></p>
                                     </div>
                                 </div>
                             </div>
@@ -103,18 +104,16 @@
                             </div>
                         </div>
 
-                        <c:if test="${not empty imagenes}">
+                        <c:if test="${not empty image}">
                             <div class="card card-common mt-4">
                                 <div class="card-body">
                                     <h5 class="fw-bold mb-3"><fmt:message key="usuario.detail.images" /></h5>
                                     <div class="row g-3">
-                                        <c:forEach var="img" items="${imagenes}">
-                                            <div class="col-6 col-md-4">
-                                                <div class="ratio ratio-1x1 rounded-4 overflow-hidden shadow-sm">
-                                                    <img alt="miniatura" loading="lazy" src="${pageContext.request.contextPath}/DownloadImageServlet?id=${usuario.id}" class="w-100 h-100 object-fit-cover">
-                                                </div>
+                                        <div class="col-6 col-md-4">
+                                            <div class="ratio ratio-1x1 rounded-4 overflow-hidden shadow-sm">
+                                                <img alt="miniatura" loading="lazy" src="${pageContext.request.contextPath}/DownloadImageServlet?id=${employeeId}" class="w-100 h-100 object-fit-cover">
                                             </div>
-                                        </c:forEach>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -123,7 +122,7 @@
                 </div>
             </c:if>
 
-            <c:if test="${empty usuario}">
+            <c:if test="${empty employee}">
                 <div class="alert alert-danger d-flex align-items-center" role="alert">
                     <i class="bi bi-exclamation-octagon-fill me-3 fs-4"></i>
                     <div><fmt:message key="usuario.detail.notfound" /></div>

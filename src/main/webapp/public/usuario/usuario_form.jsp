@@ -12,7 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
         <c:choose>
-            <c:when test="${empty usuario}">
+            <c:when test="${empty employee}">
                 <fmt:message key="usuario.create.title" />
             </c:when>
             <c:otherwise>
@@ -36,15 +36,16 @@
                         <div class="card-body">
                             <div class="d-flex flex-column align-items-center text-center">
                                 <div class="avatar-wrapper mb-3">
-                                    <img src="https://ui-avatars.com/api/?background=66b2ff&color=fff&name=<c:out value='${usuario.nombreUsuario}'/>" alt="avatar">
-                                    <c:if test="${not empty usuario}">
-                                        <a href="${pageContext.request.contextPath}/public/UsuarioServlet?action=detail&id=${usuario.id}" class="avatar-edit-btn" title="<fmt:message key='profile.avatar.change' />">
+                                <img src="https://ui-avatars.com/api/?background=66b2ff&color=fff&name=<c:out value='${employee.employeeName}'/>" alt="avatar">
+                                <c:if test="${not empty employee}">
+                                        <c:set var="employeeId" value="${not empty employee.id ? employee.id : (not empty employee.employeeId ? employee.employeeId : employee.idEmployee)}" />
+                                        <a href="${pageContext.request.contextPath}/public/EmployeeServlet?action=detail&id=${employeeId}" class="avatar-edit-btn" title="<fmt:message key='profile.avatar.change' />">
                                             <i class="bi bi-camera"></i>
                                         </a>
-                                    </c:if>
-                                </div>
-                                <h5 class="fw-semibold mb-1"><c:out value="${usuario.nombreUsuario != null ? usuario.nombreUsuario : 'Usuario RentExpress'}" /></h5>
-                                <p class="text-muted small mb-3"><c:out value="${usuario.email != null ? usuario.email : ''}" /></p>
+                                </c:if>
+                            </div>
+                            <h5 class="fw-semibold mb-1"><c:out value="${employee.employeeName != null ? employee.employeeName : 'Usuario RentExpress'}" /></h5>
+                            <p class="text-muted small mb-3"><c:out value="${employee.email != null ? employee.email : ''}" /></p>
                                 <div class="w-100 bg-light rounded-3 p-3 text-start">
                                     <p class="fw-semibold mb-1"><fmt:message key="profile.status.complete" /></p>
                                     <p class="text-muted small mb-0"><fmt:message key="profile.status.complete.desc" /></p>
@@ -59,7 +60,7 @@
                         <div class="card-body p-4">
                             <h3 class="fw-bold mb-4">
                                 <c:choose>
-                                    <c:when test="${empty usuario}">
+                                    <c:when test="${empty employee}">
                                         <fmt:message key="usuario.create.title" />
                                     </c:when>
                                     <c:otherwise>
@@ -68,10 +69,10 @@
                                 </c:choose>
                             </h3>
 
-                            <form action="${pageContext.request.contextPath}/public/UsuarioServlet" method="post" class="needs-validation" novalidate>
-                                <input type="hidden" name="action" value="${empty usuario ? 'save' : 'update'}" />
-                                <c:if test="${not empty usuario}">
-                                    <input type="hidden" name="id" value="${usuario.id}" />
+                            <form action="${pageContext.request.contextPath}/public/EmployeeServlet" method="post" class="needs-validation" novalidate>
+                                <input type="hidden" name="action" value="${empty employee ? 'save' : 'update'}" />
+                                <c:if test="${not empty employee}">
+                                    <input type="hidden" name="id" value="${employeeId}" />
                                 </c:if>
 
                                 <div class="row g-4">
@@ -81,7 +82,7 @@
                                             <div class="row g-3">
                                                 <div class="col-md-6">
                                                     <label for="nombreUsuario" class="form-label"><fmt:message key="usuario.detail.name" /></label>
-                                                    <input type="text" class="form-control" id="nombreUsuario" name="nombreUsuario" value="${usuario.nombreUsuario}" required>
+                                                    <input type="text" class="form-control" id="nombreUsuario" name="username" value="${employee.employeeName}" required>
                                                     <div class="invalid-feedback">
                                                         <fmt:message key="usuario.detail.name" />
                                                     </div>
@@ -108,7 +109,7 @@
                                             <div class="row g-3">
                                                 <div class="col-md-12">
                                                     <label for="email" class="form-label"><fmt:message key="usuario.detail.email" /></label>
-                                                    <input type="email" class="form-control" id="email" name="email" value="${usuario.email}" required>
+                                                    <input type="email" class="form-control" id="email" name="email" value="${employee.email}" required>
                                                     <div class="invalid-feedback">
                                                         <fmt:message key="usuario.detail.email" />
                                                     </div>
@@ -156,7 +157,7 @@
 
                                 <div class="d-flex flex-wrap gap-3 mt-4">
                                     <button type="submit" class="btn btn-brand px-4"><fmt:message key="profile.save" /></button>
-                                    <a href="${pageContext.request.contextPath}/public/UsuarioServlet?action=list" class="btn btn-outline-brand px-4"><fmt:message key="action.cancel" /></a>
+                                    <a href="${pageContext.request.contextPath}/public/EmployeeServlet?action=list" class="btn btn-outline-brand px-4"><fmt:message key="action.cancel" /></a>
                                 </div>
                             </form>
                         </div>
