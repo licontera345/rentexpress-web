@@ -66,7 +66,7 @@ public class LanguageServlet extends HttpServlet {
 
                 Locale requestedLocale = Locale.forLanguageTag(language);
                 String requestedLanguage = requestedLocale.getLanguage();
-                if (requestedLanguage == null || requestedLanguage.isBlank()) {
+                if (requestedLanguage == null || requestedLanguage.isEmpty()) {
                         return;
                 }
 
@@ -84,7 +84,7 @@ public class LanguageServlet extends HttpServlet {
                 Cookie cookie = new Cookie("locale", matchedLocale.getLanguage());
                 cookie.setMaxAge(60 * 60 * 24 * 30);
                 String contextPath = request.getContextPath();
-                cookie.setPath(contextPath == null || contextPath.isBlank() ? "/" : contextPath);
+                cookie.setPath(contextPath == null || contextPath.isEmpty() ? "/" : contextPath);
                 response.addCookie(cookie);
         }
 
@@ -109,7 +109,7 @@ public class LanguageServlet extends HttpServlet {
 
         private Locale resolveLocaleFromHeader(HttpServletRequest request) {
                 String acceptLanguage = request.getHeader("Accept-Language");
-                if (acceptLanguage == null || acceptLanguage.isBlank()) {
+                if (acceptLanguage == null || acceptLanguage.isEmpty()) {
                         return DEFAULT_LOCALE;
                 }
 
@@ -128,13 +128,13 @@ public class LanguageServlet extends HttpServlet {
                 }
 
                 String redirect = request.getParameter("redirect");
-                if (redirect != null && !redirect.isBlank()) {
+                if (redirect != null && !redirect.isEmpty()) {
                         response.sendRedirect(redirect);
                         return;
                 }
 
                 String referer = request.getHeader("Referer");
-                if (referer != null && !referer.isBlank()) {
+                if (referer != null && !referer.isEmpty()) {
                         response.sendRedirect(referer);
                 } else {
                         response.sendRedirect(request.getContextPath() + Views.INDEX);
