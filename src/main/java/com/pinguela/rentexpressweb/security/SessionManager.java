@@ -23,12 +23,22 @@ public class SessionManager {
 
 	}
 
-	public static Object getAttribute(HttpServletRequest request, String name) {
-		return request.getSession().getAttribute(name);
-	}
+        public static Object getAttribute(HttpServletRequest request, String name) {
+                HttpSession session = request.getSession(false);
 
-	public static void removeAttribute(HttpServletRequest request, String name) {
-		request.getSession().removeAttribute(name);
-	}
+                if (session == null) {
+                        return null;
+                }
+
+                return session.getAttribute(name);
+        }
+
+        public static void removeAttribute(HttpServletRequest request, String name) {
+                HttpSession session = request.getSession(false);
+
+                if (session != null) {
+                        session.removeAttribute(name);
+                }
+        }
 
 }
