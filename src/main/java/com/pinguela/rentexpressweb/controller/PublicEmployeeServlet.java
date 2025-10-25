@@ -112,7 +112,7 @@ public class PublicEmployeeServlet extends HttpServlet {
                                 EmployeeDTO employee = employeeService.findById(id);
 
                                 if (employee != null) {
-                                        employee.setActiveStatus(0);
+                                        employee.setActiveStatus(Boolean.FALSE);
                                         employeeService.update(employee);
                                 }
 
@@ -147,33 +147,23 @@ public class PublicEmployeeServlet extends HttpServlet {
 				String password = request.getParameter("password");
 				String remember = request.getParameter("remember");
 
-				EmployeeDTO employee = employeeService.authenticate(username, password);
+                                EmployeeDTO employee = employeeService.autenticar(username, password);
 
-                                if (employee != null && employee.getActiveStatus() == 1) {
-                                        HttpSession session = request.getSession();
-                                        session.setAttribute("employee", employee);
+                                if (employee != null && Boolean.TRUE.equals(employee.getActiveStatus())) {
+					HttpSession session = request.getSession();
+					session.setAttribute("employee", employee);
 
-                                        if ("yes".equals(remember)) {
-                                                Cookie cookieUser = new Cookie("rememberUser", username);
-                                                cookieUser.setMaxAge(60 * 60 * 24 * 7);
-                                                cookieUser.setPath(request.getContextPath());
-                                                response.addCookie(cookieUser);
-
-                                                Cookie cookiePassword = new Cookie("rememberPassword", password);
-                                                cookiePassword.setMaxAge(60 * 60 * 24 * 7);
-                                                cookiePassword.setPath(request.getContextPath());
-                                                response.addCookie(cookiePassword);
-                                        } else {
-                                                Cookie cookieUser = new Cookie("rememberUser", "");
-                                                cookieUser.setMaxAge(0);
-                                                cookieUser.setPath(request.getContextPath());
-                                                response.addCookie(cookieUser);
-
-                                                Cookie cookiePassword = new Cookie("rememberPassword", "");
-                                                cookiePassword.setMaxAge(0);
-                                                cookiePassword.setPath(request.getContextPath());
-                                                response.addCookie(cookiePassword);
-                                        }
+					if ("yes".equals(remember)) {
+						Cookie cookieUser = new Cookie("rememberUser", username);
+						cookieUser.setMaxAge(60 * 60 * 24 * 7);
+						cookieUser.setPath(request.getContextPath());
+						response.addCookie(cookieUser);
+					} else {
+						Cookie cookieUser = new Cookie("rememberUser", "");
+						cookieUser.setMaxAge(0);
+						cookieUser.setPath(request.getContextPath());
+						response.addCookie(cookieUser);
+					}
 
 					Locale locale = (Locale) session.getAttribute("locale");
 					if (locale == null)
@@ -194,7 +184,7 @@ public class PublicEmployeeServlet extends HttpServlet {
 				newEmployee.setEmployeeName(username);
 				newEmployee.setEmail(email);
 				newEmployee.setPassword(password);
-				newEmployee.setActiveStatus(1);
+                                newEmployee.setActiveStatus(Boolean.TRUE);
 
 				employeeService.create(newEmployee);
 				destination = "/public/EmployeeServlet?action=list";
