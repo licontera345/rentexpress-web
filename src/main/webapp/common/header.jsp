@@ -83,13 +83,13 @@
                                 <li>
                                     <a class="dropdown-item" href="${pageContext.request.contextPath}/public/EmployeeServlet?action=detail&id=${currentEmployeeId}">
                                         <i class="bi bi-person-lines-fill me-2"></i>
-                                        <fmt:message key="usuario.detail.button" />
+                                        <fmt:message key="employee.detail.button" />
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item" href="${pageContext.request.contextPath}/public/EmployeeServlet?action=list">
                                         <i class="bi bi-people-fill me-2"></i>
-                                        <fmt:message key="usuario.list.title" />
+                                        <fmt:message key="employee.list.title" />
                                     </a>
                                 </li>
                                 <li><hr class="dropdown-divider" /></li>
@@ -104,11 +104,11 @@
                     </c:when>
                     <c:otherwise>
                         <li class="nav-item d-flex gap-2 mt-3 mt-lg-0">
-                            <a class="btn btn-outline-brand px-3" href="${pageContext.request.contextPath}/public/usuario/login.jsp">
+                            <a class="btn btn-outline-brand px-3" href="${pageContext.request.contextPath}/public/employee/login.jsp">
                                 <fmt:message key="header.login" />
                             </a>
                             <a class="btn btn-brand px-3" href="${pageContext.request.contextPath}/public/EmployeeServlet?action=create">
-                                <fmt:message key="usuario.create.title" />
+                                <fmt:message key="employee.create.title" />
                             </a>
                         </li>
                     </c:otherwise>

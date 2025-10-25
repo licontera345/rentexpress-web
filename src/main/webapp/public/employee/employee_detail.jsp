@@ -10,7 +10,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><fmt:message key="usuario.detail.title" /></title>
+    <title><fmt:message key="employee.detail.title" /></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/flag-icons@6.6.6/css/flag-icons.min.css" rel="stylesheet">
@@ -31,14 +31,14 @@
                                 <div class="avatar-wrapper mb-3">
                                     <c:choose>
                                         <c:when test="${hasImage}">
-                                            <img alt="Foto de usuario" loading="lazy" src="${pageContext.request.contextPath}/DownloadImageServlet?id=${employeeId}">
+                                            <img alt="Foto de empleado" loading="lazy" src="${pageContext.request.contextPath}/DownloadImageServlet?id=${employeeId}">
                                         </c:when>
                                         <c:otherwise>
                                             <img alt="Placeholder" loading="lazy" src="${PH_SVG}">
                                         </c:otherwise>
                                     </c:choose>
                                     <form action="${pageContext.request.contextPath}/UploadImageServlet" method="post" enctype="multipart/form-data" class="avatar-edit-btn" title="<fmt:message key='profile.avatar.change' />">
-                                        <input type="hidden" name="idUsuario" value="${employeeId}" />
+                                        <input type="hidden" name="employeeId" value="${employeeId}" />
                                         <label for="avatarFile" class="text-white"><i class="bi bi-camera-fill"></i></label>
                                         <input type="file" id="avatarFile" name="imagen" accept=".jpg,.jpeg,.png" class="d-none" onchange="this.form.submit()" />
                                     </form>
@@ -62,18 +62,18 @@
                     <div class="col-lg-8">
                         <div class="card card-common mb-4">
                             <div class="card-body">
-                                <h3 class="fw-bold mb-3"><fmt:message key="usuario.detail.title" /></h3>
+                                <h3 class="fw-bold mb-3"><fmt:message key="employee.detail.title" /></h3>
                                 <div class="row g-3">
                                     <div class="col-md-6">
-                                        <p class="text-muted mb-1"><fmt:message key="usuario.detail.id" /></p>
+                                        <p class="text-muted mb-1"><fmt:message key="employee.detail.id" /></p>
                                         <p class="fw-semibold mb-0">${employeeId}</p>
                                     </div>
                                     <div class="col-md-6">
-                                        <p class="text-muted mb-1"><fmt:message key="usuario.detail.name" /></p>
+                                        <p class="text-muted mb-1"><fmt:message key="employee.detail.name" /></p>
                                         <p class="fw-semibold mb-0"><c:out value="${employee.employeeName}" /></p>
                                     </div>
                                     <div class="col-md-6">
-                                        <p class="text-muted mb-1"><fmt:message key="usuario.detail.email" /></p>
+                                        <p class="text-muted mb-1"><fmt:message key="employee.detail.email" /></p>
                                         <p class="fw-semibold mb-0"><c:out value="${employee.email}" /></p>
                                     </div>
                                 </div>
@@ -107,7 +107,7 @@
                         <c:if test="${not empty image}">
                             <div class="card card-common mt-4">
                                 <div class="card-body">
-                                    <h5 class="fw-bold mb-3"><fmt:message key="usuario.detail.images" /></h5>
+                                    <h5 class="fw-bold mb-3"><fmt:message key="employee.detail.images" /></h5>
                                     <div class="row g-3">
                                         <div class="col-6 col-md-4">
                                             <div class="ratio ratio-1x1 rounded-4 overflow-hidden shadow-sm">
@@ -125,7 +125,7 @@
             <c:if test="${empty employee}">
                 <div class="alert alert-danger d-flex align-items-center" role="alert">
                     <i class="bi bi-exclamation-octagon-fill me-3 fs-4"></i>
-                    <div><fmt:message key="usuario.detail.notfound" /></div>
+                    <div><fmt:message key="employee.detail.notfound" /></div>
                 </div>
             </c:if>
         </div>

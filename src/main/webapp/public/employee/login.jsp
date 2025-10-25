@@ -51,10 +51,10 @@ request.setAttribute("rememberUser", rememberUser);
                                         <label class="form-label d-block mb-2 fw-semibold text-muted"><fmt:message key="login.userType" /></label>
                                         <div class="d-flex gap-3 flex-wrap">
                                             <div class="form-check form-check-inline">
-                                                <input class="btn-check" type="radio" name="userType" id="login-customer" value="customer" checked>
-                                                <label class="btn btn-outline-brand px-4" for="login-customer">
+                                                <input class="btn-check" type="radio" name="userType" id="login-user" value="user" checked>
+                                                <label class="btn btn-outline-brand px-4" for="login-user">
                                                     <i class="bi bi-person me-2"></i>
-                                                    <fmt:message key="login.userType.customer" />
+                                                    <fmt:message key="login.userType.user" />
                                                 </label>
                                             </div>
                                             <div class="form-check form-check-inline">
@@ -73,7 +73,7 @@ request.setAttribute("rememberUser", rememberUser);
                                             <span class="input-group-text"><i class="bi bi-person-circle"></i></span>
                                             <input type="text" class="form-control" id="username" name="username" value="<c:out value='${rememberUser}'/>" required>
                                             <div class="invalid-feedback">
-                                                <fmt:message key="usuario.detail.name" />
+                                                <fmt:message key="employee.detail.name" />
                                             </div>
                                         </div>
                                     </div>

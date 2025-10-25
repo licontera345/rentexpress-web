@@ -11,25 +11,24 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-@WebServlet("/private/UsuarioServlet")
-public class PrivateUsuarioServlet extends HttpServlet {
+@WebServlet("/private/EmployeeServlet")
+public class PrivateEmployeeServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws IOException, ServletException {
 
-		//
-		// Verificar si el usuario ha iniciado sesión
-		HttpSession session = request.getSession(false);
-		// Si no hay sesión o no hay usuario en la sesión, redirigir al login
+                //
+                // Verificar si el empleado ha iniciado sesión
+                HttpSession session = request.getSession(false);
+                // Si no hay sesión o no hay empleado en la sesión, redirigir al inicio público
                 if (session == null || session.getAttribute("employee") == null) {
-			// Redirigir a la página de inicio de sesión
-			response.sendRedirect(request.getContextPath() + "/index.jsp");
-			return;
-		}
-		// LOGOUT
-		String action = request.getParameter("action");
+                        response.sendRedirect(request.getContextPath() + "/index.jsp");
+                        return;
+                }
+                // LOGOUT
+                String action = request.getParameter("action");
 		if ("logout".equals(action)) {
 			session.invalidate(); // Invalida la sesión
                         response.sendRedirect(request.getContextPath() + "/index.jsp"); // Redirige a /index.jsp
