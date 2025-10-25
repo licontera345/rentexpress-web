@@ -150,20 +150,30 @@ public class PublicEmployeeServlet extends HttpServlet {
                                 EmployeeDTO employee = employeeService.autenticar(username, password);
 
                                 if (employee != null && Boolean.TRUE.equals(employee.getActiveStatus())) {
-					HttpSession session = request.getSession();
-					session.setAttribute("employee", employee);
+                                        HttpSession session = request.getSession();
+                                        session.setAttribute("employee", employee);
 
-					if ("yes".equals(remember)) {
-						Cookie cookieUser = new Cookie("rememberUser", username);
-						cookieUser.setMaxAge(60 * 60 * 24 * 7);
-						cookieUser.setPath(request.getContextPath());
-						response.addCookie(cookieUser);
-					} else {
-						Cookie cookieUser = new Cookie("rememberUser", "");
-						cookieUser.setMaxAge(0);
-						cookieUser.setPath(request.getContextPath());
-						response.addCookie(cookieUser);
-					}
+                                        if ("yes".equals(remember)) {
+                                                Cookie cookieUser = new Cookie("rememberUser", username);
+                                                cookieUser.setMaxAge(60 * 60 * 24 * 7);
+                                                cookieUser.setPath(request.getContextPath());
+                                                response.addCookie(cookieUser);
+
+                                                Cookie cookiePassword = new Cookie("rememberPassword", password);
+                                                cookiePassword.setMaxAge(60 * 60 * 24 * 7);
+                                                cookiePassword.setPath(request.getContextPath());
+                                                response.addCookie(cookiePassword);
+                                        } else {
+                                                Cookie cookieUser = new Cookie("rememberUser", "");
+                                                cookieUser.setMaxAge(0);
+                                                cookieUser.setPath(request.getContextPath());
+                                                response.addCookie(cookieUser);
+
+                                                Cookie cookiePassword = new Cookie("rememberPassword", "");
+                                                cookiePassword.setMaxAge(0);
+                                                cookiePassword.setPath(request.getContextPath());
+                                                response.addCookie(cookiePassword);
+                                        }
 
 					Locale locale = (Locale) session.getAttribute("locale");
 					if (locale == null)
