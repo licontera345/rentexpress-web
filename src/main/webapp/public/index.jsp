@@ -155,11 +155,38 @@
                                                         ${vehicle.manufactureYear}
                                                     </c:if>
                                                 </p>
-                                                <c:if test="${vehicle.dailyPrice != null}">
-                                                    <span class="badge bg-brand fs-6">
-                                                        <fmt:formatNumber value="${vehicle.dailyPrice}" type="number" maxFractionDigits="2" minFractionDigits="2" />
-                                                        € / <fmt:message key="home.featured.pricePerDay" />
-                                                    </span>
+                                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                                    <c:if test="${vehicle.dailyPrice != null}">
+                                                        <span class="badge bg-brand fs-6">
+                                                            <fmt:formatNumber value="${vehicle.dailyPrice}" type="number" maxFractionDigits="2" minFractionDigits="2" />
+                                                            € / <fmt:message key="home.featured.pricePerDay" />
+                                                        </span>
+                                                    </c:if>
+                                                    <c:if test="${vehicle.vehicleStatus != null && vehicle.vehicleStatus.statusName != null}">
+                                                        <span class="badge bg-secondary-subtle text-secondary-emphasis fw-semibold">
+                                                            <fmt:message key="vehicle.card.status" />:
+                                                            <c:out value="${vehicle.vehicleStatus.statusName}" />
+                                                        </span>
+                                                    </c:if>
+                                                </div>
+                                                <c:if test="${vehicle.currentHeadquarters != null}">
+                                                    <p class="mb-0 small d-flex align-items-center gap-2">
+                                                        <i class="bi bi-geo-alt"></i>
+                                                        <span>
+                                                            <fmt:message key="vehicle.card.headquarters" />:
+                                                            <c:out value="${vehicle.currentHeadquarters.name}" />
+                                                            <c:if test="${vehicle.currentHeadquarters.city != null || vehicle.currentHeadquarters.province != null}">
+                                                                &nbsp;·&nbsp;
+                                                                <c:if test="${vehicle.currentHeadquarters.city != null}">
+                                                                    <c:out value="${vehicle.currentHeadquarters.city.cityName}" />
+                                                                </c:if>
+                                                                <c:if test="${vehicle.currentHeadquarters.city != null && vehicle.currentHeadquarters.province != null}">, </c:if>
+                                                                <c:if test="${vehicle.currentHeadquarters.province != null}">
+                                                                    <c:out value="${vehicle.currentHeadquarters.province.provinceName}" />
+                                                                </c:if>
+                                                            </c:if>
+                                                        </span>
+                                                    </p>
                                                 </c:if>
                                             </div>
                                         </div>

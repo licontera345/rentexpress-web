@@ -76,6 +76,55 @@
                                         <p class="text-muted mb-1"><fmt:message key="employee.detail.email" /></p>
                                         <p class="fw-semibold mb-0"><c:out value="${employee.email}" /></p>
                                     </div>
+                                    <div class="col-md-6">
+                                        <p class="text-muted mb-1"><fmt:message key="employee.detail.phone" /></p>
+                                        <p class="fw-semibold mb-0">
+                                            <c:choose>
+                                                <c:when test="${not empty employee.phone}"><c:out value="${employee.phone}" /></c:when>
+                                                <c:otherwise>-</c:otherwise>
+                                            </c:choose>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="text-muted mb-1"><fmt:message key="employee.detail.role" /></p>
+                                        <p class="fw-semibold mb-0">
+                                            <c:choose>
+                                                <c:when test="${employee.role != null}"><c:out value="${employee.role.roleName}" /></c:when>
+                                                <c:otherwise>-</c:otherwise>
+                                            </c:choose>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="text-muted mb-1"><fmt:message key="employee.detail.status" /></p>
+                                        <span class="badge ${employee.activeStatus ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'} fw-semibold px-3 py-2">
+                                            <fmt:message key="${employee.activeStatus ? 'employee.status.active' : 'employee.status.inactive'}" />
+                                        </span>
+                                    </div>
+                                    <c:if test="${employee.headquarters != null}">
+                                        <div class="col-md-6">
+                                            <p class="text-muted mb-1"><fmt:message key="employee.detail.headquarters" /></p>
+                                            <p class="fw-semibold mb-1"><c:out value="${employee.headquarters.name}" /></p>
+                                            <c:if test="${employee.headquarters.address != null}">
+                                                <p class="text-muted small mb-1">
+                                                    <c:out value="${employee.headquarters.address.street}" />
+                                                    <c:if test="${not empty employee.headquarters.address.number}">
+                                                        <span> <c:out value="${employee.headquarters.address.number}" /></span>
+                                                    </c:if>
+                                                </p>
+                                            </c:if>
+                                            <c:if test="${employee.headquarters.city != null || employee.headquarters.province != null}">
+                                                <p class="text-muted small mb-0">
+                                                    <c:if test="${employee.headquarters.city != null}">
+                                                        <c:out value="${employee.headquarters.city.cityName}" />
+                                                    </c:if>
+                                                    <c:if test="${employee.headquarters.city != null && employee.headquarters.province != null}"> · </c:if>
+                                                    <c:if test="${employee.headquarters.province != null}">
+                                                        <c:out value="${employee.headquarters.province.provinceName}" />
+                                                    </c:if>
+                                                </p>
+                                            </c:if>
+                                        </div>
+                                    </c:if>
                                 </div>
                             </div>
                         </div>

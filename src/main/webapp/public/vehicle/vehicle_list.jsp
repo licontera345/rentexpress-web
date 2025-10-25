@@ -155,6 +155,25 @@
                                                             </span>
                                                         </c:if>
                                                     </div>
+                                                    <c:if test="${vehicle.currentHeadquarters != null}">
+                                                        <div class="text-muted small d-flex align-items-center gap-2">
+                                                            <i class="bi bi-geo-alt"></i>
+                                                            <span>
+                                                                <fmt:message key="vehicle.card.headquarters" />:
+                                                                <c:out value="${vehicle.currentHeadquarters.name}" />
+                                                                <c:if test="${vehicle.currentHeadquarters.city != null || vehicle.currentHeadquarters.province != null}">
+                                                                    &nbsp;·&nbsp;
+                                                                    <c:if test="${vehicle.currentHeadquarters.city != null}">
+                                                                        <c:out value="${vehicle.currentHeadquarters.city.cityName}" />
+                                                                    </c:if>
+                                                                    <c:if test="${vehicle.currentHeadquarters.city != null && vehicle.currentHeadquarters.province != null}">, </c:if>
+                                                                    <c:if test="${vehicle.currentHeadquarters.province != null}">
+                                                                        <c:out value="${vehicle.currentHeadquarters.province.provinceName}" />
+                                                                    </c:if>
+                                                                </c:if>
+                                                            </span>
+                                                        </div>
+                                                    </c:if>
                                                     <div class="d-flex flex-wrap gap-3 text-muted small">
                                                         <c:if test="${vehicle.manufactureYear != null}">
                                                             <span class="d-flex align-items-center gap-2">

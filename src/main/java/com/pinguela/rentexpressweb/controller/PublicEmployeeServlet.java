@@ -2,23 +2,38 @@ package com.pinguela.rentexpressweb.controller;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
+import com.pinguela.rentexpres.dao.HeadquartersDAO;
+import com.pinguela.rentexpres.dao.impl.HeadquartersDAOImpl;
+import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.EmployeeDTO;
-import com.pinguela.rentexpres.model.Results;
-import com.pinguela.rentexpres.model.VehicleCriteria;
-import com.pinguela.rentexpres.model.VehicleDTO;
+import com.pinguela.rentexpres.model.HeadquartersDTO;
+import com.pinguela.rentexpres.model.RoleDTO;
 import com.pinguela.rentexpres.service.EmployeeService;
 import com.pinguela.rentexpres.service.FileService;
+import com.pinguela.rentexpres.service.ProvinceService;
+import com.pinguela.rentexpres.service.RoleService;
+import com.pinguela.rentexpres.service.CityService;
 import com.pinguela.rentexpres.service.VehicleService;
+import com.pinguela.rentexpres.service.VehicleCategoryService;
+import com.pinguela.rentexpres.service.VehicleStatusService;
+import com.pinguela.rentexpres.service.impl.CityServiceImpl;
 import com.pinguela.rentexpres.service.impl.EmployeeServiceImpl;
 import com.pinguela.rentexpres.service.impl.FileServiceImpl;
+import com.pinguela.rentexpres.service.impl.ProvinceServiceImpl;
+import com.pinguela.rentexpres.service.impl.RoleServiceImpl;
+import com.pinguela.rentexpres.service.impl.VehicleCategoryServiceImpl;
 import com.pinguela.rentexpres.service.impl.VehicleServiceImpl;
+import com.pinguela.rentexpres.service.impl.VehicleStatusServiceImpl;
 import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.service.EmployeeFormData;
+import com.pinguela.rentexpressweb.service.EmployeeFormPreparationService;
+import com.pinguela.rentexpressweb.service.HeadquartersLookupService;
+import com.pinguela.rentexpressweb.service.VehiclePresentationService;
+import com.pinguela.rentexpressweb.service.VehiclePresentationService.HomeVehiclesData;
 import com.pinguela.rentexpressweb.util.Views;
 
 import jakarta.servlet.ServletException;
@@ -39,12 +54,29 @@ public class PublicEmployeeServlet extends HttpServlet {
 
         private final EmployeeService employeeService;
         private final FileService fileService;
-        private final VehicleService vehicleService;
+        private final RoleService roleService;
+        private final VehiclePresentationService vehiclePresentationService;
+        private final HeadquartersLookupService headquartersLookupService;
+        private final EmployeeFormPreparationService employeeFormPreparationService;
 
         public PublicEmployeeServlet() {
-                this.employeeService = new EmployeeServiceImpl();
-                this.fileService = new FileServiceImpl();
-                this.vehicleService = new VehicleServiceImpl();
+                this(new EmployeeServiceImpl(), new FileServiceImpl(), new VehicleServiceImpl(), new ProvinceServiceImpl(),
+                                new CityServiceImpl(), new RoleServiceImpl(), new HeadquartersDAOImpl(),
+                                new VehicleCategoryServiceImpl(), new VehicleStatusServiceImpl());
+        }
+
+        PublicEmployeeServlet(EmployeeService employeeService, FileService fileService, VehicleService vehicleService,
+                        ProvinceService provinceService, CityService cityService, RoleService roleService,
+                        HeadquartersDAO headquartersDAO, VehicleCategoryService vehicleCategoryService,
+                        VehicleStatusService vehicleStatusService) {
+                this.employeeService = employeeService;
+                this.fileService = fileService;
+                this.roleService = roleService;
+                this.headquartersLookupService = new HeadquartersLookupService(headquartersDAO);
+                this.vehiclePresentationService = new VehiclePresentationService(vehicleService, fileService,
+                                vehicleCategoryService, vehicleStatusService, this.headquartersLookupService);
+                this.employeeFormPreparationService = new EmployeeFormPreparationService(roleService, provinceService,
+                                cityService, this.headquartersLookupService);
         }
 
         @Override
@@ -59,30 +91,34 @@ public class PublicEmployeeServlet extends HttpServlet {
                                 SessionManager.logout(request);
                                 destination = Views.LOGIN;
 
-			} else if ("detail".equals(action)) {
-				int id = Integer.parseInt(request.getParameter("id"));
-				EmployeeDTO employee = employeeService.findById(id);
-				request.setAttribute("employee", employee);
+                        } else if ("detail".equals(action)) {
+                                int id = Integer.parseInt(request.getParameter("id"));
+                                EmployeeDTO employee = employeeService.findById(id);
+                                enrichEmployee(employee);
+                                request.setAttribute("employee", employee);
 
-				File image = fileService.getImageByEmployeeId(id);
-				request.setAttribute("hasImage", image != null);
-				request.setAttribute("image", image);
+                                File image = fileService.getImageByEmployeeId(id);
+                                request.setAttribute("hasImage", image != null);
+                                request.setAttribute("image", image);
 
-				destination = Views.EMPLOYEE_DETAIL;
+                                destination = Views.EMPLOYEE_DETAIL;
 
-			} else if ("list".equals(action)) {
-				List<EmployeeDTO> employees = employeeService.findAll();
-				request.setAttribute("employees", employees);
-				destination = Views.EMPLOYEE_LIST;
+                        } else if ("list".equals(action)) {
+                                List<EmployeeDTO> employees = employeeService.findAll();
+                                request.setAttribute("employees", employees);
+                                destination = Views.EMPLOYEE_LIST;
 
-			} else if ("create".equals(action)) {
-				destination = Views.EMPLOYEE_FORM;
+                        } else if ("create".equals(action)) {
+                                destination = Views.EMPLOYEE_FORM;
+                                loadEmployeeFormData(request, null);
 
-			} else if ("edit".equals(action)) {
-				int id = Integer.parseInt(request.getParameter("id"));
-				EmployeeDTO employee = employeeService.findById(id);
-				request.setAttribute("employee", employee);
-				destination = Views.EMPLOYEE_FORM;
+                        } else if ("edit".equals(action)) {
+                                int id = Integer.parseInt(request.getParameter("id"));
+                                EmployeeDTO employee = employeeService.findById(id);
+                                enrichEmployee(employee);
+                                request.setAttribute("employee", employee);
+                                loadEmployeeFormData(request, employee);
+                                destination = Views.EMPLOYEE_FORM;
 
                         } else if ("deactivate".equals(action)) {
                                 int id = Integer.parseInt(request.getParameter("id"));
@@ -167,30 +203,82 @@ public class PublicEmployeeServlet extends HttpServlet {
                                 String username = request.getParameter("username");
                                 String email = request.getParameter("email");
                                 String password = request.getParameter("password");
+                                String firstName = request.getParameter("firstName");
+                                String lastName1 = request.getParameter("lastName1");
+                                String lastName2 = request.getParameter("lastName2");
+                                String phone = request.getParameter("phone");
+                                Integer roleId = parseInteger(request.getParameter("roleId"));
+                                Integer headquartersId = parseInteger(request.getParameter("headquartersId"));
+                                Integer provinceId = parseInteger(request.getParameter("provinceId"));
+                                Integer cityId = parseInteger(request.getParameter("cityId"));
+                                boolean active = request.getParameter("activeStatus") != null;
 
                                 EmployeeDTO newEmployee = new EmployeeDTO();
                                 newEmployee.setEmployeeName(username);
                                 newEmployee.setEmail(email);
                                 newEmployee.setPassword(password);
-                                updateActiveStatus(newEmployee, true);
+                                newEmployee.setFirstName(firstName);
+                                newEmployee.setLastName1(lastName1);
+                                newEmployee.setLastName2(lastName2);
+                                newEmployee.setPhone(phone);
+                                newEmployee.setRoleId(roleId);
+                                newEmployee.setHeadquartersId(headquartersId);
+                                updateActiveStatus(newEmployee, active);
 
-                                employeeService.create(newEmployee);
-                                response.sendRedirect(request.getContextPath() + "/public/EmployeeServlet?action=list");
-                                return;
+                                boolean created = employeeService.create(newEmployee);
+                                if (created) {
+                                        response.sendRedirect(request.getContextPath() + "/public/EmployeeServlet?action=list");
+                                        return;
+                                }
+
+                                request.setAttribute("employee", newEmployee);
+                                request.setAttribute("selectedProvinceId", provinceId);
+                                request.setAttribute("selectedCityId", cityId);
+                                loadEmployeeFormData(request, newEmployee);
+                                request.setAttribute("formErrorMessageKey", "employee.form.saveError");
+                                destination = Views.EMPLOYEE_FORM;
 
                         } else if ("update".equals(action)) {
                                 int id = Integer.parseInt(request.getParameter("id"));
                                 String username = request.getParameter("username");
                                 String email = request.getParameter("email");
+                                String password = request.getParameter("password");
+                                String firstName = request.getParameter("firstName");
+                                String lastName1 = request.getParameter("lastName1");
+                                String lastName2 = request.getParameter("lastName2");
+                                String phone = request.getParameter("phone");
+                                Integer roleId = parseInteger(request.getParameter("roleId"));
+                                Integer headquartersId = parseInteger(request.getParameter("headquartersId"));
+                                Integer provinceId = parseInteger(request.getParameter("provinceId"));
+                                Integer cityId = parseInteger(request.getParameter("cityId"));
+                                boolean active = request.getParameter("activeStatus") != null;
 
                                 EmployeeDTO employee = employeeService.findById(id);
                                 employee.setEmployeeName(username);
                                 employee.setEmail(email);
+                                employee.setFirstName(firstName);
+                                employee.setLastName1(lastName1);
+                                employee.setLastName2(lastName2);
+                                employee.setPhone(phone);
+                                employee.setRoleId(roleId);
+                                employee.setHeadquartersId(headquartersId);
+                                employee.setPassword((password != null && !password.isBlank()) ? password : null);
+                                updateActiveStatus(employee, active);
 
-                                employeeService.update(employee);
-                                response.sendRedirect(request.getContextPath() + "/public/EmployeeServlet?action=list");
-                                return;
-			}
+                                boolean updated = employeeService.update(employee);
+                                if (updated) {
+                                        response.sendRedirect(request.getContextPath() + "/public/EmployeeServlet?action=list");
+                                        return;
+                                }
+
+                                enrichEmployee(employee);
+                                request.setAttribute("employee", employee);
+                                request.setAttribute("selectedProvinceId", provinceId);
+                                request.setAttribute("selectedCityId", cityId);
+                                loadEmployeeFormData(request, employee);
+                                request.setAttribute("formErrorMessageKey", "employee.form.updateError");
+                                destination = Views.EMPLOYEE_FORM;
+                        }
 
                 } catch (Exception e) {
                         e.printStackTrace();
@@ -205,43 +293,103 @@ public class PublicEmployeeServlet extends HttpServlet {
         }
 
         private void loadHomeData(HttpServletRequest request) {
-                try {
-                        VehicleCriteria criteria = new VehicleCriteria();
-                        criteria.setPageNumber(1);
-                        criteria.setPageSize(Integer.valueOf(4));
-                        criteria.setOrderBy("created_at");
-                        criteria.setOrderDir("DESC");
+                String language = resolveLanguage(request);
+                HomeVehiclesData data = vehiclePresentationService.loadHomeVehicles(language, 4);
 
-                        Results<VehicleDTO> results = vehicleService.findByCriteria(criteria);
-                        List<VehicleDTO> vehicles = (results != null && results.getResults() != null)
-                                        ? results.getResults()
-                                        : Collections.emptyList();
+                request.setAttribute("featuredVehicles", data.getVehicles());
+                request.setAttribute("featuredVehicleImages", data.getVehicleImages());
+                request.setAttribute("featuredVehiclesError", Boolean.valueOf(data.hasErrors()));
+        }
 
-                        Map<Integer, Boolean> vehicleImages = new HashMap<>();
-                        for (VehicleDTO vehicle : vehicles) {
-                                if (vehicle == null || vehicle.getVehicleId() == null) {
-                                        continue;
-                                }
-
-                                List<File> images = fileService.getImagesByVehicleId(vehicle.getVehicleId());
-                                if (images != null && !images.isEmpty()) {
-                                        vehicleImages.put(vehicle.getVehicleId(), Boolean.TRUE);
+        private String resolveLanguage(HttpServletRequest request) {
+                HttpSession session = request.getSession(false);
+                if (session != null) {
+                        Object localeAttr = session.getAttribute("locale");
+                        if (localeAttr instanceof Locale) {
+                                Locale locale = (Locale) localeAttr;
+                                if (locale.getLanguage() != null && !locale.getLanguage().isEmpty()) {
+                                        return locale.getLanguage();
                                 }
                         }
-
-                        request.setAttribute("featuredVehicles", vehicles);
-                        request.setAttribute("featuredVehicleImages", vehicleImages);
-                } catch (Exception e) {
-                        e.printStackTrace();
-                        request.setAttribute("featuredVehicles", Collections.emptyList());
-                        request.setAttribute("featuredVehicleImages", Collections.emptyMap());
-                        request.setAttribute("featuredVehiclesError", Boolean.TRUE);
                 }
+                return Locale.getDefault().getLanguage();
         }
 
         private void updateActiveStatus(EmployeeDTO employee, boolean active) {
                 if (employee != null) {
                         employee.setActiveStatus(Boolean.valueOf(active));
+                }
+        }
+
+        private void enrichEmployee(EmployeeDTO employee) throws RentexpresException {
+                if (employee == null) {
+                        return;
+                }
+
+                if (employee.getRoleId() != null) {
+                        RoleDTO role = roleService.findById(employee.getRoleId());
+                        employee.setRole(role);
+                }
+
+                if (employee.getHeadquartersId() != null) {
+                        HeadquartersDTO headquarters = headquartersLookupService.findById(employee.getHeadquartersId());
+                        employee.setHeadquarters(headquarters);
+                }
+        }
+
+        private void loadEmployeeFormData(HttpServletRequest request, EmployeeDTO employee) throws RentexpresException {
+                EmployeeFormData formData = employeeFormPreparationService.loadFormData();
+
+                request.setAttribute("roles", new ArrayList<>(formData.getRoles()));
+                request.setAttribute("headquartersList", new ArrayList<>(formData.getHeadquarters()));
+                request.setAttribute("provinces", new ArrayList<>(formData.getProvinces()));
+                request.setAttribute("citiesByProvince", formData.getCitiesByProvince());
+
+                Integer selectedProvinceId = (Integer) request.getAttribute("selectedProvinceId");
+                Integer selectedCityId = (Integer) request.getAttribute("selectedCityId");
+                Integer selectedHeadquartersId = null;
+
+                if (employee != null) {
+                        selectedHeadquartersId = employee.getHeadquartersId();
+                }
+
+                if (selectedHeadquartersId == null) {
+                        selectedHeadquartersId = parseInteger(request.getParameter("headquartersId"));
+                }
+
+                if (selectedProvinceId == null) {
+                        selectedProvinceId = parseInteger(request.getParameter("provinceId"));
+                }
+
+                if (selectedCityId == null) {
+                        selectedCityId = parseInteger(request.getParameter("cityId"));
+                }
+
+                if (selectedProvinceId == null && selectedHeadquartersId != null) {
+                        HeadquartersDTO selectedHeadquarters = formData.getHeadquartersById(selectedHeadquartersId);
+                        if (selectedHeadquarters != null) {
+                                if (selectedHeadquarters.getProvince() != null) {
+                                        selectedProvinceId = selectedHeadquarters.getProvince().getProvinceId();
+                                }
+                                if (selectedHeadquarters.getCity() != null) {
+                                        selectedCityId = selectedHeadquarters.getCity().getCityId();
+                                }
+                        }
+                }
+
+                request.setAttribute("selectedProvinceId", selectedProvinceId);
+                request.setAttribute("selectedCityId", selectedCityId);
+                request.setAttribute("selectedHeadquartersId", selectedHeadquartersId);
+        }
+
+        private Integer parseInteger(String value) {
+                if (value == null || value.isBlank()) {
+                        return null;
+                }
+                try {
+                        return Integer.valueOf(value.trim());
+                } catch (NumberFormatException e) {
+                        return null;
                 }
         }
 }

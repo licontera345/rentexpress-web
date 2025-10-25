@@ -1,20 +1,12 @@
 package com.pinguela.rentexpressweb.controller;
 
-import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
-import com.pinguela.rentexpres.exception.RentexpresException;
-import com.pinguela.rentexpres.model.Results;
-import com.pinguela.rentexpres.model.VehicleCategoryDTO;
+import com.pinguela.rentexpres.dao.HeadquartersDAO;
+import com.pinguela.rentexpres.dao.impl.HeadquartersDAOImpl;
 import com.pinguela.rentexpres.model.VehicleCriteria;
-import com.pinguela.rentexpres.model.VehicleDTO;
-import com.pinguela.rentexpres.model.VehicleStatusDTO;
 import com.pinguela.rentexpres.service.FileService;
 import com.pinguela.rentexpres.service.VehicleCategoryService;
 import com.pinguela.rentexpres.service.VehicleService;
@@ -24,6 +16,9 @@ import com.pinguela.rentexpres.service.impl.VehicleCategoryServiceImpl;
 import com.pinguela.rentexpres.service.impl.VehicleServiceImpl;
 import com.pinguela.rentexpres.service.impl.VehicleStatusServiceImpl;
 import com.pinguela.rentexpressweb.util.Views;
+import com.pinguela.rentexpressweb.service.HeadquartersLookupService;
+import com.pinguela.rentexpressweb.service.VehiclePresentationService;
+import com.pinguela.rentexpressweb.service.VehiclePresentationService.VehicleListData;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -39,22 +34,19 @@ public class PublicVehicleServlet extends HttpServlet {
 
         private static final String ACTION_LIST = "list";
 
-        private final VehicleService vehicleService;
-        private final FileService fileService;
-        private final VehicleCategoryService vehicleCategoryService;
-        private final VehicleStatusService vehicleStatusService;
+        private final VehiclePresentationService vehiclePresentationService;
 
         public PublicVehicleServlet() {
                 this(new VehicleServiceImpl(), new FileServiceImpl(), new VehicleCategoryServiceImpl(),
-                                new VehicleStatusServiceImpl());
+                                new VehicleStatusServiceImpl(), new HeadquartersDAOImpl());
         }
 
         PublicVehicleServlet(VehicleService vehicleService, FileService fileService,
-                        VehicleCategoryService vehicleCategoryService, VehicleStatusService vehicleStatusService) {
-                this.vehicleService = vehicleService;
-                this.fileService = fileService;
-                this.vehicleCategoryService = vehicleCategoryService;
-                this.vehicleStatusService = vehicleStatusService;
+                        VehicleCategoryService vehicleCategoryService, VehicleStatusService vehicleStatusService,
+                        HeadquartersDAO headquartersDAO) {
+                HeadquartersLookupService headquartersLookupService = new HeadquartersLookupService(headquartersDAO);
+                this.vehiclePresentationService = new VehiclePresentationService(vehicleService, fileService,
+                                vehicleCategoryService, vehicleStatusService, headquartersLookupService);
         }
 
         @Override
@@ -76,46 +68,16 @@ public class PublicVehicleServlet extends HttpServlet {
                         throws ServletException, IOException {
                 VehicleCriteria criteria = buildCriteria(request);
 
-                Results<VehicleDTO> results = null;
-                List<VehicleDTO> vehicles = Collections.emptyList();
-                Map<Integer, Boolean> vehicleImages = Collections.emptyMap();
-                boolean hasErrors = false;
-
-                try {
-                        results = vehicleService.findByCriteria(criteria);
-                        if (results == null) {
-                                results = new Results<>();
-                        }
-                        results.setPage(criteria.getSafePage());
-                        results.setPageSize(criteria.getSafePageSize());
-                        results.normalize();
-                        vehicles = results.getResults();
-                        if (vehicles == null) {
-                                vehicles = Collections.emptyList();
-                        }
-
-                        vehicleImages = buildVehicleImages(vehicles);
-                } catch (RentexpresException e) {
-                        hasErrors = true;
-                        results = new Results<>();
-                        results.setPage(criteria.getSafePage());
-                        results.setPageSize(criteria.getSafePageSize());
-                        results.normalize();
-                        vehicles = Collections.emptyList();
-                        vehicleImages = Collections.emptyMap();
-                }
-
                 String language = resolveLanguage(request.getSession());
-                List<VehicleCategoryDTO> categories = loadCategories(language);
-                List<VehicleStatusDTO> statuses = loadStatuses(language);
+                VehicleListData listData = vehiclePresentationService.loadVehicleList(criteria, language);
 
                 request.setAttribute("vehicleCriteria", criteria);
-                request.setAttribute("vehicleResults", results);
-                request.setAttribute("vehicleList", vehicles);
-                request.setAttribute("vehicleImages", vehicleImages);
-                request.setAttribute("vehicleCategories", categories);
-                request.setAttribute("vehicleStatuses", statuses);
-                request.setAttribute("vehicleListError", Boolean.valueOf(hasErrors));
+                request.setAttribute("vehicleResults", listData.getResults());
+                request.setAttribute("vehicleList", listData.getVehicles());
+                request.setAttribute("vehicleImages", listData.getVehicleImages());
+                request.setAttribute("vehicleCategories", listData.getCategories());
+                request.setAttribute("vehicleStatuses", listData.getStatuses());
+                request.setAttribute("vehicleListError", Boolean.valueOf(listData.hasErrors()));
 
                 request.getRequestDispatcher(Views.VEHICLE_LIST).forward(request, response);
         }
@@ -138,25 +100,6 @@ public class PublicVehicleServlet extends HttpServlet {
                 return criteria;
         }
 
-        private Map<Integer, Boolean> buildVehicleImages(List<VehicleDTO> vehicles) throws RentexpresException {
-                if (vehicles == null || vehicles.isEmpty()) {
-                        return Collections.emptyMap();
-                }
-
-                Map<Integer, Boolean> images = new HashMap<>();
-                for (VehicleDTO vehicle : vehicles) {
-                        if (vehicle == null || vehicle.getVehicleId() == null) {
-                                continue;
-                        }
-
-                        List<File> files = fileService.getImagesByVehicleId(vehicle.getVehicleId());
-                        if (files != null && !files.isEmpty()) {
-                                images.put(vehicle.getVehicleId(), Boolean.TRUE);
-                        }
-                }
-                return images;
-        }
-
         private String resolveLanguage(HttpSession session) {
                 if (session != null) {
                         Object localeAttr = session.getAttribute("locale");
@@ -168,24 +111,6 @@ public class PublicVehicleServlet extends HttpServlet {
                         }
                 }
                 return Locale.getDefault().getLanguage();
-        }
-
-        private List<VehicleCategoryDTO> loadCategories(String language) {
-                try {
-                        List<VehicleCategoryDTO> categories = vehicleCategoryService.findAll(language);
-                        return categories != null ? categories : Collections.emptyList();
-                } catch (RentexpresException e) {
-                        return Collections.emptyList();
-                }
-        }
-
-        private List<VehicleStatusDTO> loadStatuses(String language) {
-                try {
-                        List<VehicleStatusDTO> statuses = vehicleStatusService.findAll(language);
-                        return statuses != null ? statuses : Collections.emptyList();
-                } catch (RentexpresException e) {
-                        return Collections.emptyList();
-                }
         }
 
         private Integer parseInteger(String value, Integer defaultValue) {
