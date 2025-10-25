@@ -61,4 +61,16 @@ public class CookieManagerTest {
 
         assertNull(value);
     }
+
+    @Test
+    public void testGetCookieValueReturnsCookieValueWhenPresent() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        Cookie targetCookie = new Cookie("session", "abc123");
+        Cookie[] cookies = new Cookie[]{new Cookie("other", "value"), targetCookie};
+        when(request.getCookies()).thenReturn(cookies);
+
+        String value = cookieManager.getCookieValue(request, "session");
+
+        assertEquals("abc123", value);
+    }
 }
