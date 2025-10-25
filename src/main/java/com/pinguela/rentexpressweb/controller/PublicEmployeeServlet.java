@@ -107,10 +107,16 @@ public class PublicEmployeeServlet extends HttpServlet {
 				request.setAttribute("employee", employee);
 				destination = Views.EMPLOYEE_FORM;
 
-			} else if ("deactivate".equals(action)) {
-				int id = Integer.parseInt(request.getParameter("id"));
-				employeeService.deactivate(id);
-				destination = "/public/EmployeeServlet?action=list";
+                        } else if ("deactivate".equals(action)) {
+                                int id = Integer.parseInt(request.getParameter("id"));
+                                EmployeeDTO employee = employeeService.findById(id);
+
+                                if (employee != null) {
+                                        employee.setActiveStatus(0);
+                                        employeeService.update(employee);
+                                }
+
+                                destination = "/public/EmployeeServlet?action=list";
 
 			} else if ("index".equals(action) || action == null) {
 				destination = Views.INDEX;
