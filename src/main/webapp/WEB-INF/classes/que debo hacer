@@ -1,0 +1,487 @@
+sevlet de validacion
+
+error extends map<string ...>
+
+get
+put 
+
+request.setAtribute...
+
+
+
+<fmt: me...${error.field}
+map
+
+------------------------
+welcomeServlet
+public usuario servlet
+private usuario servlet
+languageServlet
+imageServlet
+-------------------
+no literal en el codigo parameter mejor en private 
+
+------------------
+una notificacion para decirle que tiene un coche en reserva pero que aun no ha pagado
+cuando el usuario elige un coche a reservar o alquilar se guarda en la session pero no en la bd hasta que la compre 
+esa notificiacion y reserva del coche "" entre comillas solo funcionara mientras el usuario este en la seccion cuando slaga ya no esta
+
+--------------------------
+lenguage servlet
+
+1/ comprobar a ver si cliente manda cookie de locale 
+
+si la manda no hago nada si lo tiene en la session o lo meto en la session
+
+ si no la manda comprueba extraigo de la cabeserqa accect lenguage revviso la cabezera de la lista ordenada de los locales preferidos
+   (request.getheader"accect.lenguage") del navegador
+   
+ para cada uno de ellos busco si lo tengo 
+ 
+  si lo tengo soportado lo meto en la session
+  
+  si no encuentro ninguno de la lista de preferido le meto en la session el por defecto
+-------------------
+correo de bienbenida
+2fA con numero aleatorio por correo y correo de recuperacion de contrasena con un numero aleatorio ambos con 6 digitos y un periodo de 1 minuto de validez
+-------------------
+validacion de formularios
+1/ servlet de validacion que recibe los parametros del formulario
+2/ valida los campos y si hay errores los mete en un map<string,string> donde la clave es el nombre del campo y el valor el mensaje de error
+3/ si hay errores los mete en la request como atributo y redirige al formulario
+4/ si no hay errores continua con el proceso normal
+
+-------------------
+validacion en jsp
+<%-- en el formulario jsp --%>
+<c:if test="${not empty error}">
+    <div class="error-messages">
+        <c:forEach var="entry" items="${error.entrySet()}">
+            <div class="error-message">${entry.value}</div>
+        </c:forEach>
+    </div>
+    </c:if>
+    <%-- en el servlet de validacion --%>
+    Map<String, String> errors = new HashMap<>();
+    // validar campos
+    if (errors.isEmpty()) {
+        // continuar proceso normal
+    } else {
+        request.setAttribute("error", errors);
+        request.getRequestDispatcher("/form.jsp").forward(request, response);
+    }
+    -------------------
+    <fmt:message key="${error.field}"/>
+    -------------------
+USO de las cookies para guardar la preferencia de idioma del usuario
+1/ cuando el usuario selecciona un idioma se guarda en una cookie
+2/ en el servlet de lenguaje se comprueba si existe la cookie y se establece el idioma correspondiente	
+3/ si no existe la cookie se utiliza el idioma por defecto del navegador
+4/ en cada solicitud se lee la cookie para establecer el idioma adecuado
+5/ la cookie tiene una fecha de expiracion para que no se guarde indefinidamente
+-------------------
+// ejemplo de servlet de validacion
+@WebServlet("/validate")
+public class ValidationServlet extends HttpServlet {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        Map<String, String> errors = new HashMap<>();
+
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+
+        if (username == null || username.isEmpty()) {
+            errors.put("username", "Username is required.");
+        }
+
+        if (password == null || password.length() < 6) {
+            errors.put("password", "Password must be at least 6 characters long.");
+        }
+
+        if (errors.isEmpty()) {
+            // Continue with normal processing
+            response.sendRedirect("success.jsp");
+        } else {
+            request.setAttribute("error", errors);
+            request.getRequestDispatcher("/form.jsp").forward(request, response);
+        }
+    }
+}
+// ejemplo de servlet de lenguaje
+@WebServlet("/language")
+public class LanguageServlet extends HttpServlet {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        Cookie[] cookies = request.getCookies();
+        String locale = null;
+
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("locale".equals(cookie.getName())) {
+                    locale = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if (locale == null) {
+            String acceptLanguage = request.getHeader("Accept-Language");
+            List<Locale.LanguageRange> languageRanges = Locale.LanguageRange.parse(acceptLanguage);
+            List<Locale> supportedLocales = Arrays.asList(new Locale("en"), new Locale("es"), new Locale("fr"));
+
+            Locale matchedLocale = Locale.lookup(languageRanges, supportedLocales);
+            if (matchedLocale != null) {
+                locale = matchedLocale.getLanguage();
+            } else {
+                locale = "en"; // default locale
+            }
+        }
+
+        request.getSession().setAttribute("locale", locale);
+        response.sendRedirect(request.getHeader("Referer"));
+    }
+}
+// ejemplo de notificacion de coche en reserva
+@WebServlet("/notifyReservation")
+public class NotifyReservationServlet extends HttpServlet {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        Car reservedCar = (Car) session.getAttribute("reservedCar");
+
+        if (reservedCar != null) {
+            request.setAttribute("notification", "You have a car reserved: " + reservedCar.getModel() + ". Please complete your purchase.");
+        }
+
+        request.getRequestDispatcher("/dashboard.jsp").forward(request, response);
+    }
+}
+// ejemplo de envio de correo de bienvenida
+public class EmailService {
+    public void sendWelcomeEmail(String toEmail) {
+        String code = generateRandomCode(6);
+        // Logic to send email with the code
+    }
+
+    public void sendPasswordRecoveryEmail(String toEmail) {
+        String code = generateRandomCode(6);
+        // Logic to send email with the code
+    }
+
+    private String generateRandomCode(int length) {
+        Random random = new Random();
+        StringBuilder code = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            code.append(random.nextInt(10));
+        }
+        return code.toString();
+    }
+}
+ap:message key="${error.field}"/>
+    -------------------
+    <fmt:message key="${error.field}"/>
+    -------------------    
+    
+    
+uso de cookie para guardar la contrasena y usuario de un login
+1/ cuando el usuario selecciona "remember me" se guarda en una cookie
+2/ en el servlet de login se comprueba si existe la cookie y se rellena el formulario de login con los datos correspondientes
+3/ si no existe la cookie el formulario de login se muestra vacio
+4/ la cookie tiene una fecha de expiracion para que no se guarde indefinidamente
+-------------------
+// ejemplo de servlet de login con "remember me"
+@WebServlet("/login")
+public class LoginServlet extends HttpServlet {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        String rememberMe = request.getParameter("rememberMe");
+
+        // Logic to authenticate user
+
+        if ("on".equals(rememberMe)) {
+            Cookie userCookie = new Cookie("username", username);
+            Cookie passCookie = new Cookie("password", password);
+            userCookie.setMaxAge(7 * 24 * 60 * 60); // 1 week
+            passCookie.setMaxAge(7 * 24 * 60 * 60); // 1 week
+            response.addCookie(userCookie);
+            response.addCookie(passCookie);
+        }
+
+        response.sendRedirect("dashboard.jsp");
+    }
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        Cookie[] cookies = request.getCookies();
+        String username = "";
+        String password = "";
+
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("username".equals(cookie.getName())) {
+                    username = cookie.getValue();
+                }
+                if ("password".equals(cookie.getName())) {
+                    password = cookie.getValue();
+                }
+            }
+        }
+
+        request.setAttribute("username", username);
+        request.setAttribute("password", password);
+        request.getRequestDispatcher("/login.jsp").forward(request, response);
+    }
+}
+
+-------------------
+no literal en el codigo parameter mejor en private
+@WebServlet("/example")
+public class ExampleServlet extends HttpServlet {
+    private static final String PARAM_USERNAME = "username";
+    private static final String PARAM_PASSWORD = "password";
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String username = request.getParameter(PARAM_USERNAME);
+        String password = request.getParameter(PARAM_PASSWORD);
+
+        // Logic to process username and password
+
+        response.sendRedirect("success.jsp");
+    }
+}
+-------------------
+uso de los headers para controlar la cache
+1/ en el servlet se establecen los headers para controlar la cache
+2/ se puede establecer el header "Cache-Control" para definir las politicas de cache
+3/ se puede establecer el header "Expires" para definir la fecha de expiracion de la cache
+-------------------
+uso de los header para idioma 
+1/ en el servlet se lee el header "Accept-Language" para determinar el idioma preferido del usuario
+2/ se puede utilizar este valor para establecer el locale en la session o en la aplicacion
+3/ se puede utilizar este valor para mostrar contenido en el idioma preferido del usuario+
+-------------------
+// ejemplo de servlet con control de cache
+@WebServlet("/cacheExample")
+public class CacheExampleServlet extends HttpServlet {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
+
+        // Logic to generate response content
+
+        response.getWriter().write("This is a cache-controlled response.");
+    }
+}
+// ejemplo de servlet que utiliza el header Accept-Language
+@WebServlet("/languageExample")
+public class LanguageExampleServlet extends HttpServlet {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String acceptLanguage = request.getHeader("Accept-Language");
+        List<Locale.LanguageRange> languageRanges = Locale.LanguageRange.parse(acceptLanguage);
+        List<Locale> supportedLocales = Arrays.asList(new Locale("en"), new Locale("es"), new Locale("fr"));
+
+        Locale matchedLocale = Locale.lookup(languageRanges, supportedLocales);
+        if (matchedLocale != null) {
+            request.getSession().setAttribute("locale", matchedLocale.getLanguage());
+        } else {
+            request.getSession().setAttribute("locale", "en"); // default locale
+        }
+
+        response.sendRedirect("dashboard.jsp");
+    }
+}
+-------------------
+Sí Rol CRUD adecuado de una entidad de modelo de datos con fotos
+1/ Crear una entidad de modelo de datos con atributos incluyendo fotos
+2/ Implementar el CRUD (Crear, Leer, Actualizar, Eliminar) para la entidad
+3/ Utilizar un servlet para manejar las operaciones CRUD
+4/ Utilizar JSP para mostrar las fotos y los datos de la entidad
+-------------------
+// ejemplo de entidad de modelo de datos con fotos
+public class Product {
+    private int id;
+    private String name;
+    private String description;
+    private double price;
+    private String file;
+
+    // Getters and setters
+}
+// ejemplo de servlet para manejar operaciones CRUD
+@WebServlet("/product")
+public class ProductServlet extends HttpServlet {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String action = request.getParameter("action");
+        if ("list".equals(action)) {
+            // Logic to list products
+        } else if ("view".equals(action)) {
+            // Logic to view a single product
+        }
+    }
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String action = request.getParameter("action");
+        if ("create".equals(action)) {
+            // Logic to create a new product
+        } else if ("update".equals(action)) {
+            // Logic to update an existing product
+        } else if ("delete".equals(action)) {
+            // Logic to delete a product
+        }
+    }
+}
+// ejemplo de JSP para mostrar fotos y datos de la entidad
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<html>
+<head>
+  <title>Product List</title>
+</head>
+  <body>
+    <h1>Product List</h1>
+    <c:forEach var="product" items="${products}">
+        <div class="product">
+            <h2>${product.name}</h2>
+            <img src="images/${product.file}" alt="${product.name}" />
+            <p>${product.description}</p>
+            <p>Price: $${product.price}</p>
+       </div>
+    </c:forEach>
+  </body>
+</html>
+-------------------
+busqueda extructurada de una entidad con paginacion
+1/ Crear una entidad de modelo de datos
+2/ Implementar la busqueda estructurada con filtros
+3/ Implementar la paginacion de los resultados
+4/ Utilizar un servlet para manejar la busqueda y paginacion
+5/ Utilizar JSP para mostrar los resultados de la busqueda con paginacion
+-------------------
+Edición de perfil con foto avatar
+1/ Crear una entidad de usuario con atributos incluyendo foto avatar
+2/ Implementar la funcionalidad de edición de perfil
+3/ Utilizar un servlet para manejar la edición de perfil
+4/ Utilizar JSP para mostrar el formulario de edición de perfil con foto avatar
+-------------------
+Internacionalización con cookies
+Filtro de idioma y cambio de idioma
+Vistas de al menos una entidad (la misma que el crud)
+Datos de al menos una entidad
+1/ Implementar la internacionalización utilizando cookies para guardar la preferencia de idioma del usuario
+2/ Crear un filtro para manejar el cambio de idioma
+3/ Utilizar JSP para mostrar las vistas de la entidad en diferentes idiomas
+4/ Utilizar un servlet para manejar los datos de la entidad
+-------------------
+Securización: parte privada / parte pública
+1/ Implementar la securización de la aplicación dividiendo en parte privada y parte pública
+2/ Utilizar filtros para controlar el acceso a la parte privada
+3/ Utilizar JSP para mostrar las vistas de la parte pública y privada
+4/ Utilizar un servlet para manejar las operaciones en la parte privada
+-------------------
+Validación y gestión de errores: formularios y excepciones
+1/ Implementar la validación de formularios en el servlet
+2/ Gestionar los errores y excepciones de manera adecuada
+3/ Utilizar JSP para mostrar los mensajes de error en los formularios
+4/ Utilizar un servlet para manejar las excepciones y redirigir a páginas de error
+-------------------
+Gestión de sesiones y cookies: login, preferencias de usuario
+1/ Implementar la gestión de sesiones para el login de usuarios
+2/ Utilizar cookies para guardar las preferencias de usuario
+3/ Utilizar JSP para mostrar las preferencias de usuario
+4/ Utilizar un servlet para manejar el login y las preferencias de usuario
+-------------------
+Gestión de archivos: subida y descarga de img
+1/ Implementar la funcionalidad de subida y descarga de img
+2/ Utilizar un servlet para manejar la subida y descarga de img
+3/ Utilizar JSP para mostrar el formulario de subida de img y los enlaces de descarga
+-------------------
+Acción de mi negocio reserva/alquiler de coches
+1/ Implementar la funcionalidad de reserva y alquiler de coches
+2/ Utilizar un servlet para manejar las reservas y alquileres de coches
+3/ Utilizar JSP para mostrar el formulario de reserva y alquiler de coches
+4/ Gestionar el estado de las reservas y alquileres en la base de datos
+-------------------
+Tecnologías utilizadas
+Frontend: JSP, HTML, CSS, Bootstrap
+Backend: Java Servlets (Jakarta EE)  
+Base de datos: MySQL  
+Servidor: Apache Tomcat 10  
+Herramienta de compilación: Maven
+------------------
+a tener en cuenta:
+aunque no inicie seccion uede cambiar el idioma
+podra ver los coches pero no reservar ni alquilar si quiere reservar o alquilar debe iniciar sesion yo le mando una 
+pantalla de login o registro para continuar al precionar el boton reservar o alquilar
+-------------------
+la diferencia entre reservar y alquilar: 
+reserva es cuando el usuario aparta un coche pera una fecha futura pero ya lo paga en el momento de la reserva y cuando llega la fecha de la reserva establecida
+pasa a ser un alquiler hasta la fecha de devolucion.
+la gestion de las fechas de reserva y alquiler es importante para que no haya conflictos.
+para gestionar las fechas de reserva y alquiler lo haremos de la siguiente manera:
+con metodos en el servlet que gestionan las reservas y alquileres
+que automaticamente cambian el estado del coche segun las fechas y hora establecidas
+antes de llegar al alquiler debemos pasar por la reserva aunque lo quiera alquilar directamente.
+lo gestionaremos de la manera: 
+1/ el usuario selecciona un coche y una fecha de inicio y fin
+2/ el sistema comprueba si el coche esta disponible en esas fechas
+3/ si el coche esta disponible se crea una reserva y se cambia el estado del coche a reservado
+4/ cuando llega la fecha de inicio de la reserva se cambia el estado del coche a alquilado
+5/ cuando llega la fecha de fin del alquiler se cambia el estado del coche a disponible
+-------------------
+no debemos alquilar sin antes reservar 
+un coche reservado no puede ser reservado por otro usuario
+un coche alquilado no puede ser reservado ni alquilado por otro usuario
+aunque lo muestro y dejo ver sus caracteristicas no se puede reservar ni alquilar si su estado es cualquier otro que no sea disponible
+-------------------
+Resumen de la aplicación web de reserva/alquiler de coches
+1/ Crear una aplicación web para la reserva y alquiler de coches
+2/ Implementar las funcionalidades de CRUD, búsqueda estructurada, edición de perfil, internacionalización, securización, validación, gestión de sesiones y cookies, gestión de archivos y acción de negocio
+3/ Utilizar servlets y JSP para manejar las operaciones y mostrar las vistas
+4/ Utilizar una base de datos para almacenar los datos de la aplicación
+-------------------
+importante: 
+hay que autenticar al usuario antes de permitirle reservar o alquilar un coche 
+si no esta autenticado lo redirijo a la pagina de login o registro
+
+hay que autenticarte despues de login
+
+autrizacion: solo los usuarios con rol de cliente pueden reservar o alquilar coches;
+solo los empleados 
+lo hacemos con un controlador
+
+
+//authfilter
+//obtrnrmos la url que deseo acceder
+//obtengo a sesion sino crear una nueva 
+//se no hay session hago uno anonimo
+//chamada a metodo de autorizacion 
+//chain.dofilter request response 
+
+//inicio de deicion de filtrado
+if else
+//
+
+
+----------------
+contrullo la la autorizacion de cada rol
+una lista de url autorizadas 
+
+
+
+----------
+recorro y verifico se la autorizaciony el rol con la url
+//url enviado como parametro_url
+
+
+
+
+
+
+-------------------
+
+
+
+
+
+
+
+
+
+  
