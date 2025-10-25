@@ -2,14 +2,22 @@ package com.pinguela.rentexpressweb.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import com.pinguela.rentexpres.model.EmployeeDTO;
+import com.pinguela.rentexpres.model.Results;
+import com.pinguela.rentexpres.model.VehicleCriteria;
+import com.pinguela.rentexpres.model.VehicleDTO;
 import com.pinguela.rentexpres.service.EmployeeService;
 import com.pinguela.rentexpres.service.FileService;
+import com.pinguela.rentexpres.service.VehicleService;
 import com.pinguela.rentexpres.service.impl.EmployeeServiceImpl;
 import com.pinguela.rentexpres.service.impl.FileServiceImpl;
+import com.pinguela.rentexpres.service.impl.VehicleServiceImpl;
 import com.pinguela.rentexpressweb.security.SessionManager;
 import com.pinguela.rentexpressweb.util.Views;
 
@@ -27,15 +35,17 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet("/public/EmployeeServlet")
 public class PublicEmployeeServlet extends HttpServlet {
 
-	private static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 1L;
 
-	private final EmployeeService employeeService;
-	private final FileService fileService;
+        private final EmployeeService employeeService;
+        private final FileService fileService;
+        private final VehicleService vehicleService;
 
-	public PublicEmployeeServlet() {
-		this.employeeService = new EmployeeServiceImpl();
-		this.fileService = new FileServiceImpl();
-	}
+        public PublicEmployeeServlet() {
+                this.employeeService = new EmployeeServiceImpl();
+                this.fileService = new FileServiceImpl();
+                this.vehicleService = new VehicleServiceImpl();
+        }
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -111,8 +121,12 @@ public class PublicEmployeeServlet extends HttpServlet {
 			destination = Views.ERROR;
 		}
 
-		request.getRequestDispatcher(destination).forward(request, response);
-	}
+                if (Views.INDEX.equals(destination)) {
+                        loadHomeData(request);
+                }
+
+                request.getRequestDispatcher(destination).forward(request, response);
+        }
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -121,8 +135,8 @@ public class PublicEmployeeServlet extends HttpServlet {
 		String action = request.getParameter("action");
 		String destination = Views.INDEX;
 
-		try {
-			if ("login".equals(action)) {
+                try {
+                        if ("login".equals(action)) {
 				String username = request.getParameter("username");
 				String password = request.getParameter("password");
 				String remember = request.getParameter("remember");
@@ -149,11 +163,11 @@ public class PublicEmployeeServlet extends HttpServlet {
 					if (locale == null)
 						session.setAttribute("locale", new Locale("es"));
 
-					destination = Views.INDEX;
-				} else {
-					request.setAttribute("error", "Invalid credentials or inactive account");
-					destination = Views.LOGIN;
-				}
+                                        destination = Views.INDEX;
+                                } else {
+                                        request.setAttribute("error", "Invalid credentials or inactive account");
+                                        destination = Views.LOGIN;
+                                }
 
 			} else if ("save".equals(action)) {
 				String username = request.getParameter("username");
@@ -182,11 +196,50 @@ public class PublicEmployeeServlet extends HttpServlet {
 				destination = "/public/EmployeeServlet?action=list";
 			}
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			destination = Views.ERROR;
-		}
+                } catch (Exception e) {
+                        e.printStackTrace();
+                        destination = Views.ERROR;
+                }
 
-		request.getRequestDispatcher(destination).forward(request, response);
-	}
+                if (Views.INDEX.equals(destination)) {
+                        loadHomeData(request);
+                }
+
+                request.getRequestDispatcher(destination).forward(request, response);
+        }
+
+        private void loadHomeData(HttpServletRequest request) {
+                try {
+                        VehicleCriteria criteria = new VehicleCriteria();
+                        criteria.setPageNumber(1);
+                        criteria.setPageSize(Integer.valueOf(4));
+                        criteria.setOrderBy("created_at");
+                        criteria.setOrderDir("DESC");
+
+                        Results<VehicleDTO> results = vehicleService.findByCriteria(criteria);
+                        List<VehicleDTO> vehicles = (results != null && results.getResults() != null)
+                                        ? results.getResults()
+                                        : Collections.emptyList();
+
+                        Map<Integer, Boolean> vehicleImages = new HashMap<>();
+                        for (VehicleDTO vehicle : vehicles) {
+                                if (vehicle == null || vehicle.getVehicleId() == null) {
+                                        continue;
+                                }
+
+                                List<File> images = fileService.getImagesByVehicleId(vehicle.getVehicleId());
+                                if (images != null && !images.isEmpty()) {
+                                        vehicleImages.put(vehicle.getVehicleId(), Boolean.TRUE);
+                                }
+                        }
+
+                        request.setAttribute("featuredVehicles", vehicles);
+                        request.setAttribute("featuredVehicleImages", vehicleImages);
+                } catch (Exception e) {
+                        e.printStackTrace();
+                        request.setAttribute("featuredVehicles", Collections.emptyList());
+                        request.setAttribute("featuredVehicleImages", Collections.emptyMap());
+                        request.setAttribute("featuredVehiclesError", Boolean.TRUE);
+                }
+        }
 }

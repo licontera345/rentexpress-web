@@ -116,6 +116,12 @@ body {
     height: 360px;
 }
 
+.carousel-placeholder {
+    height: 360px;
+    width: 100%;
+    background: linear-gradient(135deg, rgba(102, 178, 255, 0.15), rgba(102, 178, 255, 0.05));
+}
+
 .carousel-caption {
     background: linear-gradient(180deg, rgba(12, 20, 35, 0.05) 0%, rgba(12, 20, 35, 0.7) 90%);
     border-radius: 1rem;

@@ -121,58 +121,67 @@
                     </div>
                 </div>
 
-                <div id="carouselDestacados" class="carousel slide" data-bs-ride="carousel">
-                    <div class="carousel-inner">
-                        <div class="carousel-item active">
-                            <div class="carousel-vehicle">
-                                <img src="https://images.unsplash.com/photo-1549924231-f129b911e442?auto=format&fit=crop&w=1400&q=80" class="d-block w-100" alt="Audi A3">
-                                <div class="carousel-caption text-start">
-                                    <h4 class="fw-semibold">Audi A3 Sportback</h4>
-                                    <p class="mb-2">Premium · Automático · 2023</p>
-                                    <span class="badge bg-brand fs-6">39€ / día</span>
-                                </div>
+                <c:set var="featuredVehicles" value="${requestScope.featuredVehicles}" />
+                <c:set var="featuredVehicleImages" value="${requestScope.featuredVehicleImages}" />
+
+                <c:choose>
+                    <c:when test="${not empty featuredVehicles}">
+                        <div id="carouselDestacados" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                <c:forEach var="vehicle" items="${featuredVehicles}" varStatus="status">
+                                    <div class="carousel-item ${status.first ? 'active' : ''}">
+                                        <div class="carousel-vehicle">
+                                            <c:choose>
+                                                <c:when test="${featuredVehicleImages[vehicle.vehicleId] != null}">
+                                                    <img src="${pageContext.request.contextPath}/public/vehicle-image?vehicleId=${vehicle.vehicleId}"
+                                                        class="d-block w-100" alt="${vehicle.brand} ${vehicle.model}" />
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <div class="carousel-placeholder d-flex align-items-center justify-content-center">
+                                                        <span class="text-muted small text-uppercase fw-semibold">
+                                                            <fmt:message key="home.featured.noImage" />
+                                                        </span>
+                                                    </div>
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <div class="carousel-caption text-start">
+                                                <h4 class="fw-semibold">${vehicle.brand} ${vehicle.model}</h4>
+                                                <p class="mb-2">
+                                                    <c:if test="${vehicle.vehicleCategory != null}">
+                                                        <c:out value="${vehicle.vehicleCategory.categoryName}" />
+                                                    </c:if>
+                                                    <c:if test="${vehicle.manufactureYear != null}">
+                                                        <c:if test="${vehicle.vehicleCategory != null}"> · </c:if>
+                                                        ${vehicle.manufactureYear}
+                                                    </c:if>
+                                                </p>
+                                                <c:if test="${vehicle.dailyPrice != null}">
+                                                    <span class="badge bg-brand fs-6">
+                                                        <fmt:formatNumber value="${vehicle.dailyPrice}" type="number" maxFractionDigits="2" minFractionDigits="2" />
+                                                        € / <fmt:message key="home.featured.pricePerDay" />
+                                                    </span>
+                                                </c:if>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </c:forEach>
                             </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carouselDestacados" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carouselDestacados" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
                         </div>
-                        <div class="carousel-item">
-                            <div class="carousel-vehicle">
-                                <img src="https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1400&q=80" class="d-block w-100" alt="Toyota RAV4">
-                                <div class="carousel-caption text-start">
-                                    <h4 class="fw-semibold">Toyota RAV4 Hybrid</h4>
-                                    <p class="mb-2">SUV · Híbrido · 2022</p>
-                                    <span class="badge bg-brand fs-6">45€ / día</span>
-                                </div>
-                            </div>
+                    </c:when>
+                    <c:otherwise>
+                        <div class="alert alert-info" role="alert">
+                            <fmt:message key="home.featured.empty" />
                         </div>
-                        <div class="carousel-item">
-                            <div class="carousel-vehicle">
-                                <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1400&q=80" class="d-block w-100" alt="Mini Cooper">
-                                <div class="carousel-caption text-start">
-                                    <h4 class="fw-semibold">Mini Cooper Cabrio</h4>
-                                    <p class="mb-2">Descapotable · Manual · 2021</p>
-                                    <span class="badge bg-brand fs-6">55€ / día</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="carousel-item">
-                            <div class="carousel-vehicle">
-                                <img src="https://images.unsplash.com/photo-1493238792000-8113da705763?auto=format&fit=crop&w=1400&q=80" class="d-block w-100" alt="Mercedes Vito">
-                                <div class="carousel-caption text-start">
-                                    <h4 class="fw-semibold">Mercedes Vito Tourer</h4>
-                                    <p class="mb-2">Familiar · Automático · 2020</p>
-                                    <span class="badge bg-brand fs-6">62€ / día</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselDestacados" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#carouselDestacados" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
-                    </button>
-                </div>
+                    </c:otherwise>
+                </c:choose>
             </div>
         </section>
 
