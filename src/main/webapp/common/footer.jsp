@@ -10,9 +10,9 @@
             </div>
             <div class="col-lg-4 d-flex justify-content-center">
                 <div class="d-flex flex-column gap-2 text-center text-lg-start">
-                    <a href="#" class="small text-decoration-none"><fmt:message key="footer.terms" /></a>
-                    <a href="#" class="small text-decoration-none"><fmt:message key="footer.privacy" /></a>
-                    <a href="#" class="small text-decoration-none"><fmt:message key="footer.cookies" /></a>
+                    <a href="${pageContext.request.contextPath}/public/company-policy.jsp#terms" class="small text-decoration-none"><fmt:message key="footer.terms" /></a>
+                    <a href="${pageContext.request.contextPath}/public/company-policy.jsp#privacy" class="small text-decoration-none"><fmt:message key="footer.privacy" /></a>
+                    <a href="${pageContext.request.contextPath}/public/company-policy.jsp#cookies" class="small text-decoration-none"><fmt:message key="footer.cookies" /></a>
                 </div>
             </div>
             <div class="col-lg-4 text-lg-end text-center">
