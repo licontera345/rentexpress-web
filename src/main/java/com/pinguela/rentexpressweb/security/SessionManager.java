@@ -10,11 +10,13 @@ public class SessionManager {
 		return request.getSession();
 	}
 
-	public static void logout(HttpServletRequest request) {
-		HttpSession session = getSession(request);
-		session.invalidate();
+        public static void logout(HttpServletRequest request) {
+                HttpSession session = request.getSession(false);
 
-	}
+                if (session != null) {
+                        session.invalidate();
+                }
+        }
 
 	public static void setAttribute(HttpServletRequest request, String name, Object value) {
 		request.getSession().setAttribute(name, value);
