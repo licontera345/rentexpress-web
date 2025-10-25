@@ -49,8 +49,7 @@ public class AuthFilter extends HttpFilter implements Filter {
 
                 // Rutas públicas
                 boolean esPublica = uri.contains("/public/") || uri.endsWith("login.jsp") || uri.endsWith("EmployeeServlet")
-                                && req.getParameter("action") != null
-                                && (req.getParameter("action").equals("login") || req.getParameter("action").equals("changeLocale"));
+                                && "login".equals(req.getParameter("action"));
 
                 // Recursos estáticos (CSS, JS, imágenes)
                 boolean esRecursoEstatico = uri.contains("/css/") || uri.contains("/js/") || uri.contains("/images/");

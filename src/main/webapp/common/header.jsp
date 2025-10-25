@@ -39,7 +39,7 @@
                         <c:out value="${sessionScope.locale.language != null ? sessionScope.locale.language.toUpperCase() : 'ES'}" />
                     </a>
                     <div class="dropdown-menu dropdown-menu-end p-3 shadow-sm" aria-labelledby="dropdownIdioma">
-                        <form action="${pageContext.request.contextPath}/public/EmployeeServlet" method="get" class="d-flex flex-column gap-2">
+                        <form action="${pageContext.request.contextPath}/public/LanguageServlet" method="get" class="d-flex flex-column gap-2">
                             <input type="hidden" name="action" value="changeLocale" />
                             <button type="submit" name="language" value="es" class="btn btn-outline-brand d-flex align-items-center justify-content-between">
                                 <span class="d-flex align-items-center gap-2">
