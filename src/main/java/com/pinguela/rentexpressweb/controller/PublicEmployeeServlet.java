@@ -112,7 +112,7 @@ public class PublicEmployeeServlet extends HttpServlet {
                                 EmployeeDTO employee = employeeService.findById(id);
 
                                 if (employee != null) {
-                                        employee.setActiveStatus(0);
+                                        employee.setActiveStatus(Boolean.FALSE);
                                         employeeService.update(employee);
                                 }
 
@@ -147,9 +147,9 @@ public class PublicEmployeeServlet extends HttpServlet {
 				String password = request.getParameter("password");
 				String remember = request.getParameter("remember");
 
-				EmployeeDTO employee = employeeService.authenticate(username, password);
+                                EmployeeDTO employee = employeeService.autenticar(username, password);
 
-				if (employee != null && employee.getActiveStatus() == 1) {
+                                if (employee != null && Boolean.TRUE.equals(employee.getActiveStatus())) {
 					HttpSession session = request.getSession();
 					session.setAttribute("employee", employee);
 
@@ -184,7 +184,7 @@ public class PublicEmployeeServlet extends HttpServlet {
 				newEmployee.setEmployeeName(username);
 				newEmployee.setEmail(email);
 				newEmployee.setPassword(password);
-				newEmployee.setActiveStatus(1);
+                                newEmployee.setActiveStatus(Boolean.TRUE);
 
 				employeeService.create(newEmployee);
 				destination = "/public/EmployeeServlet?action=list";
