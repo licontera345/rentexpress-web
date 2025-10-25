@@ -23,7 +23,7 @@ public class PrivateUsuarioServlet extends HttpServlet {
 		// Verificar si el usuario ha iniciado sesión
 		HttpSession session = request.getSession(false);
 		// Si no hay sesión o no hay usuario en la sesión, redirigir al login
-		if (session == null || session.getAttribute("usuario") == null) {
+                if (session == null || session.getAttribute("employee") == null) {
 			// Redirigir a la página de inicio de sesión
 			response.sendRedirect(request.getContextPath() + "/index.jsp");
 			return;

@@ -34,7 +34,7 @@
                                     <c:out value="${pageContext.exception.message}" />
                                 </div>
                             </c:if>
-                            <form action="${pageContext.request.contextPath}/public/UsuarioServlet" method="get" class="mt-4">
+                            <form action="${pageContext.request.contextPath}/public/EmployeeServlet" method="get" class="mt-4">
                                 <input type="hidden" name="action" value="index" />
                                 <button type="submit" class="btn btn-brand px-4"><fmt:message key="error.back" /></button>
                             </form>

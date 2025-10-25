@@ -5,17 +5,17 @@
 <fmt:setLocale value="${sessionScope.locale}" scope="session" />
 <fmt:setBundle basename="i18n.Messages" />
 <%
-String rememberedUser = "";
+String rememberUser = "";
 Cookie[] cookies = request.getCookies();
 if (cookies != null) {
     for (Cookie cookie : cookies) {
-        if ("rememberedUser".equals(cookie.getName())) {
-            rememberedUser = cookie.getValue();
+        if ("rememberUser".equals(cookie.getName())) {
+            rememberUser = cookie.getValue();
             break;
         }
     }
 }
-request.setAttribute("rememberedUser", rememberedUser);
+request.setAttribute("rememberUser", rememberUser);
 %>
 
 <!DOCTYPE html>
@@ -44,7 +44,7 @@ request.setAttribute("rememberedUser", rememberedUser);
                                     <h2 class="fw-bold mb-2"><fmt:message key="login.title" /></h2>
                                     <p class="text-muted mb-0"><fmt:message key="login.subtitle" /></p>
                                 </div>
-                                <form action="${pageContext.request.contextPath}/public/UsuarioServlet" method="post" class="needs-validation" novalidate>
+                                <form action="${pageContext.request.contextPath}/public/EmployeeServlet" method="post" class="needs-validation" novalidate>
                                     <input type="hidden" name="action" value="login" />
 
                                     <div class="mb-4">
@@ -71,7 +71,7 @@ request.setAttribute("rememberedUser", rememberedUser);
                                         <label for="username" class="form-label fw-semibold"><fmt:message key="login.username" /></label>
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="bi bi-person-circle"></i></span>
-                                            <input type="text" class="form-control" id="username" name="username" value="<c:out value='${rememberedUser}'/>" required>
+                                            <input type="text" class="form-control" id="username" name="username" value="<c:out value='${rememberUser}'/>" required>
                                             <div class="invalid-feedback">
                                                 <fmt:message key="usuario.detail.name" />
                                             </div>
@@ -94,7 +94,7 @@ request.setAttribute("rememberedUser", rememberedUser);
 
                                     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="rememberMe" name="rememberMe" <c:if test="${not empty rememberedUser}">checked</c:if>>
+                                            <input class="form-check-input" type="checkbox" id="rememberMe" name="remember" value="yes" <c:if test="${not empty rememberUser}">checked</c:if>>
                                             <label class="form-check-label" for="rememberMe">
                                                 <fmt:message key="login.rememberMe" />
                                             </label>
@@ -108,7 +108,7 @@ request.setAttribute("rememberedUser", rememberedUser);
 
                                     <div class="text-center text-muted small">
                                         <fmt:message key="login.noAccount" />
-                                        <a href="${pageContext.request.contextPath}/public/UsuarioServlet?action=create" class="text-brand text-decoration-none fw-semibold">
+                                        <a href="${pageContext.request.contextPath}/public/EmployeeServlet?action=create" class="text-brand text-decoration-none fw-semibold">
                                             <fmt:message key="login.registerNow" />
                                         </a>
                                     </div>

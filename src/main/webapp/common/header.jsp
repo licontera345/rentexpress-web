@@ -39,9 +39,9 @@
                         <c:out value="${sessionScope.locale.language != null ? sessionScope.locale.language.toUpperCase() : 'ES'}" />
                     </a>
                     <div class="dropdown-menu dropdown-menu-end p-3 shadow-sm" aria-labelledby="dropdownIdioma">
-                        <form action="${pageContext.request.contextPath}/public/UsuarioServlet" method="get" class="d-flex flex-column gap-2">
+                        <form action="${pageContext.request.contextPath}/public/EmployeeServlet" method="get" class="d-flex flex-column gap-2">
                             <input type="hidden" name="action" value="changeLocale" />
-                            <button type="submit" name="lenguage" value="es" class="btn btn-outline-brand d-flex align-items-center justify-content-between">
+                            <button type="submit" name="language" value="es" class="btn btn-outline-brand d-flex align-items-center justify-content-between">
                                 <span class="d-flex align-items-center gap-2">
                                     <span class="fi fi-es language-flag"></span>
                                     Español
@@ -50,7 +50,7 @@
                                     <i class="bi bi-check-circle-fill text-brand"></i>
                                 </c:if>
                             </button>
-                            <button type="submit" name="lenguage" value="en" class="btn btn-outline-brand d-flex align-items-center justify-content-between">
+                            <button type="submit" name="language" value="en" class="btn btn-outline-brand d-flex align-items-center justify-content-between">
                                 <span class="d-flex align-items-center gap-2">
                                     <span class="fi fi-gb language-flag"></span>
                                     English
@@ -59,7 +59,7 @@
                                     <i class="bi bi-check-circle-fill text-brand"></i>
                                 </c:if>
                             </button>
-                            <button type="submit" name="lenguage" value="fr" class="btn btn-outline-brand d-flex align-items-center justify-content-between">
+                            <button type="submit" name="language" value="fr" class="btn btn-outline-brand d-flex align-items-center justify-content-between">
                                 <span class="d-flex align-items-center gap-2">
                                     <span class="fi fi-fr language-flag"></span>
                                     Français
@@ -72,28 +72,29 @@
                     </div>
                 </li>
                 <c:choose>
-                    <c:when test="${not empty sessionScope.usuario}">
+                    <c:when test="${not empty sessionScope.employee}">
+                        <c:set var="currentEmployeeId" value="${not empty sessionScope.employee.id ? sessionScope.employee.id : (not empty sessionScope.employee.employeeId ? sessionScope.employee.employeeId : sessionScope.employee.idEmployee)}" />
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" id="dropdownCuenta" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-person-circle fs-5"></i>
-                                <span class="fw-semibold text-dark"><c:out value="${sessionScope.usuario.nombreUsuario}" /></span>
+                                <span class="fw-semibold text-dark"><c:out value="${sessionScope.employee.employeeName}" /></span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="dropdownCuenta">
                                 <li>
-                                    <a class="dropdown-item" href="${pageContext.request.contextPath}/public/UsuarioServlet?action=detail&id=${sessionScope.usuario.id}">
+                                    <a class="dropdown-item" href="${pageContext.request.contextPath}/public/EmployeeServlet?action=detail&id=${currentEmployeeId}">
                                         <i class="bi bi-person-lines-fill me-2"></i>
                                         <fmt:message key="usuario.detail.button" />
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="${pageContext.request.contextPath}/public/UsuarioServlet?action=list">
+                                    <a class="dropdown-item" href="${pageContext.request.contextPath}/public/EmployeeServlet?action=list">
                                         <i class="bi bi-people-fill me-2"></i>
                                         <fmt:message key="usuario.list.title" />
                                     </a>
                                 </li>
                                 <li><hr class="dropdown-divider" /></li>
                                 <li>
-                                    <a class="dropdown-item text-danger" href="${pageContext.request.contextPath}/public/UsuarioServlet?action=logout">
+                                    <a class="dropdown-item text-danger" href="${pageContext.request.contextPath}/public/EmployeeServlet?action=logout">
                                         <i class="bi bi-box-arrow-right me-2"></i>
                                         <fmt:message key="header.logout" />
                                     </a>
@@ -106,7 +107,7 @@
                             <a class="btn btn-outline-brand px-3" href="${pageContext.request.contextPath}/public/usuario/login.jsp">
                                 <fmt:message key="header.login" />
                             </a>
-                            <a class="btn btn-brand px-3" href="${pageContext.request.contextPath}/public/UsuarioServlet?action=create">
+                            <a class="btn btn-brand px-3" href="${pageContext.request.contextPath}/public/EmployeeServlet?action=create">
                                 <fmt:message key="usuario.create.title" />
                             </a>
                         </li>
