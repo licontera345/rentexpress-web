@@ -157,3 +157,40 @@ Búsqueda y Paginación: Se implementará búsqueda estructurada (con filtros) y
 Evitar Literales (Strings "Mágicos"): Los nombres de los parámetros de request, atributos de sesión, etc., no deben escribirse directamente en el código. Se definirán como constantes private static final String al inicio de la clase Servlet.
 
 Control de Caché: Se usarán cabeceras HTTP en los Servlets (Cache-Control: no-cache, no-store, Expires: 0) para forzar al navegador a no guardar en caché las respuestas de páginas dinámicas o privadas.
+
+## Esquema de Base de Datos
+
+La captura compartida del modelo entidad-relación muestra las tablas principales y cómo se relacionan entre sí. A continuación se documenta lo observado para que cualquier integrante del equipo (incluido Codex) pueda consultarlo sin depender de la imagen original.
+
+### Tablas Principales
+
+* **language** (`language_id` PK, `name`, `code`). Tabla catálogo de idiomas disponibles.
+* **role** (`role_id` PK, `name`). Define los roles del sistema (Cliente, Empleado, etc.).
+* **user** (`user_id` PK, `role_id` FK → `role.role_id`, datos de autenticación y perfil como `email`, `password`, `first_name`, `last_name`, `phone`).
+* **address** (`address_id` PK, `street`, `postal_code`, `city_id` FK → `city.city_id`).
+* **province** (`province_id` PK, `name`).
+* **city** (`city_id` PK, `province_id` FK → `province.province_id`, `name`).
+* **headquarters** (`headquarters_id` PK, `name`, `phone`, `email`).
+* **headquarters_address** (`headquarters_id` PK/FK → `headquarters.headquarters_id`, `address_id` FK → `address.address_id`). Tabla puente que vincula cada sede con su dirección física.
+* **employee** (`employee_id` PK, `user_id` FK → `user.user_id`, `headquarters_id` FK → `headquarters.headquarters_id`, datos laborales como `hire_date`, `salary`).
+* **vehicle_category** (`category_id` PK, `code`). Catálogo de categorías de vehículos.
+* **vehicle_category_language** (`category_id` PK/FK → `vehicle_category.category_id`, `language_id` PK/FK → `language.language_id`, `name`, `description`). Permite las traducciones por idioma.
+* **vehicle_status** (`vehicle_status_id` PK, `code`). Estados internos del vehículo.
+* **vehicle_status_language** (`vehicle_status_id` PK/FK → `vehicle_status.vehicle_status_id`, `language_id` PK/FK → `language.language_id`, `name`, `description`). Descripciones traducidas del estado del vehículo.
+* **vehicle** (`vehicle_id` PK, `category_id` FK → `vehicle_category.category_id`, `vehicle_status_id` FK → `vehicle_status.vehicle_status_id`, `headquarters_id` FK → `headquarters.headquarters_id`, atributos como `license_plate`, `brand`, `model`, `year`, `price_per_day`).
+* **reservation_status** (`reservation_status_id` PK, `code`). Estados generales de una reserva.
+* **reservation_status_language** (`reservation_status_id` PK/FK → `reservation_status.reservation_status_id`, `language_id` PK/FK → `language.language_id`, `name`, `description`). Traducciones de los estados de reserva.
+* **rental_status** (`rental_status_id` PK, `code`). Estados del alquiler activo.
+* **rental_status_language** (`rental_status_id` PK/FK → `rental_status.rental_status_id`, `language_id` PK/FK → `language.language_id`, `name`, `description`). Traducciones de los estados del alquiler.
+* **reservation** (`reservation_id` PK, `user_id` FK → `user.user_id`, `vehicle_id` FK → `vehicle.vehicle_id`, `reservation_status_id` FK → `reservation_status.reservation_status_id`, datos como `start_date`, `end_date`, `total_price`, `payment_reference`).
+* **rental** (`rental_id` PK, `reservation_id` FK → `reservation.reservation_id`, `rental_status_id` FK → `rental_status.rental_status_id`, campos como `pickup_date`, `return_date`, `mileage_start`, `mileage_end`).
+
+### Relaciones Destacadas
+
+* Cada **usuario** pertenece a un **rol** y puede tener asociadas múltiples **reservas**.
+* Una **reserva** se crea para un **vehículo** concreto y se encuentra en un **estado de reserva** determinado. Al activarse, genera un registro en **rental** que refleja el estado de alquiler.
+* Los **vehículos** dependen de una **categoría**, un **estado** y se ubican en una **sede**; estas entidades disponen de tablas auxiliares por idioma para internacionalización.
+* La estructura geográfica parte de **province** → **city** → **address**, que después se asigna a sedes mediante **headquarters_address**.
+* El personal (**employee**) es una extensión de **user** y se asocia a una **headquarters**, permitiendo distinguir entre clientes y empleados.
+
+Esta documentación resume fielmente el esquema visto en la imagen y servirá como referencia rápida para el desarrollo y las integraciones con la base de datos.
