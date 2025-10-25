@@ -158,39 +158,39 @@ Evitar Literales (Strings "Mágicos"): Los nombres de los parámetros de request
 
 Control de Caché: Se usarán cabeceras HTTP en los Servlets (Cache-Control: no-cache, no-store, Expires: 0) para forzar al navegador a no guardar en caché las respuestas de páginas dinámicas o privadas.
 
-## Esquema de Base de Datos
+## Database Schema
 
-La captura compartida del modelo entidad-relación muestra las tablas principales y cómo se relacionan entre sí. A continuación se documenta lo observado para que cualquier integrante del equipo (incluido Codex) pueda consultarlo sin depender de la imagen original.
+The shared entity-relationship diagram highlights the main tables and their relationships. The following summary captures that information so that anyone on the team (including Codex) can consult it without relying on the original image.
 
-### Tablas Principales
+### Core Tables
 
-* **language** (`language_id` PK, `name`, `code`). Tabla catálogo de idiomas disponibles.
-* **role** (`role_id` PK, `name`). Define los roles del sistema (Cliente, Empleado, etc.).
-* **user** (`user_id` PK, `role_id` FK → `role.role_id`, datos de autenticación y perfil como `email`, `password`, `first_name`, `last_name`, `phone`).
+* **language** (`language_id` PK, `name`, `code`): catalog of supported languages.
+* **role** (`role_id` PK, `name`): system roles such as Customer or Employee.
+* **user** (`user_id` PK, `role_id` FK → `role.role_id`, authentication/profile fields like `email`, `password`, `first_name`, `last_name`, `phone`).
 * **address** (`address_id` PK, `street`, `postal_code`, `city_id` FK → `city.city_id`).
 * **province** (`province_id` PK, `name`).
 * **city** (`city_id` PK, `province_id` FK → `province.province_id`, `name`).
 * **headquarters** (`headquarters_id` PK, `name`, `phone`, `email`).
-* **headquarters_address** (`headquarters_id` PK/FK → `headquarters.headquarters_id`, `address_id` FK → `address.address_id`). Tabla puente que vincula cada sede con su dirección física.
-* **employee** (`employee_id` PK, `user_id` FK → `user.user_id`, `headquarters_id` FK → `headquarters.headquarters_id`, datos laborales como `hire_date`, `salary`).
-* **vehicle_category** (`category_id` PK, `code`). Catálogo de categorías de vehículos.
-* **vehicle_category_language** (`category_id` PK/FK → `vehicle_category.category_id`, `language_id` PK/FK → `language.language_id`, `name`, `description`). Permite las traducciones por idioma.
-* **vehicle_status** (`vehicle_status_id` PK, `code`). Estados internos del vehículo.
-* **vehicle_status_language** (`vehicle_status_id` PK/FK → `vehicle_status.vehicle_status_id`, `language_id` PK/FK → `language.language_id`, `name`, `description`). Descripciones traducidas del estado del vehículo.
-* **vehicle** (`vehicle_id` PK, `category_id` FK → `vehicle_category.category_id`, `vehicle_status_id` FK → `vehicle_status.vehicle_status_id`, `headquarters_id` FK → `headquarters.headquarters_id`, atributos como `license_plate`, `brand`, `model`, `year`, `price_per_day`).
-* **reservation_status** (`reservation_status_id` PK, `code`). Estados generales de una reserva.
-* **reservation_status_language** (`reservation_status_id` PK/FK → `reservation_status.reservation_status_id`, `language_id` PK/FK → `language.language_id`, `name`, `description`). Traducciones de los estados de reserva.
-* **rental_status** (`rental_status_id` PK, `code`). Estados del alquiler activo.
-* **rental_status_language** (`rental_status_id` PK/FK → `rental_status.rental_status_id`, `language_id` PK/FK → `language.language_id`, `name`, `description`). Traducciones de los estados del alquiler.
-* **reservation** (`reservation_id` PK, `user_id` FK → `user.user_id`, `vehicle_id` FK → `vehicle.vehicle_id`, `reservation_status_id` FK → `reservation_status.reservation_status_id`, datos como `start_date`, `end_date`, `total_price`, `payment_reference`).
-* **rental** (`rental_id` PK, `reservation_id` FK → `reservation.reservation_id`, `rental_status_id` FK → `rental_status.rental_status_id`, campos como `pickup_date`, `return_date`, `mileage_start`, `mileage_end`).
+* **headquarters_address** (`headquarters_id` PK/FK → `headquarters.headquarters_id`, `address_id` FK → `address.address_id`): bridge table linking each branch to its physical address.
+* **employee** (`employee_id` PK, `user_id` FK → `user.user_id`, `headquarters_id` FK → `headquarters.headquarters_id`, employment data such as `hire_date`, `salary`).
+* **vehicle_category** (`category_id` PK, `code`): catalog of vehicle categories.
+* **vehicle_category_language** (`category_id` PK/FK → `vehicle_category.category_id`, `language_id` PK/FK → `language.language_id`, `name`, `description`): localized names and descriptions for each category.
+* **vehicle_status** (`vehicle_status_id` PK, `code`): internal vehicle statuses.
+* **vehicle_status_language** (`vehicle_status_id` PK/FK → `vehicle_status.vehicle_status_id`, `language_id` PK/FK → `language.language_id`, `name`, `description`): localized status descriptions.
+* **vehicle** (`vehicle_id` PK, `category_id` FK → `vehicle_category.category_id`, `vehicle_status_id` FK → `vehicle_status.vehicle_status_id`, `headquarters_id` FK → `headquarters.headquarters_id`, attributes such as `license_plate`, `brand`, `model`, `year`, `price_per_day`).
+* **reservation_status** (`reservation_status_id` PK, `code`): overall reservation statuses.
+* **reservation_status_language** (`reservation_status_id` PK/FK → `reservation_status.reservation_status_id`, `language_id` PK/FK → `language.language_id`, `name`, `description`): localized reservation status descriptions.
+* **rental_status** (`rental_status_id` PK, `code`): active rental statuses.
+* **rental_status_language** (`rental_status_id` PK/FK → `rental_status.rental_status_id`, `language_id` PK/FK → `language.language_id`, `name`, `description`): localized rental status descriptions.
+* **reservation** (`reservation_id` PK, `user_id` FK → `user.user_id`, `vehicle_id` FK → `vehicle.vehicle_id`, `reservation_status_id` FK → `reservation_status.reservation_status_id`, fields like `start_date`, `end_date`, `total_price`, `payment_reference`).
+* **rental** (`rental_id` PK, `reservation_id` FK → `reservation.reservation_id`, `rental_status_id` FK → `rental_status.rental_status_id`, fields such as `pickup_date`, `return_date`, `mileage_start`, `mileage_end`).
 
-### Relaciones Destacadas
+### Key Relationships
 
-* Cada **usuario** pertenece a un **rol** y puede tener asociadas múltiples **reservas**.
-* Una **reserva** se crea para un **vehículo** concreto y se encuentra en un **estado de reserva** determinado. Al activarse, genera un registro en **rental** que refleja el estado de alquiler.
-* Los **vehículos** dependen de una **categoría**, un **estado** y se ubican en una **sede**; estas entidades disponen de tablas auxiliares por idioma para internacionalización.
-* La estructura geográfica parte de **province** → **city** → **address**, que después se asigna a sedes mediante **headquarters_address**.
-* El personal (**employee**) es una extensión de **user** y se asocia a una **headquarters**, permitiendo distinguir entre clientes y empleados.
+* Each **user** belongs to a **role** and can own multiple **reservations**.
+* A **reservation** targets a specific **vehicle** and references a **reservation_status**. Once activated, it creates a related **rental** record describing the active rental state.
+* **Vehicles** depend on a **category**, a **status**, and a **headquarters**; each of these entities has language-specific tables to support localization.
+* The geographic hierarchy flows from **province** → **city** → **address**, which then links to branches through **headquarters_address**.
+* **Employees** extend **user** records and attach to a **headquarters**, distinguishing them from customers.
 
-Esta documentación resume fielmente el esquema visto en la imagen y servirá como referencia rápida para el desarrollo y las integraciones con la base de datos.
+This documentation mirrors the diagram faithfully and serves as a quick reference for development and database integrations.
