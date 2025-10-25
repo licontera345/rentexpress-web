@@ -31,7 +31,7 @@ public class PrivateEmployeeServlet extends HttpServlet {
                 String action = request.getParameter("action");
                 if ("logout".equals(action)) {
                         session.invalidate(); // Invalida la sesión
-                        response.sendRedirect(request.getContextPath() + Views.INDEX); // Redirige a /index.jsp
+                        response.sendRedirect(request.getContextPath() + Views.INDEX); // Redirige a /public/index.jsp (Views.INDEX ya incluye el prefijo público)
 			return;
 		}
 
