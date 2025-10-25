@@ -64,14 +64,24 @@ public class LanguageServlet extends HttpServlet {
                         return;
                 }
 
-                Locale newLocale = Locale.forLanguageTag(language);
-                if (!SUPPORTED_LOCALES.contains(newLocale)) {
+                Locale requestedLocale = Locale.forLanguageTag(language);
+                String requestedLanguage = requestedLocale.getLanguage();
+                if (requestedLanguage == null || requestedLanguage.isBlank()) {
                         return;
                 }
 
-                session.setAttribute("locale", newLocale);
+                Locale matchedLocale = SUPPORTED_LOCALES.stream()
+                                .filter(locale -> locale.getLanguage().equalsIgnoreCase(requestedLanguage))
+                                .findFirst()
+                                .orElse(null);
 
-                Cookie cookie = new Cookie("locale", newLocale.getLanguage());
+                if (matchedLocale == null) {
+                        return;
+                }
+
+                session.setAttribute("locale", matchedLocale);
+
+                Cookie cookie = new Cookie("locale", matchedLocale.getLanguage());
                 cookie.setMaxAge(60 * 60 * 24 * 30);
                 String contextPath = request.getContextPath();
                 cookie.setPath(contextPath == null || contextPath.isBlank() ? "/" : contextPath);
