@@ -24,14 +24,14 @@ public class PrivateEmployeeServlet extends HttpServlet {
                 HttpSession session = request.getSession(false);
                 // Si no hay sesión o no hay empleado en la sesión, redirigir al inicio público
                 if (session == null || session.getAttribute("employee") == null) {
-                        response.sendRedirect(request.getContextPath() + "/index.jsp");
+                        response.sendRedirect(request.getContextPath() + Views.INDEX);
                         return;
                 }
                 // LOGOUT
                 String action = request.getParameter("action");
-		if ("logout".equals(action)) {
-			session.invalidate(); // Invalida la sesión
-                        response.sendRedirect(request.getContextPath() + "/index.jsp"); // Redirige a /index.jsp
+                if ("logout".equals(action)) {
+                        session.invalidate(); // Invalida la sesión
+                        response.sendRedirect(request.getContextPath() + Views.INDEX); // Redirige a /index.jsp
 			return;
 		}
 
