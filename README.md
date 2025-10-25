@@ -11,7 +11,7 @@ Antes de implementar nuevos servlets, servicios u otros componentes dentro del p
 Seguir este flujo asegura que las funcionalidades nuevas aprovechen la base ya implementada en el middleware y que la información mostrada en la aplicación esté alineada con los servicios disponibles.
 
 
-a tener en cuenta:
+A tener en cuenta:
 
 El objetivo es crear una aplicación web para la reserva y alquiler de coches. La aplicación implementará funcionalidades clave como CRUD de entidades, gestión de perfiles de usuario, internacionalización, seguridad (división pública/privada), validación de formularios, gestión de sesiones y la lógica de negocio específica para las reservas.
 
