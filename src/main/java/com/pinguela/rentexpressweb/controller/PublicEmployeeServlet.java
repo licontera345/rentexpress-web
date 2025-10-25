@@ -116,7 +116,8 @@ public class PublicEmployeeServlet extends HttpServlet {
                                         employeeService.update(employee);
                                 }
 
-                                destination = "/public/EmployeeServlet?action=list";
+                                response.sendRedirect(request.getContextPath() + "/public/EmployeeServlet?action=list");
+                                return;
 
 			} else if ("index".equals(action) || action == null) {
 				destination = Views.INDEX;
@@ -185,10 +186,10 @@ public class PublicEmployeeServlet extends HttpServlet {
                                         destination = Views.LOGIN;
                                 }
 
-			} else if ("save".equals(action)) {
-				String username = request.getParameter("username");
-				String email = request.getParameter("email");
-				String password = request.getParameter("password");
+                        } else if ("save".equals(action)) {
+                                String username = request.getParameter("username");
+                                String email = request.getParameter("email");
+                                String password = request.getParameter("password");
 
                                 EmployeeDTO newEmployee = new EmployeeDTO();
                                 newEmployee.setEmployeeName(username);
@@ -196,20 +197,22 @@ public class PublicEmployeeServlet extends HttpServlet {
                                 newEmployee.setPassword(password);
                                 updateActiveStatus(newEmployee, true);
 
-				employeeService.create(newEmployee);
-				destination = "/public/EmployeeServlet?action=list";
+                                employeeService.create(newEmployee);
+                                response.sendRedirect(request.getContextPath() + "/public/EmployeeServlet?action=list");
+                                return;
 
-			} else if ("update".equals(action)) {
-				int id = Integer.parseInt(request.getParameter("id"));
-				String username = request.getParameter("username");
-				String email = request.getParameter("email");
+                        } else if ("update".equals(action)) {
+                                int id = Integer.parseInt(request.getParameter("id"));
+                                String username = request.getParameter("username");
+                                String email = request.getParameter("email");
 
                                 EmployeeDTO employee = employeeService.findById(id);
                                 employee.setEmployeeName(username);
                                 employee.setEmail(email);
 
-				employeeService.update(employee);
-				destination = "/public/EmployeeServlet?action=list";
+                                employeeService.update(employee);
+                                response.sendRedirect(request.getContextPath() + "/public/EmployeeServlet?action=list");
+                                return;
 			}
 
                 } catch (Exception e) {
