@@ -32,7 +32,7 @@ public class PrivateUsuarioServlet extends HttpServlet {
 		String action = request.getParameter("action");
 		if ("logout".equals(action)) {
 			session.invalidate(); // Invalida la sesión
-			response.sendRedirect(request.getContextPath() + "/index.jsp"); // Redirige al login
+                        response.sendRedirect(request.getContextPath() + "/index.jsp"); // Redirige a /index.jsp
 			return;
 		}
 
