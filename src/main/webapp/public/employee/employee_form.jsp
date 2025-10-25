@@ -13,10 +13,10 @@
     <title>
         <c:choose>
             <c:when test="${empty employee}">
-                <fmt:message key="usuario.create.title" />
+                <fmt:message key="employee.create.title" />
             </c:when>
             <c:otherwise>
-                <fmt:message key="usuario.edit.title" />
+                <fmt:message key="employee.edit.title" />
             </c:otherwise>
         </c:choose>
     </title>
@@ -44,7 +44,7 @@
                                         </a>
                                 </c:if>
                             </div>
-                            <h5 class="fw-semibold mb-1"><c:out value="${employee.employeeName != null ? employee.employeeName : 'Usuario RentExpress'}" /></h5>
+                            <h5 class="fw-semibold mb-1"><c:out value="${employee.employeeName != null ? employee.employeeName : 'RentExpress Employee'}" /></h5>
                             <p class="text-muted small mb-3"><c:out value="${employee.email != null ? employee.email : ''}" /></p>
                                 <div class="w-100 bg-light rounded-3 p-3 text-start">
                                     <p class="fw-semibold mb-1"><fmt:message key="profile.status.complete" /></p>
@@ -61,10 +61,10 @@
                             <h3 class="fw-bold mb-4">
                                 <c:choose>
                                     <c:when test="${empty employee}">
-                                        <fmt:message key="usuario.create.title" />
+                                        <fmt:message key="employee.create.title" />
                                     </c:when>
                                     <c:otherwise>
-                                        <fmt:message key="usuario.edit.title" />
+                                        <fmt:message key="employee.edit.title" />
                                     </c:otherwise>
                                 </c:choose>
                             </h3>
@@ -81,10 +81,10 @@
                                             <p class="form-section-title"><fmt:message key="profile.section.personal" /></p>
                                             <div class="row g-3">
                                                 <div class="col-md-6">
-                                                    <label for="nombreUsuario" class="form-label"><fmt:message key="usuario.detail.name" /></label>
+                                                    <label for="nombreUsuario" class="form-label"><fmt:message key="employee.detail.name" /></label>
                                                     <input type="text" class="form-control" id="nombreUsuario" name="username" value="${employee.employeeName}" required>
                                                     <div class="invalid-feedback">
-                                                        <fmt:message key="usuario.detail.name" />
+                                                        <fmt:message key="employee.detail.name" />
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6">
@@ -108,10 +108,10 @@
                                             <p class="form-section-title"><fmt:message key="profile.section.contact" /></p>
                                             <div class="row g-3">
                                                 <div class="col-md-12">
-                                                    <label for="email" class="form-label"><fmt:message key="usuario.detail.email" /></label>
+                                                    <label for="email" class="form-label"><fmt:message key="employee.detail.email" /></label>
                                                     <input type="email" class="form-control" id="email" name="email" value="${employee.email}" required>
                                                     <div class="invalid-feedback">
-                                                        <fmt:message key="usuario.detail.email" />
+                                                        <fmt:message key="employee.detail.email" />
                                                     </div>
                                                 </div>
                                                 <div class="col-md-12">

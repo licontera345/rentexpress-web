@@ -18,7 +18,7 @@ import jakarta.servlet.http.HttpSession;
 
 /**
  * Filtro de trazas (auditoría) para RentExpress. Registra cada petición con
- * fecha, método, ruta y usuario logueado.
+ * fecha, método, ruta y empleado autenticado.
  */
 @WebFilter("/*")
 public class LoggingFilter implements Filter {
@@ -42,8 +42,8 @@ public class LoggingFilter implements Filter {
 		String uri = req.getRequestURI();
 		String method = req.getMethod();
 		HttpSession session = req.getSession(false);
-		EmployeeDTO employee = (session != null) ? (EmployeeDTO) session.getAttribute("usuario") : null;
-		String usuarioStr = (employee != null) ? employee.getEmployeeName() : "anónimo";
+                EmployeeDTO employee = (session != null) ? (EmployeeDTO) session.getAttribute("employee") : null;
+                String employeeStr = (employee != null) ? employee.getEmployeeName() : "anónimo";
 		String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 
 		chain.doFilter(request, response);

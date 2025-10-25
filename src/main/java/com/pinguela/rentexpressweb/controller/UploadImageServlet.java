@@ -31,17 +31,17 @@
 //
 //		request.setCharacterEncoding("UTF-8");
 //
-//		final String idStr = request.getParameter("idUsuario");
+//		final String idStr = request.getParameter("employeeId");
 //		if (idStr == null) {
-//			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Falta idUsuario");
+//			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Falta employeeId");
 //			return;
 //		}
 //
-//		final Integer idUsuario;
+//		final Integer employeeId;
 //		try {
-//			idUsuario = Integer.valueOf(idStr);
+//			employeeId = Integer.valueOf(idStr);
 //		} catch (NumberFormatException e) {
-//			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "idUsuario inválido");
+//			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "employeeId inválido");
 //			return;
 //		}
 //
@@ -68,7 +68,7 @@
 //		}
 //
 //		try {
-//			fileService.uploadUsuarioImages(Collections.singletonList(tmp), idUsuario);
+//			fileService.uploadEmployeeImages(Collections.singletonList(tmp), employeeId);
 //		} finally {
 //			// Limpieza del temporal
 //			if (!tmp.delete())
@@ -76,6 +76,6 @@
 //		}
 //
 //		// Volver al detalle
-//		response.sendRedirect(request.getContextPath() + "/public/UsuarioServlet?action=detail&id=" + idUsuario);
+//		response.sendRedirect(request.getContextPath() + "/public/EmployeeServlet?action=detail&id=" + employeeId);
 //	}
 //}

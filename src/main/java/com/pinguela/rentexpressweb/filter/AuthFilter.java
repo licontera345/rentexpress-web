@@ -45,23 +45,23 @@ public class AuthFilter extends HttpFilter implements Filter {
 		String uri = req.getRequestURI();
 		HttpSession session = req.getSession(false);
 
-		boolean usuarioLogueado = (session != null && session.getAttribute("usuario") != null);
+                boolean employeeLoggedIn = (session != null && session.getAttribute("employee") != null);
 
-		// Rutas públicas
-		boolean esPublica = uri.contains("/public/") || uri.endsWith("login.jsp") || uri.endsWith("UsuarioServlet")
-				&& req.getParameter("action") != null
-				&& (req.getParameter("action").equals("login") || req.getParameter("action").equals("changeLocale"));
+                // Rutas públicas
+                boolean esPublica = uri.contains("/public/") || uri.endsWith("login.jsp") || uri.endsWith("EmployeeServlet")
+                                && req.getParameter("action") != null
+                                && (req.getParameter("action").equals("login") || req.getParameter("action").equals("changeLocale"));
 
-		// Recursos estáticos (CSS, JS, imágenes)
-		boolean esRecursoEstatico = uri.contains("/css/") || uri.contains("/js/") || uri.contains("/images/");
+                // Recursos estáticos (CSS, JS, imágenes)
+                boolean esRecursoEstatico = uri.contains("/css/") || uri.contains("/js/") || uri.contains("/images/");
 
-		// Lógica de acceso
-		if (usuarioLogueado || esPublica || esRecursoEstatico) {
-			chain.doFilter(request, response);
-		} else {
-			// Si intenta acceder a algo privado sin login → redirige al login
-			res.sendRedirect(req.getContextPath() + "/public/usuario/login.jsp");
-		}
+                // Lógica de acceso
+                if (employeeLoggedIn || esPublica || esRecursoEstatico) {
+                        chain.doFilter(request, response);
+                } else {
+                        // Si intenta acceder a algo privado sin login → redirige al login
+                        res.sendRedirect(req.getContextPath() + "/public/employee/login.jsp");
+                }
 	}
 
 	/**
