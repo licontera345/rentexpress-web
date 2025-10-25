@@ -112,7 +112,7 @@ public class PublicEmployeeServlet extends HttpServlet {
                                 EmployeeDTO employee = employeeService.findById(id);
 
                                 if (employee != null) {
-                                        employee.setActiveStatus(Boolean.FALSE);
+                                        updateActiveStatus(employee, false);
                                         employeeService.update(employee);
                                 }
 
@@ -190,11 +190,11 @@ public class PublicEmployeeServlet extends HttpServlet {
 				String email = request.getParameter("email");
 				String password = request.getParameter("password");
 
-				EmployeeDTO newEmployee = new EmployeeDTO();
-				newEmployee.setEmployeeName(username);
-				newEmployee.setEmail(email);
-				newEmployee.setPassword(password);
-                                newEmployee.setActiveStatus(Boolean.TRUE);
+                                EmployeeDTO newEmployee = new EmployeeDTO();
+                                newEmployee.setEmployeeName(username);
+                                newEmployee.setEmail(email);
+                                newEmployee.setPassword(password);
+                                updateActiveStatus(newEmployee, true);
 
 				employeeService.create(newEmployee);
 				destination = "/public/EmployeeServlet?action=list";
@@ -204,9 +204,9 @@ public class PublicEmployeeServlet extends HttpServlet {
 				String username = request.getParameter("username");
 				String email = request.getParameter("email");
 
-				EmployeeDTO employee = employeeService.findById(id);
-				employee.setEmployeeName(username);
-				employee.setEmail(email);
+                                EmployeeDTO employee = employeeService.findById(id);
+                                employee.setEmployeeName(username);
+                                employee.setEmail(email);
 
 				employeeService.update(employee);
 				destination = "/public/EmployeeServlet?action=list";
@@ -256,6 +256,12 @@ public class PublicEmployeeServlet extends HttpServlet {
                         request.setAttribute("featuredVehicles", Collections.emptyList());
                         request.setAttribute("featuredVehicleImages", Collections.emptyMap());
                         request.setAttribute("featuredVehiclesError", Boolean.TRUE);
+                }
+        }
+
+        private void updateActiveStatus(EmployeeDTO employee, boolean active) {
+                if (employee != null) {
+                        employee.setActiveStatus(Boolean.valueOf(active));
                 }
         }
 }
