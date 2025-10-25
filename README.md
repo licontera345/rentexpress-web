@@ -1,120 +1,120 @@
 # RentExpress Web Middleware Guidelines
 
-Antes de implementar nuevos servlets, servicios u otros componentes dentro del proyecto **rentexpress-web**, revisa primero el contenido del middleware empaquetado en [`src/main/webapp/WEB-INF/lib/RentExpres.jar`](src/main/webapp/WEB-INF/lib/RentExpres.jar).
+Before implementing new servlets, services, or other components within the **rentexpress-web** project, first inspect the middleware bundled in [`src/main/webapp/WEB-INF/lib/RentExpres.jar`](src/main/webapp/WEB-INF/lib/RentExpres.jar).
 
-1. Extrae o lista los recursos existentes (por ejemplo con `jar tf src/main/webapp/WEB-INF/lib/RentExpres.jar`).
-2. Comprueba si ya existen los *services*, *DAOs* u otras clases que necesitas reutilizar.
-3. Si el JAR expone la clase en formato `.java`, abre el archivo y revisa cómo funcionan exactamente los métodos implicados.
-4. Verifica que el método que deseas usar realmente existe en el middleware; si no existe, detén la implementación hasta definir una alternativa con el equipo.
-5. Si el método existe, replica fielmente su comportamiento en tu servlet o componente para mantener la coherencia funcional.
+1. Extract or list the existing resources (for example, with `jar tf src/main/webapp/WEB-INF/lib/RentExpres.jar`).
+2. Check whether the services, DAOs, or other classes you need already exist and can be reused.
+3. If the JAR exposes the class as `.java`, open the file and review exactly how the relevant methods behave.
+4. Confirm that the method you plan to use is actually provided by the middleware; if it is not, pause the implementation and align on an alternative with the team.
+5. When the method exists, mirror its behavior accurately in your servlet or component so the application stays functionally consistent.
 
-Seguir este flujo asegura que las funcionalidades nuevas aprovechen la base ya implementada en el middleware y que la información mostrada en la aplicación esté alineada con los servicios disponibles.
+Following this workflow ensures that new features build upon the middleware that is already implemented and that the information shown in the application stays aligned with the available services.
 
 
-A tener en cuenta:
+Key project notes:
 
-El objetivo es crear una aplicación web para la reserva y alquiler de coches. La aplicación implementará funcionalidades clave como CRUD de entidades, gestión de perfiles de usuario, internacionalización, seguridad (división pública/privada), validación de formularios, gestión de sesiones y la lógica de negocio específica para las reservas.
+The goal is to build a web application for car reservations and rentals. The application will deliver core capabilities such as CRUD for entities, user profile management, internationalization, security (public/private split), form validation, session management, and the business logic required for reservations.
 
-Tecnologías Utilizadas:
+Technologies in use:
 
 Frontend: JSP, HTML, CSS, Bootstrap
 
 Backend: Java Servlets (Jakarta EE)
 
-Base de datos: MySQL
+Database: MySQL
 
-Servidor: Apache Tomcat 10
+Server: Apache Tomcat 10
 
 Build: Maven
 
-Lógica de Negocio: Reserva y Alquiler
-Esta es la acción principal de la aplicación.
+Business Logic: Reservation and Rental
+This is the primary action within the application.
 
-Diferencia Reserva vs. Alquiler:
+Reservation vs. Rental flow:
 
-Reserva: El usuario paga por adelantado para apartar un coche en una fecha futura.
+Reservation: The user prepays to secure a vehicle for a future date.
 
-Alquiler: Cuando llega la fecha de inicio de la reserva, esta se convierte automáticamente en un "Alquiler" activo hasta la fecha de devolución.
+Rental: When the reservation’s start date arrives, it automatically becomes an active “Rental” until the return date.
 
-Flujo obligatorio: Siempre se debe pasar por una reserva antes de un alquiler, incluso si es para el mismo día.
+Mandatory flow: Every rental must originate from a reservation, even if both happen on the same day.
 
-Gestión de Estado y Fechas:
+State and date management:
 
-El usuario selecciona un coche y un rango de fechas (inicio y fin).
+The user selects a vehicle and a date range (start and end).
 
-El sistema comprueba la disponibilidad del coche en esas fechas.
+The system checks the vehicle’s availability for those dates.
 
-Si está disponible, se crea la reserva y el estado del coche cambia a Reservado.
+If available, the reservation is created and the vehicle status changes to Reserved.
 
-Cuando llega la fecha de inicio de la reserva, el estado cambia automáticamente a Alquilado.
+When the reservation start date arrives, the status automatically updates to Rented.
 
-Cuando llega la fecha de fin del alquiler, el estado vuelve a Disponible.
+When the rental end date is reached, the status reverts to Available.
 
-Reglas de Disponibilidad:
+Availability rules:
 
-Un coche "Reservado" o "Alquilado" no puede ser seleccionado por otro usuario.
+A vehicle that is “Reserved” or “Rented” cannot be selected by another user.
 
-Aunque los coches no disponibles se muestren en el catálogo, no se podrán reservar ni alquilar.
+Even if unavailable vehicles appear in the catalog, they cannot be reserved or rented.
 
-Notificación de "Reserva" en Sesión:
+Session-based “Reservation” notice:
 
-Si un usuario elige un coche (lo añade al "carrito") pero no completa el pago, ese coche se guarda temporalmente en la sesión (HttpSession), pero no en la base de datos.
+If a user selects a vehicle (adds it to the “cart”) but does not complete payment, that vehicle is stored temporarily in the session (HttpSession) but not in the database.
 
-Se mostrará una notificación al usuario (ej: "Tiene un coche en reserva. Por favor, complete su compra").
+Show a notification to the user (for example: “You have a car on hold. Please complete your purchase.”).
 
-Esta reserva temporal solo existe mientras la sesión del usuario esté activa; si cierra sesión, se pierde.
+This temporary hold only exists while the user’s session is active; logging out clears it.
 
-Seguridad: Autenticación y Autorización
-El sistema se dividirá en una parte pública (visible para todos) y una parte privada (requiere login).
+Security: Authentication and authorization
+The system is divided into a public area (visible to everyone) and a private area (requires login).
 
-Autenticación (Login):
+Authentication (login):
 
-Es obligatorio iniciar sesión para poder reservar o alquilar un coche.
+Logging in is required to reserve or rent a vehicle.
 
-Si un usuario anónimo intenta acceder a estas funciones, será redirigido a la página de login o registro.
+If an anonymous user tries to access these features, redirect them to the login or registration page.
 
-"Remember Me": Se usarán cookies (con setMaxAge) para guardar el usuario y contraseña si el usuario lo solicita, permitiendo rellenar el formulario de login en futuras visitas.
+“Remember Me”: Use cookies (via `setMaxAge`) to save the username and password when requested, allowing the login form to be prefilled on future visits.
 
-Email y 2FA: Se enviarán correos de bienvenida. Para la recuperación de contraseña (y opcionalmente 2FA), se enviará un correo con un código aleatorio de 6 dígitos válido por un corto período (ej. 1 minuto).
+Email and 2FA: Send welcome emails. For password recovery (and optionally 2FA), send an email containing a random 6-digit code that remains valid for a short period (e.g., 1 minute).
 
-Autorización (Roles y Filtros):
+Authorization (roles and filters):
 
-Se implementará un AuthFilter (Filtro de Autorización) para controlar el acceso a las URLs.
+Implement an `AuthFilter` to control URL access.
 
-Roles: Se definirán roles claros (ej. Cliente, Empleado). Solo los "Clientes" pueden reservar o alquilar.
+Roles: Define clear roles (for example, Customer and Employee). Only Customers can reserve or rent.
 
-Lógica del Filtro:
+Filter logic:
 
-El filtro intercepta la petición y obtiene la URL solicitada.
+The filter intercepts the request and obtains the requested URL.
 
-Obtiene la sesión del usuario (si no existe, crea una para un usuario "Anónimo").
+It retrieves the user session (creating one for an “Anonymous” user if needed).
 
-Se llama a un método de autorización que verifica si el rol del usuario en sesión tiene permiso para acceder a esa URL (comparando con una lista de URLs autorizadas por rol).
+Call an authorization method that checks whether the session user’s role is permitted to access that URL (comparing against a list of role-authorized URLs).
 
-Si tiene permiso, se ejecuta chain.doFilter(request, response).
+If permitted, execute `chain.doFilter(request, response)`.
 
-Si no tiene permiso, se le redirige (ej. al login o a una página de acceso denegado).
+If not permitted, redirect the user (for example, to the login page or an access denied page).
 
-Validación de Formularios y Gestión de Errores
-La validación se gestionará centralizadamente en los Servlets.
+Form validation and error handling
+Validation will be centralized in the Servlets.
 
-El Servlet de validación recibe los parámetros del formulario (ej. request.getParameter("username")).
+The validation servlet receives the form parameters (for example, `request.getParameter("username")`).
 
-Valida cada campo según las reglas de negocio.
+Validate each field according to the business rules.
 
-Si se encuentran errores, se almacenan en un Map<String, String> (ej. errors.put("username", "El usuario es obligatorio.")).
+When errors occur, store them in a `Map<String, String>` (for example, `errors.put("username", "Username is required.")`).
 
-Si hay errores (el Map no está vacío):
+If errors exist (the map is not empty):
 
-El Map de errores se guarda en la request (request.setAttribute("error", errors)).
+Store the error map in the request (`request.setAttribute("error", errors)`).
 
-Se redirige (mediante forward) de vuelta al formulario JSP.
+Forward back to the JSP form.
 
-Si no hay errores (el Map está vacío):
+If there are no errors (the map is empty):
 
-Se continúa con el proceso normal (ej. guardar en BD, redirigir a "success.jsp").
+Continue with the regular flow (for example, save to the database, redirect to `success.jsp`).
 
-Visualización de Errores en JSP (usando JSTL): En el formulario JSP, se comprueba si existe el atributo "error" y se iteran los mensajes.
+Displaying errors in JSP (using JSTL): Within the JSP form, check for the `error` attribute and iterate over the messages.
 
 Java
 
@@ -122,41 +122,41 @@ Java
     <div class="error-messages">
         <c:forEach var="entry" items="${error.entrySet()}">
             <div class="error-message">${entry.value}</div>
-            <%-- Para internacionalización, se podría usar la clave:
-                 <fmt:message key="${entry.key}_error" /> 
+            <%-- For internationalization, you could use a key such as:
+                 <fmt:message key="${entry.key}_error" />
             --%>
         </c:forEach>
     </div>
 </c:if>
-Internacionalización (i18n)
-El usuario podrá cambiar el idioma, incluso si no ha iniciado sesión.
+Internationalization (i18n)
+Users can switch the language even if they are not logged in.
 
-Prioridad de Selección de Idioma (Lógica del LanguageServlet):
+Language selection priority (logic within `LanguageServlet`):
 
-Cookie: Se comprueba si el cliente envía una cookie llamada "locale". Si existe, se usa ese idioma y se guarda en la sesión.
+Cookie: Check whether the client sends a cookie named `locale`. If present, use that language and store it in the session.
 
-Cabecera del Navegador: Si no hay cookie, se extrae la cabecera Accept-Language (request.getHeader("Accept-Language")).
+Browser header: If there is no cookie, read the `Accept-Language` header (`request.getHeader("Accept-Language")`).
 
-Búsqueda de Coincidencia: Se compara la lista ordenada de idiomas preferidos del navegador con la lista de idiomas soportados por la aplicación (ej. "en", "es", "fr") usando Locale.lookup.
+Matching: Compare the browser’s ordered list of preferred languages against the application’s supported languages (for example, `en`, `es`, `fr`) using `Locale.lookup`.
 
-Establecimiento: Si se encuentra una coincidencia soportada, se guarda en la sesión.
+Setting: If a supported match is found, store it in the session.
 
-Por Defecto: Si no se encuentra ninguna coincidencia, se establece el idioma por defecto (ej. "en") en la sesión.
+Default: If no match is found, store the default language (for example, `en`) in the session.
 
-Persistencia: Cuando un usuario selecciona activamente un idioma, este se guarda en una cookie con fecha de expiración para futuras visitas.
+Persistence: When a user explicitly selects a language, save it to a cookie with an expiration date for future visits.
 
-Otras Funcionalidades y Prácticas
-CRUD y Vistas: Implementación de operaciones CRUD (Crear, Leer, Actualizar, Eliminar) para las entidades principales (ej. Coches, Productos) que incluirán fotos. Las JSPs mostrarán estas entidades y sus imágenes.
+Additional features and practices
+CRUD and views: Implement CRUD operations (create, read, update, delete) for the primary entities (for example, vehicles and products), including images. JSPs should render these entities and their photos.
 
-Edición de Perfil: Los usuarios podrán editar su información de perfil, incluyendo la subida de una foto de avatar.
+Profile editing: Users can update their profile information, including uploading an avatar photo.
 
-Gestión de Archivos: El sistema manejará la subida y descarga de imágenes (fotos de coches, avatares).
+File management: The system handles uploading and downloading images (vehicle photos, avatars).
 
-Búsqueda y Paginación: Se implementará búsqueda estructurada (con filtros) y paginación para los listados de entidades.
+Search and pagination: Implement structured search (with filters) and pagination for entity listings.
 
-Evitar Literales (Strings "Mágicos"): Los nombres de los parámetros de request, atributos de sesión, etc., no deben escribirse directamente en el código. Se definirán como constantes private static final String al inicio de la clase Servlet.
+Avoid literals (“magic strings”): Request parameter names, session attributes, and similar values should not be hard-coded. Declare them as `private static final String` constants at the start of the servlet class.
 
-Control de Caché: Se usarán cabeceras HTTP en los Servlets (Cache-Control: no-cache, no-store, Expires: 0) para forzar al navegador a no guardar en caché las respuestas de páginas dinámicas o privadas.
+Cache control: Configure HTTP headers in servlets (`Cache-Control: no-cache, no-store`, `Expires: 0`) to prevent the browser from caching dynamic or private pages.
 
 ## Database Schema
 
