@@ -6,16 +6,20 @@
 <fmt:setBundle basename="i18n.Messages" />
 <%
 String rememberUser = "";
+String rememberPassword = "";
 Cookie[] cookies = request.getCookies();
 if (cookies != null) {
     for (Cookie cookie : cookies) {
         if ("rememberUser".equals(cookie.getName())) {
             rememberUser = cookie.getValue();
-            break;
+        }
+        if ("rememberPassword".equals(cookie.getName())) {
+            rememberPassword = cookie.getValue();
         }
     }
 }
 request.setAttribute("rememberUser", rememberUser);
+request.setAttribute("rememberPassword", rememberPassword);
 %>
 
 <!DOCTYPE html>
@@ -82,7 +86,7 @@ request.setAttribute("rememberUser", rememberUser);
                                         <label for="password" class="form-label fw-semibold"><fmt:message key="login.password" /></label>
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
-                                            <input type="password" class="form-control" id="password" name="password" required>
+                                            <input type="password" class="form-control" id="password" name="password" value="<c:out value='${rememberPassword}'/>" required>
                                             <button class="btn btn-outline-secondary" type="button" id="togglePassword" aria-label="<fmt:message key='login.showPassword' />" data-label-show="<fmt:message key='login.showPassword' />" data-label-hide="<fmt:message key='login.hidePassword' />">
                                                 <i class="bi bi-eye"></i>
                                             </button>
@@ -94,7 +98,7 @@ request.setAttribute("rememberUser", rememberUser);
 
                                     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="rememberMe" name="remember" value="yes" <c:if test="${not empty rememberUser}">checked</c:if>>
+                                            <input class="form-check-input" type="checkbox" id="rememberMe" name="remember" value="yes" <c:if test="${not empty rememberUser or not empty rememberPassword}">checked</c:if>>
                                             <label class="form-check-label" for="rememberMe">
                                                 <fmt:message key="login.rememberMe" />
                                             </label>
