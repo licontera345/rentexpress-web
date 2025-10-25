@@ -9,5 +9,7 @@ public class Views {
         public static final String EMPLOYEE_LIST   = "/public/employee/employee_list.jsp";
         public static final String EMPLOYEE_FORM   = "/public/employee/employee_form.jsp";
 
+        public static final String VEHICLE_LIST    = "/public/vehicle/vehicle_list.jsp";
+
 
 }
