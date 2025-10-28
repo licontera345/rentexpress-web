@@ -1,41 +1,167 @@
 package com.pinguela.rentexpressweb.controller;
 
+import com.pinguela.rentexpres.dao.HeadquartersDAO;
+import com.pinguela.rentexpres.dao.impl.HeadquartersDAOImpl;
+import com.pinguela.rentexpres.exception.DataException;
+import com.pinguela.rentexpres.exception.RentexpresException;
+import com.pinguela.rentexpres.model.HeadquartersDTO;
+import com.pinguela.rentexpres.model.VehicleCategoryDTO;
+import com.pinguela.rentexpres.model.VehicleDTO;
+import com.pinguela.rentexpres.service.VehicleCategoryService;
+import com.pinguela.rentexpres.service.VehicleService;
+import com.pinguela.rentexpres.service.impl.VehicleCategoryServiceImpl;
+import com.pinguela.rentexpres.service.impl.VehicleServiceImpl;
+import com.pinguela.rentexpres.util.JDBCUtils;
+import com.pinguela.rentexpressweb.constants.AppConstants;
+import com.pinguela.rentexpressweb.constants.ReservationConstants;
+import com.pinguela.rentexpressweb.constants.VehicleConstants;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
- * Servlet implementation class PublicVehicleDetailServlet
+ * Muestra el detalle de un vehículo del catálogo público.
  */
 @WebServlet("/public/vehicles/detail")
 public class PublicVehicleDetailServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
+    private static final Logger LOGGER = LogManager.getLogger(PublicVehicleDetailServlet.class);
+
+    private final VehicleService vehicleService = new VehicleServiceImpl();
+    private final VehicleCategoryService categoryService = new VehicleCategoryServiceImpl();
+    private final HeadquartersDAO headquartersDAO = new HeadquartersDAOImpl();
+
     public PublicVehicleDetailServlet() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
     /**
-     * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+     * @see HttpServlet#doGet(HttpServletRequest, HttpServletResponse)
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // TODO Auto-generated method stub
-        response.getWriter().append("Served at: ").append(request.getContextPath()).append(" PublicVehicleDetailServlet");
+        String vehicleIdParam = request.getParameter(VehicleConstants.PARAM_VEHICLE_ID);
+        Integer vehicleId = parseVehicleId(vehicleIdParam);
+        if (vehicleId == null) {
+            response.sendRedirect(request.getContextPath() + "/public/vehicles?notfound=1");
+            return;
+        }
+
+        VehicleDTO vehicle = loadVehicle(vehicleId);
+        if (vehicle == null) {
+            response.sendRedirect(request.getContextPath() + "/public/vehicles?notfound=1");
+            return;
+        }
+
+        Locale locale = request.getLocale();
+        String categoryName = resolveCategoryName(vehicle.getCategoryId(), locale);
+
+        request.setAttribute(AppConstants.ATTR_PAGE_TITLE, vehicle.getBrand() + " " + vehicle.getModel());
+        request.setAttribute(VehicleConstants.ATTR_SELECTED_VEHICLE, vehicle);
+        request.setAttribute(VehicleConstants.ATTR_SELECTED_CATEGORY_NAME, categoryName);
+
+        List<VehicleDTO> relatedVehicles = findRelatedVehicles(vehicle);
+        request.setAttribute(VehicleConstants.ATTR_RELATED_VEHICLES, relatedVehicles);
+
+        request.setAttribute(ReservationConstants.ATTR_HEADQUARTERS, loadHeadquarters());
+
+        if (request.getAttribute(ReservationConstants.ATTR_RESERVATION_FORM) == null) {
+            request.setAttribute(ReservationConstants.ATTR_RESERVATION_FORM, buildDefaultForm(vehicleIdParam));
+        }
+
+        request.getRequestDispatcher("/public/vehicle/vehicle_detail.jsp").forward(request, response);
     }
 
     /**
-     * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+     * @see HttpServlet#doPost(HttpServletRequest, HttpServletResponse)
      */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // TODO Auto-generated method stub
         doGet(request, response);
     }
 
+    private Integer parseVehicleId(String vehicleIdParam) {
+        if (vehicleIdParam == null) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(vehicleIdParam);
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
+    private VehicleDTO loadVehicle(Integer vehicleId) {
+        try {
+            return vehicleService.findById(vehicleId);
+        } catch (RentexpresException ex) {
+            LOGGER.error("Error al recuperar el vehículo {}", vehicleId, ex);
+            return null;
+        }
+    }
+
+    private String resolveCategoryName(Integer categoryId, Locale locale) {
+        if (categoryId == null) {
+            return null;
+        }
+        try {
+            String language = locale != null ? locale.getLanguage() : Locale.getDefault().getLanguage();
+            VehicleCategoryDTO dto = categoryService.findById(categoryId, language);
+            return dto != null ? dto.getCategoryName() : null;
+        } catch (RentexpresException ex) {
+            LOGGER.warn("No se pudo obtener el nombre de la categoría {}", categoryId, ex);
+            return null;
+        }
+    }
+
+    private List<VehicleDTO> findRelatedVehicles(VehicleDTO vehicle) {
+        try {
+            return vehicleService.findAll().stream()
+                    .filter(other -> other.getVehicleId() != null && !other.getVehicleId().equals(vehicle.getVehicleId()))
+                    .filter(other -> vehicle.getCategoryId() != null
+                            && vehicle.getCategoryId().equals(other.getCategoryId()))
+                    .limit(3)
+                    .collect(Collectors.toList());
+        } catch (RentexpresException ex) {
+            LOGGER.warn("No se pudieron cargar vehículos relacionados", ex);
+            return new ArrayList<>();
+        }
+    }
+
+    private List<HeadquartersDTO> loadHeadquarters() {
+        Connection connection = null;
+        try {
+            connection = JDBCUtils.getConnection();
+            JDBCUtils.beginTransaction(connection);
+            List<HeadquartersDTO> list = headquartersDAO.findAll(connection);
+            JDBCUtils.commitTransaction(connection);
+            return list;
+        } catch (SQLException | DataException ex) {
+            JDBCUtils.rollbackTransaction(connection);
+            LOGGER.error("Error al recuperar las sedes", ex);
+            return new ArrayList<>();
+        } finally {
+            JDBCUtils.close(connection);
+        }
+    }
+
+    private Map<String, String> buildDefaultForm(String vehicleIdParam) {
+        Map<String, String> defaults = new HashMap<>();
+        defaults.put(ReservationConstants.PARAM_VEHICLE_ID, vehicleIdParam);
+        return defaults;
+    }
 }
