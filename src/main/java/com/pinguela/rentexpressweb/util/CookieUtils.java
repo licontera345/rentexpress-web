@@ -12,20 +12,13 @@ public final class CookieUtils {
     private CookieUtils() {
     }
 
-    public static Cookie findCookie(HttpServletRequest request, String name) {
-        if (request == null || name == null) {
-            return null;
+    public static Optional<Cookie> findCookie(HttpServletRequest request, String name) {
+        if (request.getCookies() == null || name == null) {
+            return Optional.empty();
         }
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return null;
-        }
-        for (Cookie cookie : cookies) {
-            if (name.equals(cookie.getName())) {
-                return cookie;
-            }
-        }
-        return null;
+        return Arrays.stream(request.getCookies())
+                .filter(cookie -> name.equals(cookie.getName()))
+                .findFirst();
     }
 
     public static void addCookie(HttpServletResponse response, String name, String value,

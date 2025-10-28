@@ -22,9 +22,6 @@ public class LanguageServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final List<String> SUPPORTED_LANGUAGES = Arrays.asList("es", "en", "fr");
 
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
     public LanguageServlet() {
         super();
     }
