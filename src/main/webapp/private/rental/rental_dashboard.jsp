@@ -10,13 +10,36 @@
 <c:set var="rentals" value="${rentals}" />
 <c:set var="latestRentals" value="${latestRentals}" />
 
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+    <div>
+        <h1 class="h3 fw-semibold mb-1">Panel privado de alquileres</h1>
+        <p class="text-muted mb-0">Monitoriza la conversión de reservas, estados de vehículos e ingresos estimados.</p>
+    </div>
+    <form method="post" action="${ctx}/app/rentals/private" class="d-flex gap-2 align-items-center">
+        <input type="hidden" name="${RentalConstants.PARAM_ACTION}" value="autoconvert" />
+        <button type="submit" class="btn btn-brand">
+            <i class="bi bi-lightning-charge me-2"></i>Convertir reservas activas
+        </button>
+    </form>
+</div>
+
+<c:if test="${not empty flashSuccess}">
+    <div class="alert alert-success shadow-soft">${flashSuccess}</div>
+</c:if>
+<c:if test="${not empty flashError}">
+    <div class="alert alert-danger shadow-soft">${flashError}</div>
+</c:if>
+<c:if test="${not empty flashInfo}">
+    <div class="alert alert-info shadow-soft">${flashInfo}</div>
+</c:if>
+
 <div class="row g-4 align-items-start">
-    <div class="col-lg-4">
+    <div class="col-xl-4">
         <div class="card shadow-soft analytics-card">
             <div class="card-body">
-                <h2 class="h5 fw-semibold mb-3">Explora los alquileres</h2>
-                <p class="text-muted">Filtra por estado, fechas o importe para entender la actividad de la flota.</p>
-                <form method="get" action="${ctx}/public/rentals" class="analytics-form">
+                <h2 class="h5 fw-semibold mb-3">Filtra tus alquileres</h2>
+                <p class="text-muted">Aplica filtros para centrarte en los alquileres que más te interesan analizar.</p>
+                <form method="get" action="${ctx}/app/rentals/private" class="analytics-form">
                     <div class="mb-3">
                         <label for="status" class="form-label">Estado</label>
                         <select class="form-select" id="status" name="${RentalConstants.PARAM_STATUS}">
@@ -59,7 +82,7 @@
                     </div>
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-brand">Aplicar filtros</button>
-                        <a class="btn btn-outline-brand" href="${ctx}/public/rentals">Limpiar</a>
+                        <a class="btn btn-outline-brand" href="${ctx}/app/rentals/private">Limpiar</a>
                     </div>
                 </form>
                 <c:if test="${not empty errors}">
@@ -74,27 +97,49 @@
             </div>
         </div>
     </div>
-    <div class="col-lg-8">
+    <div class="col-xl-8">
         <div class="row g-3 mb-4">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="analytics-stat">
                     <span class="analytics-label">Alquileres filtrados</span>
-                    <span class="analytics-value">${summary.totalRentals}</span>
+                    <span class="analytics-value">${summary.filteredCount}</span>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="analytics-stat">
-                    <span class="analytics-label">Ingresos estimados</span>
+                    <span class="analytics-label">Alquileres totales</span>
+                    <span class="analytics-value">${summary.totalCount}</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="analytics-stat">
+                    <span class="analytics-label">Ingresos filtrados</span>
                     <span class="analytics-value">
-                        <fmt:formatNumber value="${summary.totalRevenue}" type="currency" currencySymbol="€"/>
+                        <fmt:formatNumber value="${summary.filteredRevenue}" type="currency" currencySymbol="€"/>
                     </span>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="analytics-stat">
-                    <span class="analytics-label">Duración media</span>
+                    <span class="analytics-label">Ticket medio</span>
                     <span class="analytics-value">
-                        <fmt:formatNumber value="${summary.averageDuration}" minFractionDigits="1" maxFractionDigits="1" /> días
+                        <fmt:formatNumber value="${summary.averageTicket}" type="currency" currencySymbol="€"/>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="analytics-stat">
+                    <span class="analytics-label">Alquileres activos</span>
+                    <span class="analytics-value">${summary.activeRentals}</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="analytics-stat">
+                    <span class="analytics-label">Duración media (filtro)</span>
+                    <span class="analytics-value">
+                        <fmt:formatNumber value="${summary.averageFilteredDuration}" minFractionDigits="1" maxFractionDigits="1" /> días
                     </span>
                 </div>
             </div>
@@ -117,11 +162,11 @@
         </div>
 
         <div class="card card-common mb-4">
-            <div class="card-header">Últimos alquileres</div>
+            <div class="card-header">Últimos movimientos</div>
             <div class="card-body">
                 <c:choose>
                     <c:when test="${empty latestRentals}">
-                        <p class="text-muted mb-0">No hay alquileres que coincidan con los filtros seleccionados.</p>
+                        <p class="text-muted mb-0">No hay alquileres para mostrar con los filtros aplicados.</p>
                     </c:when>
                     <c:otherwise>
                         <ul class="timeline list-unstyled mb-0">
@@ -147,7 +192,7 @@
         </div>
 
         <div class="card card-common">
-            <div class="card-header">Detalle completo</div>
+            <div class="card-header">Detalle de alquileres</div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0 align-middle">
@@ -164,7 +209,7 @@
                         <tbody>
                             <c:if test="${empty rentals}">
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted py-4">No hay registros para mostrar.</td>
+                                    <td colspan="6" class="text-center text-muted py-4">No hay datos que coincidan con los filtros.</td>
                                 </tr>
                             </c:if>
                             <c:forEach var="rental" items="${rentals}">
