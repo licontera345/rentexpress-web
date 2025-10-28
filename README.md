@@ -621,3 +621,6 @@ public class ProductServlet extends HttpServlet {
 </html>
 ```
 
+**Comentarios estándar de los servlets**
+
+Nunca elimines los comentarios generados automáticamente por Maven en cada servlet (por ejemplo, las anotaciones de `@see`). Esos comentarios forman parte del estándar del proyecto y deben mantenerse siempre
