@@ -41,9 +41,12 @@
                             Recordarme en este equipo
                         </label>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <button type="submit" class="btn btn-brand">Entrar</button>
-                        <a href="${ctx}/app/users/register" class="text-decoration-none">¿No tienes cuenta? Regístrate</a>
+                        <div class="text-end">
+                            <a href="${ctx}/app/users/register" class="text-decoration-none d-block">¿No tienes cuenta? Regístrate</a>
+                            <a href="${ctx}/app/password/forgot" class="text-decoration-none small">¿Olvidaste tu contraseña?</a>
+                        </div>
                     </div>
                 </form>
             </div>
