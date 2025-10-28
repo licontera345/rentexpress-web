@@ -5,6 +5,7 @@ import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.constants.UserConstants;
 import com.pinguela.rentexpressweb.security.RememberMeManager;
 import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.security.TwoFactorManager;
 import com.pinguela.rentexpressweb.util.Views;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -16,6 +17,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Servlet implementation class LoginServlet
  */
@@ -25,6 +29,8 @@ public class LoginServlet extends HttpServlet {
 
     private static final String DEMO_EMAIL = "demo@rentexpress.com";
     private static final String DEMO_PASSWORD = "RentExpress123";
+
+    private static final Logger LOGGER = LogManager.getLogger(LoginServlet.class);
 
     /**
      * @see HttpServlet#HttpServlet()
@@ -41,6 +47,11 @@ public class LoginServlet extends HttpServlet {
         Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
         if (currentUser != null) {
             response.sendRedirect(request.getContextPath() + SecurityConstants.HOME_ENDPOINT);
+            return;
+        }
+
+        if (TwoFactorManager.hasPendingVerification(request)) {
+            response.sendRedirect(request.getContextPath() + "/app/auth/verify-2fa");
             return;
         }
 
@@ -83,16 +94,16 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-        SessionManager.setAttribute(request, AppConstants.ATTR_CURRENT_USER, email);
-        if (remember) {
-            RememberMeManager.rememberUser(response, email);
-        } else {
-            RememberMeManager.forgetUser(response);
-        }
+        String sanitizedEmail = email != null ? email.trim() : null;
+        RememberMeManager.forgetUser(response);
+        SessionManager.removeAttribute(request, AppConstants.ATTR_CURRENT_USER);
 
-        SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
-                "¡Bienvenido de nuevo! Has accedido con la cuenta demo.");
-        response.sendRedirect(request.getContextPath() + SecurityConstants.HOME_ENDPOINT);
+        String verificationCode = TwoFactorManager.initiate(request, sanitizedEmail, remember);
+        SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_INFO,
+                buildVerificationInfoMessage(sanitizedEmail, verificationCode, false));
+        LOGGER.info("Generado código 2FA {} para {}", verificationCode, sanitizedEmail);
+
+        response.sendRedirect(request.getContextPath() + "/app/auth/verify-2fa");
     }
 
     private boolean authenticate(String email, String password) {
@@ -112,5 +123,18 @@ public class LoginServlet extends HttpServlet {
             request.setAttribute(AppConstants.ATTR_FLASH_ERROR, error);
             SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_ERROR);
         }
+
+        Object info = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_INFO);
+        if (info != null) {
+            request.setAttribute(AppConstants.ATTR_FLASH_INFO, info);
+            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_INFO);
+        }
+    }
+
+    private String buildVerificationInfoMessage(String email, String code, boolean resent) {
+        String intro = resent ? "Hemos reenviado un nuevo código" : "Hemos enviado un código";
+        return String.format(
+                "%s a %s. Por tratarse de un entorno académico, el código es %s y caduca en %d segundos.",
+                intro, email, code, SecurityConstants.TWO_FA_CODE_VALIDITY_SECONDS);
     }
 }

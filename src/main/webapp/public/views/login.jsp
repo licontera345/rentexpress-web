@@ -12,6 +12,9 @@
                 <c:if test="${not empty flashError}">
                     <div class="alert alert-danger">${flashError}</div>
                 </c:if>
+                <c:if test="${not empty flashInfo}">
+                    <div class="alert alert-info">${flashInfo}</div>
+                </c:if>
                 <c:if test="${not empty errors}">
                     <div class="alert alert-danger">
                         <ul class="mb-0">
