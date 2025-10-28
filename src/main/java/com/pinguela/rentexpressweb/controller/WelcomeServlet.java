@@ -1,10 +1,15 @@
 package com.pinguela.rentexpressweb.controller;
 
+import com.pinguela.rentexpressweb.constants.AppConstants;
+import com.pinguela.rentexpressweb.security.RememberMeManager;
+import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.Views;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 
 /**
@@ -14,28 +19,38 @@ import java.io.IOException;
 public class WelcomeServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
     public WelcomeServlet() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
-    /**
-     * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-     */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // TODO Auto-generated method stub
-        response.getWriter().append("Served at: ").append(request.getContextPath()).append(" WelcomeServlet");
+        RememberMeManager.applyRememberedUser(request);
+        exposeFlashMessage(request);
+
+        request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Bienvenido");
+        Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
+        if (currentUser != null) {
+            request.setAttribute(AppConstants.ATTR_CURRENT_USER, currentUser);
+        }
+
+        request.getRequestDispatcher(Views.PUBLIC_WELCOME).forward(request, response);
     }
 
-    /**
-     * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-     */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // TODO Auto-generated method stub
         doGet(request, response);
     }
 
+    private void exposeFlashMessage(HttpServletRequest request) {
+        Object success = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
+        if (success != null) {
+            request.setAttribute(AppConstants.ATTR_FLASH_SUCCESS, success);
+            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
+        }
+
+        Object error = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_ERROR);
+        if (error != null) {
+            request.setAttribute(AppConstants.ATTR_FLASH_ERROR, error);
+            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_ERROR);
+        }
+    }
 }
