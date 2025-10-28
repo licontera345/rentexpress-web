@@ -3,9 +3,11 @@ package com.pinguela.rentexpressweb.controller;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.constants.UserConstants;
+import com.pinguela.rentexpressweb.security.CredentialStore;
 import com.pinguela.rentexpressweb.security.RememberMeManager;
 import com.pinguela.rentexpressweb.security.SessionManager;
 import com.pinguela.rentexpressweb.security.TwoFactorManager;
+import com.pinguela.rentexpressweb.util.PasswordEncoder;
 import com.pinguela.rentexpressweb.util.Views;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -16,6 +18,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,9 +29,6 @@ import org.apache.logging.log4j.Logger;
 @WebServlet("/app/auth/login")
 public class LoginServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-
-    private static final String DEMO_EMAIL = "demo@rentexpress.com";
-    private static final String DEMO_PASSWORD = "RentExpress123";
 
     private static final Logger LOGGER = LogManager.getLogger(LoginServlet.class);
 
@@ -107,8 +107,20 @@ public class LoginServlet extends HttpServlet {
     }
 
     private boolean authenticate(String email, String password) {
-        return DEMO_EMAIL.equalsIgnoreCase(email != null ? email.trim() : null)
-                && DEMO_PASSWORD.equals(password);
+        if (email == null || password == null) {
+            return false;
+        }
+        CredentialStore.ensureCredential(getServletContext(), SecurityConstants.DEMO_EMAIL,
+                SecurityConstants.DEMO_PASSWORD);
+
+        String sanitizedEmail = email.trim().toLowerCase(Locale.ROOT);
+        String storedHash = CredentialStore.findHashedPassword(getServletContext(), sanitizedEmail);
+        if (storedHash != null && PasswordEncoder.matches(password, storedHash)) {
+            return true;
+        }
+
+        return SecurityConstants.DEMO_EMAIL.equalsIgnoreCase(sanitizedEmail)
+                && SecurityConstants.DEMO_PASSWORD.equals(password);
     }
 
     private void copyFlashMessages(HttpServletRequest request) {

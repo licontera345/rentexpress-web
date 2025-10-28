@@ -3,6 +3,7 @@ package com.pinguela.rentexpressweb.controller;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.constants.UserConstants;
+import com.pinguela.rentexpressweb.security.CredentialStore;
 import com.pinguela.rentexpressweb.security.SessionManager;
 import com.pinguela.rentexpressweb.util.Views;
 import jakarta.servlet.ServletContext;
@@ -20,6 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 
 /**
  * Servlet implementation class RegisterUserServlet
@@ -80,11 +82,14 @@ public class RegisterUserServlet extends HttpServlet {
             return;
         }
 
+        String sanitizedEmail = email.trim().toLowerCase(Locale.ROOT);
+
         RegisteredUser registeredUser = new RegisteredUser(fullName, email, phone);
         getRegisteredUsers().add(registeredUser);
+        CredentialStore.updatePassword(getServletContext(), sanitizedEmail, password);
 
         SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
-                "Registro completado. Ahora puedes iniciar sesión con la cuenta demo mientras conectas la base de datos.");
+                "Registro completado. Ya puedes iniciar sesión con tu correo y contraseña.");
         response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
     }
 

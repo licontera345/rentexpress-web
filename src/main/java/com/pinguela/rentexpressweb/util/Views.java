@@ -12,4 +12,7 @@ public final class Views {
     public static final String PUBLIC_WELCOME = "/public/views/welcome.jsp";
     public static final String PUBLIC_LOGIN = "/public/views/login.jsp";
     public static final String PUBLIC_REGISTER_USER = "/public/views/register_user.jsp";
+    public static final String PUBLIC_FORGOT_PASSWORD = "/public/views/forgot_password.jsp";
+    public static final String PUBLIC_VERIFY_RESET = "/public/views/verify_reset.jsp";
+    public static final String PUBLIC_RESET_PASSWORD = "/public/views/reset_password.jsp";
 }

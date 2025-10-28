@@ -23,4 +23,6 @@ public final class AppConstants {
     public static final String PARAM_LANGUAGE = "lang";
 
     public static final String CONTEXT_REGISTERED_USERS = "rentexpress.registeredUsers";
+    public static final String CONTEXT_CREDENTIALS = "rentexpress.credentials";
+    public static final String CONTEXT_KNOWN_EMAILS = "rentexpress.knownEmails";
 }
