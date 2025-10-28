@@ -23,9 +23,6 @@ public class WelcomeServlet extends HttpServlet {
         super();
     }
 
-    /**
-     * @see HttpServlet#doGet(HttpServletRequest, HttpServletResponse)
-     */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         RememberMeManager.applyRememberedUser(request);
         exposeFlashMessage(request);
@@ -39,9 +36,6 @@ public class WelcomeServlet extends HttpServlet {
         request.getRequestDispatcher(Views.PUBLIC_WELCOME).forward(request, response);
     }
 
-    /**
-     * @see HttpServlet#doPost(HttpServletRequest, HttpServletResponse)
-     */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);
     }
