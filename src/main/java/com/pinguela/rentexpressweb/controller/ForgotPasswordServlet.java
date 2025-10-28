@@ -43,9 +43,6 @@ public class ForgotPasswordServlet extends HttpServlet {
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        CredentialStore.ensureCredential(getServletContext(), SecurityConstants.DEMO_EMAIL,
-                SecurityConstants.DEMO_PASSWORD);
-
         copyFlashMessages(request);
         if (request.getAttribute(PasswordConstants.ATTR_FORGOT_EMAIL) == null
                 && PasswordResetManager.hasPending(request)) {
@@ -59,9 +56,6 @@ public class ForgotPasswordServlet extends HttpServlet {
      * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
      */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        CredentialStore.ensureCredential(getServletContext(), SecurityConstants.DEMO_EMAIL,
-                SecurityConstants.DEMO_PASSWORD);
-
         String emailParam = request.getParameter(UserConstants.PARAM_EMAIL);
         String sanitizedEmail = emailParam != null ? emailParam.trim().toLowerCase(Locale.ROOT) : null;
 

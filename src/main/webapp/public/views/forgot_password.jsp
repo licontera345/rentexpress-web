@@ -31,7 +31,7 @@
                         <label for="email" class="form-label">Correo electrónico</label>
                         <input type="email" class="form-control" id="email" name="email" required
                                value="${not empty email ? email : ''}">
-                        <div class="form-text">Si tienes dudas, usa <code>demo@rentexpress.com</code>.</div>
+                        <div class="form-text">Si tienes dudas, contacta con el equipo de soporte de RentExpress.</div>
                     </div>
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <button type="submit" class="btn btn-brand">Enviar código</button>

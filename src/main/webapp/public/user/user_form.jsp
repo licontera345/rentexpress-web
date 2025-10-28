@@ -8,7 +8,7 @@
                 <i class="bi bi-person-plus"></i> Ir al formulario de registro
             </a>
             <a class="btn btn-outline-secondary" href="${ctx}/app/auth/login">
-                <i class="bi bi-box-arrow-in-right"></i> Accede con la cuenta demo
+                <i class="bi bi-box-arrow-in-right"></i> Accede con tu cuenta oficial
             </a>
         </div>
     </div>

@@ -112,7 +112,7 @@ public class Verify2FAServlet extends HttpServlet {
         TwoFactorManager.clear(request);
         LOGGER.info("Verificación 2FA completada para {}", email);
         SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
-                "¡Bienvenido de nuevo! Has accedido con la cuenta demo.");
+                "¡Bienvenido de nuevo! Has iniciado sesión correctamente.");
         response.sendRedirect(request.getContextPath() + SecurityConstants.HOME_ENDPOINT);
     }
 
