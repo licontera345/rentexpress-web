@@ -3,7 +3,11 @@ mi appweb
 # RentExpress Web Middleware Guidelines
 
 
-siempre revisar el archivo que esta a 
+siempre revisar el archivo que esta a
+
+**Comentarios estándar de los servlets**
+
+Nunca elimines los comentarios generados automáticamente por Maven en cada servlet (por ejemplo, las anotaciones de `@see`). Esos comentarios forman parte del estándar del proyecto y deben mantenerse siempre.
 
 Before implementing new servlets, services, or other components within the **rentexpress-web** project, first inspect the middleware bundled in [`src/main/webapp/WEB-INF/lib/RentExpres.jar`](src/main/webapp/WEB-INF/lib/RentExpres.jar).
 
