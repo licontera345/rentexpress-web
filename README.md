@@ -44,6 +44,8 @@ Aplicación web para la reserva y alquiler de coches desarrollada con Java Servl
   - [19.9 Uso del header `Accept-Language`](#199-uso-del-header-accept-language)
   - [19.10 CRUD de ejemplo con fotos](#1910-crud-de-ejemplo-con-fotos)
 
+importante:uso java 1.8 siempre
+
 ## 1. Resumen del proyecto
 La meta es construir una aplicación web que permita gestionar reservas y alquileres de vehículos. Debe cubrir las capacidades básicas del dominio: CRUD de entidades, búsqueda estructurada, edición de perfil, internacionalización, seguridad (zonas públicas y privadas), validación de formularios, gestión de sesión y cookies, gestión de archivos y lógica de negocio específica para reservas y alquileres.
 
