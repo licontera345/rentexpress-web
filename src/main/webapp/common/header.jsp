@@ -24,7 +24,7 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item"><a class="nav-link" href="${ctx}/app/welcome">Inicio</a></li>
-                <li class="nav-item"><a class="nav-link" href="${ctx}/public/vehicle/catalog.jsp">Catálogo</a></li>
+                <li class="nav-item"><a class="nav-link" href="${ctx}/public/vehicles">Catálogo</a></li>
             </ul>
             <div class="d-flex gap-2">
                 <a class="btn btn-outline-brand" href="${ctx}/app/auth/login">Iniciar sesión</a>
