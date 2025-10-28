@@ -83,7 +83,7 @@ public class LoginServlet extends HttpServlet {
         }
 
         if (errors.isEmpty() && !authenticate(email, password)) {
-            errors.add("Credenciales no válidas. Prueba con la cuenta demo.");
+            errors.add("Credenciales no válidas. Revisa tu correo y contraseña.");
         }
 
         if (!errors.isEmpty()) {
@@ -110,17 +110,13 @@ public class LoginServlet extends HttpServlet {
         if (email == null || password == null) {
             return false;
         }
-        CredentialStore.ensureCredential(getServletContext(), SecurityConstants.DEMO_EMAIL,
-                SecurityConstants.DEMO_PASSWORD);
-
         String sanitizedEmail = email.trim().toLowerCase(Locale.ROOT);
         String storedHash = CredentialStore.findHashedPassword(getServletContext(), sanitizedEmail);
         if (storedHash != null && PasswordEncoder.matches(password, storedHash)) {
             return true;
         }
 
-        return SecurityConstants.DEMO_EMAIL.equalsIgnoreCase(sanitizedEmail)
-                && SecurityConstants.DEMO_PASSWORD.equals(password);
+        return false;
     }
 
     private void copyFlashMessages(HttpServletRequest request) {

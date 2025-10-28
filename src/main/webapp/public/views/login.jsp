@@ -4,8 +4,8 @@
         <div class="card card-common">
             <div class="card-header">Iniciar sesión</div>
             <div class="card-body p-4">
-                <p class="text-muted">Usa la cuenta demo <code>demo@rentexpress.com</code> con contraseña
-                    <code>RentExpress123</code> para probar la aplicación.</p>
+                <p class="text-muted">Introduce tus credenciales oficiales para acceder a la plataforma y gestionar tus
+                    reservas.</p>
                 <c:if test="${not empty flashSuccess}">
                     <div class="alert alert-success">${flashSuccess}</div>
                 </c:if>

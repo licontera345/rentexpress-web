@@ -15,12 +15,12 @@
             <h1 class="display-5 fw-bold mb-3 text-brand">Gestiona reservas y alquileres como un profesional</h1>
             <p class="lead text-muted mb-4">
                 RentExpress te guía paso a paso para construir una aplicación Java EE completa:
-                validación de formularios, sesiones, seguridad, CRUD y más. Usa la cuenta demo
-                para explorar el flujo mientras conectas tu base de datos.
+                validación de formularios, sesiones, seguridad, CRUD y más. Conéctate con tus
+                credenciales oficiales y explora cada flujo mientras integras tu base de datos.
             </p>
             <div class="d-flex flex-wrap gap-3">
                 <a class="btn btn-brand btn-lg px-4" href="${ctx}/app/auth/login">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Accede con la cuenta demo
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Inicia sesión con tu cuenta oficial
                 </a>
                 <a class="btn btn-outline-brand btn-lg px-4" href="${ctx}/app/users/register">
                     <i class="bi bi-person-plus-fill me-2"></i>Regístrate y prepara tu proyecto
@@ -40,7 +40,7 @@
                         <div class="feature-icon"><i class="bi bi-person-badge"></i></div>
                         <div>
                             <h3 class="h6 fw-bold mb-1">Autenticación básica</h3>
-                            <p class="text-muted mb-0">Cuenta demo con opción "recordarme" y gestión de sesión.</p>
+                            <p class="text-muted mb-0">Inicio de sesión con 2FA, opción "recordarme" y gestión de sesión.</p>
                         </div>
                     </li>
                     <li class="d-flex align-items-start gap-3 mb-3">
