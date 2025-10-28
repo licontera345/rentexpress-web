@@ -203,6 +203,119 @@ main {
     backdrop-filter: blur(10px);
 }
 
+.analytics-card {
+    border-radius: 1rem;
+    border: 1px solid rgba(102, 178, 255, 0.16);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+}
+
+.analytics-form .form-label {
+    font-weight: 600;
+    color: var(--rentexpress-text-dark);
+}
+
+.analytics-stat {
+    border-radius: 1rem;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, rgba(102, 178, 255, 0.18), rgba(255, 255, 255, 0.75));
+    box-shadow: 0 15px 30px rgba(102, 178, 255, 0.18);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.analytics-label {
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: var(--rentexpress-muted);
+}
+
+.analytics-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--rentexpress-text-dark);
+}
+
+.status-pill {
+    border-radius: 999px;
+    background: rgba(102, 178, 255, 0.1);
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.status-label {
+    font-weight: 600;
+    color: var(--rentexpress-text-dark);
+}
+
+.status-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--rentexpress-primary);
+}
+
+.timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.timeline-item::before {
+    content: "";
+    position: absolute;
+    left: 0.6rem;
+    top: 0.3rem;
+    bottom: -1rem;
+    width: 2px;
+    background: linear-gradient(180deg, rgba(102, 178, 255, 0.4), transparent);
+}
+
+.timeline-item::after {
+    content: "";
+    position: absolute;
+    left: 0.4rem;
+    top: 0.2rem;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    background: var(--rentexpress-primary);
+    box-shadow: 0 0 0 6px rgba(102, 178, 255, 0.25);
+}
+
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.35rem;
+}
+
+.timeline-id {
+    font-weight: 600;
+    color: var(--rentexpress-text-dark);
+}
+
+.timeline-status {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--rentexpress-primary);
+}
+
+.timeline-footer {
+    margin-top: 0.4rem;
+    font-weight: 600;
+    color: var(--rentexpress-text-dark);
+}
+
 .catalog-filter-card {
     border-radius: 1rem;
     border: 1px solid rgba(102, 178, 255, 0.15);
