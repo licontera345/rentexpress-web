@@ -26,9 +26,6 @@ public class LanguageServlet extends HttpServlet {
         super();
     }
 
-    /**
-     * @see HttpServlet#doPost(HttpServletRequest, HttpServletResponse)
-     */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String requestedLanguage = request.getParameter(AppConstants.PARAM_LANGUAGE);
         if (requestedLanguage != null) {
@@ -44,16 +41,13 @@ public class LanguageServlet extends HttpServlet {
         }
 
         String referer = request.getHeader("Referer");
-        if (referer != null && !referer.trim().isEmpty()) {
+        if (referer != null && !referer.isBlank()) {
             response.sendRedirect(referer);
         } else {
             response.sendRedirect(request.getContextPath() + SecurityConstants.HOME_ENDPOINT);
         }
     }
 
-    /**
-     * @see HttpServlet#doGet(HttpServletRequest, HttpServletResponse)
-     */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doPost(request, response);
     }
