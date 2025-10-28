@@ -26,10 +26,16 @@ public class LoginServlet extends HttpServlet {
     private static final String DEMO_EMAIL = "demo@rentexpress.com";
     private static final String DEMO_PASSWORD = "RentExpress123";
 
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
     public LoginServlet() {
         super();
     }
 
+    /**
+     * @see HttpServlet#doGet(HttpServletRequest, HttpServletResponse)
+     */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         RememberMeManager.applyRememberedUser(request);
         Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
@@ -49,6 +55,9 @@ public class LoginServlet extends HttpServlet {
         request.getRequestDispatcher(Views.PUBLIC_LOGIN).forward(request, response);
     }
 
+    /**
+     * @see HttpServlet#doPost(HttpServletRequest, HttpServletResponse)
+     */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String email = request.getParameter(UserConstants.PARAM_EMAIL);
         String password = request.getParameter(UserConstants.PARAM_PASSWORD);

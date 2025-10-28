@@ -32,6 +32,9 @@ public class RegisterUserServlet extends HttpServlet {
         super();
     }
 
+    /**
+     * @see HttpServlet#doGet(HttpServletRequest, HttpServletResponse)
+     */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Crea tu cuenta");
         request.setAttribute("formData", new HashMap<String, String>());
@@ -39,6 +42,9 @@ public class RegisterUserServlet extends HttpServlet {
         request.getRequestDispatcher(Views.PUBLIC_REGISTER_USER).forward(request, response);
     }
 
+    /**
+     * @see HttpServlet#doPost(HttpServletRequest, HttpServletResponse)
+     */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Map<String, String> formData = new HashMap<>();
         String fullName = request.getParameter(UserConstants.PARAM_FULL_NAME);
@@ -83,22 +89,25 @@ public class RegisterUserServlet extends HttpServlet {
     }
 
     @SuppressWarnings("unchecked")
-    private CopyOnWriteArrayList<RegisteredUser> getRegisteredUsers() {
+    private List<RegisteredUser> getRegisteredUsers() {
         ServletContext context = getServletContext();
-        CopyOnWriteArrayList<RegisteredUser> list =
-                (CopyOnWriteArrayList<RegisteredUser>) context.getAttribute(AppConstants.CONTEXT_REGISTERED_USERS);
+        List<RegisteredUser> list = (List<RegisteredUser>) context.getAttribute(AppConstants.CONTEXT_REGISTERED_USERS);
         if (list == null) {
-            list = new CopyOnWriteArrayList<>();
+            list = Collections.synchronizedList(new ArrayList<RegisteredUser>());
             context.setAttribute(AppConstants.CONTEXT_REGISTERED_USERS, list);
         }
         return list;
     }
 
     private List<RegisteredUser> getRecentRegistrations() {
-        List<RegisteredUser> copy = new ArrayList<>(getRegisteredUsers());
-        copy.sort(Comparator.comparing(RegisteredUser::getRegisteredAt).reversed());
+        List<RegisteredUser> copy = new ArrayList<RegisteredUser>(getRegisteredUsers());
+        Collections.sort(copy, new Comparator<RegisteredUser>() {
+            public int compare(RegisteredUser first, RegisteredUser second) {
+                return second.getRegisteredAt().compareTo(first.getRegisteredAt());
+            }
+        });
         if (copy.size() > 5) {
-            return new ArrayList<>(copy.subList(0, 5));
+            return new ArrayList<RegisteredUser>(copy.subList(0, 5));
         }
         return copy;
     }
@@ -107,13 +116,13 @@ public class RegisterUserServlet extends HttpServlet {
         private final String fullName;
         private final String email;
         private final String phone;
-        private final LocalDateTime registeredAt;
+        private final Date registeredAt;
 
         private RegisteredUser(String fullName, String email, String phone) {
             this.fullName = fullName;
             this.email = email;
             this.phone = phone;
-            this.registeredAt = LocalDateTime.now();
+            this.registeredAt = new Date();
         }
 
         public String getFullName() {
@@ -128,7 +137,7 @@ public class RegisterUserServlet extends HttpServlet {
             return phone;
         }
 
-        public LocalDateTime getRegisteredAt() {
+        public Date getRegisteredAt() {
             return registeredAt;
         }
     }
