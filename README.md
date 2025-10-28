@@ -15,6 +15,100 @@ Before implementing new servlets, services, or other components within the **ren
 
 Following this workflow ensures that new features build upon the middleware that is already implemented and that the information shown in the application stays aligned with the available services.
 
+## RentExpress Middleware Source Classes
+
+All Java classes available inside `RentExpres/src` within `src/main/webapp/WEB-INF/lib/rentexpress-middleware.zip`:
+
+- RentExpres/src/com/pinguela/rentexpres/config/ConfigManager.java
+- RentExpres/src/com/pinguela/rentexpres/dao/AddressDAO.java
+- RentExpres/src/com/pinguela/rentexpres/dao/CityDAO.java
+- RentExpres/src/com/pinguela/rentexpres/dao/EmployeeDAO.java
+- RentExpres/src/com/pinguela/rentexpres/dao/HeadquartersDAO.java
+- RentExpres/src/com/pinguela/rentexpres/dao/ProvinceDAO.java
+- RentExpres/src/com/pinguela/rentexpres/dao/RentalDAO.java
+- RentExpres/src/com/pinguela/rentexpres/dao/RentalStatusDAO.java
+- RentExpres/src/com/pinguela/rentexpres/dao/ReservationDAO.java
+- RentExpres/src/com/pinguela/rentexpres/dao/ReservationStatusDAO.java
+- RentExpres/src/com/pinguela/rentexpres/dao/RoleDAO.java
+- RentExpres/src/com/pinguela/rentexpres/dao/UserDAO.java
+- RentExpres/src/com/pinguela/rentexpres/dao/VehicleCategoryDAO.java
+- RentExpres/src/com/pinguela/rentexpres/dao/VehicleDAO.java
+- RentExpres/src/com/pinguela/rentexpres/dao/VehicleStatusDAO.java
+- RentExpres/src/com/pinguela/rentexpres/dao/impl/AddressDAOImpl.java
+- RentExpres/src/com/pinguela/rentexpres/dao/impl/CityDAOImpl.java
+- RentExpres/src/com/pinguela/rentexpres/dao/impl/EmployeeDAOImpl.java
+- RentExpres/src/com/pinguela/rentexpres/dao/impl/HeadquartersDAOImpl.java
+- RentExpres/src/com/pinguela/rentexpres/dao/impl/ProvinceDAOImpl.java
+- RentExpres/src/com/pinguela/rentexpres/dao/impl/RentalDAOImpl.java
+- RentExpres/src/com/pinguela/rentexpres/dao/impl/RentalStatusDAOImpl.java
+- RentExpres/src/com/pinguela/rentexpres/dao/impl/ReservationDAOImpl.java
+- RentExpres/src/com/pinguela/rentexpres/dao/impl/ReservationStatusDAOImpl.java
+- RentExpres/src/com/pinguela/rentexpres/dao/impl/RoleDAOImpl.java
+- RentExpres/src/com/pinguela/rentexpres/dao/impl/UserDAOImpl.java
+- RentExpres/src/com/pinguela/rentexpres/dao/impl/VehicleCategoryDAOImpl.java
+- RentExpres/src/com/pinguela/rentexpres/dao/impl/VehicleDAOImpl.java
+- RentExpres/src/com/pinguela/rentexpres/dao/impl/VehicleStatusDAOImpl.java
+- RentExpres/src/com/pinguela/rentexpres/exception/DataException.java
+- RentExpres/src/com/pinguela/rentexpres/exception/RentexpresException.java
+- RentExpres/src/com/pinguela/rentexpres/model/AddressDTO.java
+- RentExpres/src/com/pinguela/rentexpres/model/CityDTO.java
+- RentExpres/src/com/pinguela/rentexpres/model/CriteriaBase.java
+- RentExpres/src/com/pinguela/rentexpres/model/EmployeeCriteria.java
+- RentExpres/src/com/pinguela/rentexpres/model/EmployeeDTO.java
+- RentExpres/src/com/pinguela/rentexpres/model/HeadquartersDTO.java
+- RentExpres/src/com/pinguela/rentexpres/model/LanguageDTO.java
+- RentExpres/src/com/pinguela/rentexpres/model/ProvinceDTO.java
+- RentExpres/src/com/pinguela/rentexpres/model/RentalCriteria.java
+- RentExpres/src/com/pinguela/rentexpres/model/RentalDTO.java
+- RentExpres/src/com/pinguela/rentexpres/model/RentalStatusDTO.java
+- RentExpres/src/com/pinguela/rentexpres/model/RentalStatusLanguageDTO.java
+- RentExpres/src/com/pinguela/rentexpres/model/ReservationCriteria.java
+- RentExpres/src/com/pinguela/rentexpres/model/ReservationDTO.java
+- RentExpres/src/com/pinguela/rentexpres/model/ReservationStatusDTO.java
+- RentExpres/src/com/pinguela/rentexpres/model/ReservationStatusLanguageDTO.java
+- RentExpres/src/com/pinguela/rentexpres/model/Results.java
+- RentExpres/src/com/pinguela/rentexpres/model/RoleDTO.java
+- RentExpres/src/com/pinguela/rentexpres/model/UserCriteria.java
+- RentExpres/src/com/pinguela/rentexpres/model/UserDTO.java
+- RentExpres/src/com/pinguela/rentexpres/model/ValueObject.java
+- RentExpres/src/com/pinguela/rentexpres/model/VehicleCategoryDTO.java
+- RentExpres/src/com/pinguela/rentexpres/model/VehicleCategoryLanguageDTO.java
+- RentExpres/src/com/pinguela/rentexpres/model/VehicleCriteria.java
+- RentExpres/src/com/pinguela/rentexpres/model/VehicleDTO.java
+- RentExpres/src/com/pinguela/rentexpres/model/VehicleStatusDTO.java
+- RentExpres/src/com/pinguela/rentexpres/model/VehicleStatusLanguageDTO.java
+- RentExpres/src/com/pinguela/rentexpres/service/AddressService.java
+- RentExpres/src/com/pinguela/rentexpres/service/CityService.java
+- RentExpres/src/com/pinguela/rentexpres/service/EmployeeService.java
+- RentExpres/src/com/pinguela/rentexpres/service/FileService.java
+- RentExpres/src/com/pinguela/rentexpres/service/MailService.java
+- RentExpres/src/com/pinguela/rentexpres/service/ProvinceService.java
+- RentExpres/src/com/pinguela/rentexpres/service/RentalService.java
+- RentExpres/src/com/pinguela/rentexpres/service/RentalStatusService.java
+- RentExpres/src/com/pinguela/rentexpres/service/ReservationService.java
+- RentExpres/src/com/pinguela/rentexpres/service/ReservationStatusService.java
+- RentExpres/src/com/pinguela/rentexpres/service/RoleService.java
+- RentExpres/src/com/pinguela/rentexpres/service/UserService.java
+- RentExpres/src/com/pinguela/rentexpres/service/VehicleCategoryService.java
+- RentExpres/src/com/pinguela/rentexpres/service/VehicleService.java
+- RentExpres/src/com/pinguela/rentexpres/service/VehicleStatusService.java
+- RentExpres/src/com/pinguela/rentexpres/service/impl/AddressServiceImpl.java
+- RentExpres/src/com/pinguela/rentexpres/service/impl/CityServiceImpl.java
+- RentExpres/src/com/pinguela/rentexpres/service/impl/EmployeeServiceImpl.java
+- RentExpres/src/com/pinguela/rentexpres/service/impl/FileServiceImpl.java
+- RentExpres/src/com/pinguela/rentexpres/service/impl/MailServiceImpl.java
+- RentExpres/src/com/pinguela/rentexpres/service/impl/ProvinceServiceImpl.java
+- RentExpres/src/com/pinguela/rentexpres/service/impl/RentalServiceImpl.java
+- RentExpres/src/com/pinguela/rentexpres/service/impl/RentalStatusServiceImpl.java
+- RentExpres/src/com/pinguela/rentexpres/service/impl/ReservationServiceImpl.java
+- RentExpres/src/com/pinguela/rentexpres/service/impl/ReservationStatusServiceImpl.java
+- RentExpres/src/com/pinguela/rentexpres/service/impl/RoleServiceImpl.java
+- RentExpres/src/com/pinguela/rentexpres/service/impl/UserServiceImpl.java
+- RentExpres/src/com/pinguela/rentexpres/service/impl/VehicleCategoryServiceImpl.java
+- RentExpres/src/com/pinguela/rentexpres/service/impl/VehicleServiceImpl.java
+- RentExpres/src/com/pinguela/rentexpres/service/impl/VehicleStatusServiceImpl.java
+- RentExpres/src/com/pinguela/rentexpres/util/JDBCUtils.java
+
 
 Key project notes:
 
