@@ -62,6 +62,212 @@
         </div>
     </div>
 </section>
+<section class="section-spacing">
+    <div class="text-center mb-5">
+        <span class="section-eyebrow">Tu punto de partida</span>
+        <h2 class="display-6 fw-semibold mb-3">Todo lo necesario para presentar RentExpress con orgullo</h2>
+        <p class="section-description mx-auto">
+            Unifica tu documentación académica con una experiencia visual moderna. Cada módulo del middleware ya
+            disponible tiene su propio espacio para brillar en el welcome.
+        </p>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="glass-card h-100">
+                <div class="icon-badge bg-icon-primary"><i class="bi bi-person-check"></i></div>
+                <h3 class="h5 fw-bold mb-2">Autenticación impecable</h3>
+                <p class="text-muted mb-3">Formulario de login con 2FA, recuperación de contraseña y recordatorio de sesión
+                    listos para mostrarse desde el primer día.</p>
+                <ul class="list-check">
+                    <li>JSP dedicadas a login y recuperación</li>
+                    <li>Mensajería flash integrada</li>
+                    <li>Enlaces directos a rutas públicas y privadas</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card h-100">
+                <div class="icon-badge bg-icon-secondary"><i class="bi bi-kanban"></i></div>
+                <h3 class="h5 fw-bold mb-2">Gestión operativa clara</h3>
+                <p class="text-muted mb-3">Presenta el catálogo de vehículos, el informe público de alquileres y los
+                    formularios de empleados con llamadas a la acción coherentes.</p>
+                <ul class="list-check">
+                    <li>Accesos a catálogo y reportes</li>
+                    <li>Cards con estados y métricas</li>
+                    <li>Diseño responsive con Bootstrap 5</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card h-100">
+                <div class="icon-badge bg-icon-tertiary"><i class="bi bi-diagram-3"></i></div>
+                <h3 class="h5 fw-bold mb-2">Middleware aprovechado</h3>
+                <p class="text-muted mb-3">Destaca que todo se apoya en los DAO y servicios del paquete `RentExpres.jar`,
+                    evitando desarrollos duplicados.</p>
+                <ul class="list-check">
+                    <li>Clases DAO y DTO referenciadas</li>
+                    <li>Configuraciones centralizadas</li>
+                    <li>Procesos alineados al README</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="section-spacing">
+    <div class="gradient-panel">
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-5">
+                <span class="section-eyebrow text-white">Flujos clave</span>
+                <h2 class="fw-semibold text-white mb-3">Recorre el ciclo completo de reservas y alquileres</h2>
+                <p class="text-white-50 mb-4">El welcome se convierte en tu carta de presentación: muestra los procesos
+                    disponibles y guía al docente a las vistas privadas que prueban la integración.</p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a class="btn btn-light btn-lg px-4" href="${ctx}/public/vehicles">
+                        <i class="bi bi-car-front-fill me-2"></i>Ver catálogo público
+                    </a>
+                    <a class="btn btn-outline-light btn-lg px-4" href="${ctx}/public/rentals">
+                        <i class="bi bi-bar-chart-line me-2"></i>Informe de actividad
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="row g-4">
+                    <div class="col-sm-6">
+                        <div class="step-card h-100">
+                            <div class="step-number">01</div>
+                            <h3 class="h6 fw-bold mb-2">Configura tu entorno</h3>
+                            <p class="text-muted mb-0">Importa el proyecto Maven, valida el uso de Java 1.8 y prepara las
+                                propiedades de conexión.</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="step-card h-100">
+                            <div class="step-number">02</div>
+                            <h3 class="h6 fw-bold mb-2">Conecta el middleware</h3>
+                            <p class="text-muted mb-0">Reutiliza los DAO y servicios empaquetados para poblar los JSP sin
+                                duplicar lógica.</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="step-card h-100">
+                            <div class="step-number">03</div>
+                            <h3 class="h6 fw-bold mb-2">Personaliza la experiencia</h3>
+                            <p class="text-muted mb-0">Ajusta roles, sesiones y notificaciones para entregar una demo
+                                convincente.</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="step-card h-100">
+                            <div class="step-number">04</div>
+                            <h3 class="h6 fw-bold mb-2">Entrega evidencias</h3>
+                            <p class="text-muted mb-0">Captura pantallas, prepara reportes y documenta tus pruebas para la
+                                revisión final.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="section-spacing">
+    <div class="row g-4 align-items-stretch">
+        <div class="col-lg-7">
+            <div class="glass-card h-100">
+                <div class="section-eyebrow">Checklist del README</div>
+                <h2 class="h4 fw-semibold mb-3">Lo que el jurado espera ver funcionando</h2>
+                <p class="text-muted mb-4">El welcome resume los apartados críticos del README para que nadie dude de que
+                    tu entrega cumple los mínimos profesionales.</p>
+                <div class="row g-4">
+                    <div class="col-sm-6">
+                        <div class="mini-card">
+                            <i class="bi bi-fingerprint"></i>
+                            <h3 class="h6 fw-bold mb-1">Seguridad</h3>
+                            <p class="text-muted mb-0">Login, 2FA, filtros de autorización y control de sesiones documentados.</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="mini-card">
+                            <i class="bi bi-gear"></i>
+                            <h3 class="h6 fw-bold mb-1">Reglas de negocio</h3>
+                            <p class="text-muted mb-0">Reservas, retenciones y notificaciones soportadas por tus servlets.</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="mini-card">
+                            <i class="bi bi-translate"></i>
+                            <h3 class="h6 fw-bold mb-1">Internacionalización</h3>
+                            <p class="text-muted mb-0">Selector de idioma y textos preparados para múltiples locales.</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="mini-card">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                            <h3 class="h6 fw-bold mb-1">Gestión de archivos</h3>
+                            <p class="text-muted mb-0">Subida de imágenes y descarga controlada desde el catálogo.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="glass-card h-100">
+                <div class="section-eyebrow">Recursos rápidos</div>
+                <h3 class="h5 fw-semibold mb-3">Rutas que validan tu integración</h3>
+                <ul class="resource-list">
+                    <li>
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        <div>
+                            <span class="resource-title">Acceso seguro</span>
+                            <a class="resource-link" href="${ctx}/app/auth/login">${ctx}/app/auth/login</a>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="bi bi-people"></i>
+                        <div>
+                            <span class="resource-title">Gestión de usuarios</span>
+                            <a class="resource-link" href="${ctx}/public/users">${ctx}/public/users</a>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="bi bi-file-text"></i>
+                        <div>
+                            <span class="resource-title">Formularios estructurados</span>
+                            <a class="resource-link" href="${ctx}/public/employees">${ctx}/public/employees</a>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="bi bi-database"></i>
+                        <div>
+                            <span class="resource-title">DAO del middleware</span>
+                            <span class="resource-hint">`src/main/webapp/WEB-INF/lib/RentExpres.jar`</span>
+                        </div>
+                    </li>
+                </ul>
+                <div class="alert alert-info shadow-soft mt-4 mb-0">
+                    Mantén esta sección actualizada cuando incorpores nuevas vistas o endpoints relevantes.
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="section-spacing">
+    <div class="cta-banner">
+        <div>
+            <span class="section-eyebrow text-white">Listo para demostrar</span>
+            <h2 class="h3 fw-semibold text-white mb-2">Explica tu arquitectura con una sola mirada</h2>
+            <p class="text-white-50 mb-0">Incluye esta pantalla en tus entregas, conectada a cada servlet y JSP clave para
+                evidenciar que dominaste el stack completo.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-3">
+            <a class="btn btn-light btn-lg px-4" href="${ctx}/app/users/register">
+                <i class="bi bi-person-plus me-2"></i>Crear cuenta demo
+            </a>
+            <a class="btn btn-outline-light btn-lg px-4" href="${ctx}/public/views/login.jsp">
+                <i class="bi bi-eye me-2"></i>Previsualizar login JSP
+            </a>
+        </div>
+    </div>
+</section>
 <c:if test="${not empty currentUser}">
     <section class="mt-5">
         <div class="card card-common">
