@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="com.pinguela.rentexpressweb.constants.VehicleConstants" %>
 <%@ include file="/common/header.jsp" %>
 <c:if test="${not empty flashSuccess}">
     <div class="alert alert-success shadow-soft border-0">${flashSuccess}</div>
@@ -23,6 +24,80 @@
                             <i class="bi bi-question-circle me-2"></i>
                             <fmt:message key="home.hero.ctaSecondary" />
                         </a>
+                    </div>
+                    <div class="hero-search-card shadow-soft mt-4">
+                        <form class="row gy-3 align-items-end" method="get" action="${ctx}/public/vehicles">
+                            <div class="col-12 col-lg-4">
+                                <label for="heroSearch" class="form-label fw-semibold text-secondary">¿Qué vehículo necesitas?</label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                    <input type="text" class="form-control" id="heroSearch"
+                                           name="${VehicleConstants.PARAM_SEARCH}"
+                                           placeholder="Buscar auto"
+                                           value="${param.search}" />
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-3">
+                                <label for="heroHeadquarters" class="form-label fw-semibold text-secondary">Sede</label>
+                                <select id="heroHeadquarters" class="form-select form-select-lg"
+                                        name="${VehicleConstants.PARAM_HEADQUARTERS}">
+                                    <option value="">Todas las sedes</option>
+                                    <c:forEach var="hq" items="${requestScope.vehicleHeadquarters}">
+                                        <option value="${hq.headquartersId}"
+                                                ${param.headquarters == hq.headquartersId ? 'selected' : ''}>
+                                            <c:out value="${hq.name}" />
+                                            <c:if test="${hq.city != null || hq.province != null}">
+                                                &nbsp;·&nbsp;
+                                                <c:if test="${hq.city != null}">
+                                                    <c:out value="${hq.city.cityName}" />
+                                                </c:if>
+                                                <c:if test="${hq.city != null && hq.province != null}">, </c:if>
+                                                <c:if test="${hq.province != null}">
+                                                    <c:out value="${hq.province.provinceName}" />
+                                                </c:if>
+                                            </c:if>
+                                        </option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+                            <div class="col-6 col-lg-2">
+                                <label for="heroPickupDate" class="form-label fw-semibold text-secondary">Fecha de recogida</label>
+                                <input type="date" class="form-control form-control-lg" id="heroPickupDate"
+                                       name="pickupDate" value="${param.pickupDate}" />
+                            </div>
+                            <div class="col-6 col-lg-1">
+                                <label for="heroPickupTime" class="form-label fw-semibold text-secondary">Hora</label>
+                                <input type="time" class="form-control form-control-lg" id="heroPickupTime"
+                                       name="pickupTime"
+                                       value="${empty param.pickupTime ? '10:00' : param.pickupTime}" />
+                            </div>
+                            <div class="col-6 col-lg-2">
+                                <label for="heroDropoffDate" class="form-label fw-semibold text-secondary">Fecha de devolución</label>
+                                <input type="date" class="form-control form-control-lg" id="heroDropoffDate"
+                                       name="returnDate" value="${param.returnDate}" />
+                            </div>
+                            <div class="col-6 col-lg-1">
+                                <label for="heroDropoffTime" class="form-label fw-semibold text-secondary">Hora</label>
+                                <input type="time" class="form-control form-control-lg" id="heroDropoffTime"
+                                       name="returnTime"
+                                       value="${empty param.returnTime ? '10:00' : param.returnTime}" />
+                            </div>
+                            <div class="col-12 col-lg-4 d-lg-flex align-items-center justify-content-between">
+                                <div class="form-check form-switch mb-3 mb-lg-0">
+                                    <input class="form-check-input" type="checkbox" role="switch"
+                                           id="heroOnlyAvailable"
+                                           name="${VehicleConstants.PARAM_ONLY_AVAILABLE}"
+                                           value="true"
+                                           ${param.onlyAvailable == 'true' || param.onlyAvailable == 'on' ? 'checked' : ''} />
+                                    <label class="form-check-label fw-semibold text-secondary" for="heroOnlyAvailable">
+                                        Solo mostrar disponibles
+                                    </label>
+                                </div>
+                                <button type="submit" class="btn btn-brand btn-lg px-5">
+                                    <i class="bi bi-search me-2"></i>Buscar
+                                </button>
+                            </div>
+                        </form>
                     </div>
                     <div class="hero-trust mt-4">
                         <div class="trust-item">

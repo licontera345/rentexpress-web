@@ -8,6 +8,8 @@
 <c:set var="vehicles" value="${vehicles}" />
 <c:set var="filterErrors" value="${vehicleFilterErrors}" />
 <c:set var="total" value="${totalVehicles}" />
+<c:set var="headquarters" value="${vehicleHeadquarters}" />
+<c:set var="headquartersNames" value="${vehicleHeadquartersNames}" />
 
 <div class="row g-4">
     <div class="col-lg-3">
@@ -29,6 +31,28 @@
                                 <option value="${category.categoryId}"
                                         ${category.categoryId eq filters[VehicleConstants.PARAM_CATEGORY] ? 'selected' : ''}>
                                     ${category.categoryName}
+                                </option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="headquarters" class="form-label">Sede</label>
+                        <select class="form-select" id="headquarters" name="${VehicleConstants.PARAM_HEADQUARTERS}">
+                            <option value="">Todas las sedes</option>
+                            <c:forEach var="hq" items="${headquarters}">
+                                <option value="${hq.headquartersId}"
+                                        ${hq.headquartersId eq filters[VehicleConstants.PARAM_HEADQUARTERS] ? 'selected' : ''}>
+                                    <c:out value="${hq.name}" />
+                                    <c:if test="${hq.city != null || hq.province != null}">
+                                        &nbsp;·&nbsp;
+                                        <c:if test="${hq.city != null}">
+                                            <c:out value="${hq.city.cityName}" />
+                                        </c:if>
+                                        <c:if test="${hq.city != null && hq.province != null}">, </c:if>
+                                        <c:if test="${hq.province != null}">
+                                            <c:out value="${hq.province.provinceName}" />
+                                        </c:if>
+                                    </c:if>
                                 </option>
                             </c:forEach>
                         </select>
@@ -63,6 +87,12 @@
                                 Más recientes
                             </option>
                         </select>
+                    </div>
+                    <div class="form-check form-switch mb-4">
+                        <input class="form-check-input" type="checkbox" id="onlyAvailable"
+                               name="${VehicleConstants.PARAM_ONLY_AVAILABLE}" value="true"
+                               ${filters[VehicleConstants.PARAM_ONLY_AVAILABLE] == 'true' ? 'checked' : ''} />
+                        <label class="form-check-label" for="onlyAvailable">Solo mostrar vehículos disponibles</label>
                     </div>
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-brand">Aplicar filtros</button>
@@ -113,8 +143,28 @@
                                         <li>
                                             <i class="bi bi-geo-alt"></i>
                                             <c:choose>
+                                                <c:when test="${vehicle.currentHeadquarters != null}">
+                                                    Sede actual:
+                                                    <span class="fw-semibold">
+                                                        <c:out value="${vehicle.currentHeadquarters.name}" />
+                                                        <c:if test="${vehicle.currentHeadquarters.city != null}">
+                                                            &nbsp;·&nbsp;<c:out value="${vehicle.currentHeadquarters.city.cityName}" />
+                                                        </c:if>
+                                                        <c:if test="${vehicle.currentHeadquarters.city != null && vehicle.currentHeadquarters.province != null}">, </c:if>
+                                                        <c:if test="${vehicle.currentHeadquarters.province != null}">
+                                                            <c:out value="${vehicle.currentHeadquarters.province.provinceName}" />
+                                                        </c:if>
+                                                    </span>
+                                                </c:when>
                                                 <c:when test="${vehicle.currentHeadquartersId != null}">
-                                                    Sede actual: #${vehicle.currentHeadquartersId}
+                                                    <c:choose>
+                                                        <c:when test="${not empty headquartersNames[vehicle.currentHeadquartersId]}">
+                                                            Sede actual: ${headquartersNames[vehicle.currentHeadquartersId]}
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            Sede actual: #${vehicle.currentHeadquartersId}
+                                                        </c:otherwise>
+                                                    </c:choose>
                                                 </c:when>
                                                 <c:otherwise>
                                                     Sede actual sin asignar

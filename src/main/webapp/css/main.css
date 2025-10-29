@@ -460,6 +460,56 @@ main {
     color: var(--rentexpress-primary);
 }
 
+.hero-search-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 1.5rem;
+    border: 1px solid rgba(102, 178, 255, 0.25);
+    padding: 1.75rem;
+}
+
+.hero-search-card .input-group-lg .form-control,
+.hero-search-card .input-group-lg .input-group-text {
+    border-radius: 1rem;
+}
+
+.hero-search-card .input-group-text {
+    background: rgba(102, 178, 255, 0.1);
+    border: 1px solid rgba(102, 178, 255, 0.2);
+    border-right: 0;
+    color: var(--rentexpress-primary);
+    font-size: 1.25rem;
+}
+
+.hero-search-card .form-select,
+.hero-search-card .form-control {
+    border-radius: 1rem;
+    border: 1px solid rgba(102, 178, 255, 0.25);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.hero-search-card .form-check-input {
+    width: 3rem;
+    height: 1.5rem;
+    border-radius: 1rem;
+    border-color: rgba(102, 178, 255, 0.2);
+    background-color: rgba(102, 178, 255, 0.2);
+}
+
+.hero-search-card .form-check-input:checked {
+    background-color: var(--rentexpress-primary);
+    border-color: var(--rentexpress-primary);
+}
+
+.hero-search-card .form-check-label {
+    color: var(--rentexpress-muted);
+}
+
+@media (max-width: 991.98px) {
+    .hero-search-card {
+        padding: 1.25rem;
+    }
+}
+
 .hero-floating-card {
     border-radius: 1.25rem;
     box-shadow: 0 35px 70px rgba(15, 23, 42, 0.18);
