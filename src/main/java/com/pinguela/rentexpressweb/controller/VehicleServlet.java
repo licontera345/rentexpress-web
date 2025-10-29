@@ -15,12 +15,12 @@ import com.pinguela.rentexpres.service.impl.VehicleStatusServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.constants.VehicleConstants;
-import com.pinguela.rentexpressweb.security.SessionManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,16 +49,16 @@ public class VehicleServlet extends HttpServlet {
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
-        Object currentEmployee = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
+        Object currentUser = getSessionAttribute(request, AppConstants.ATTR_CURRENT_USER);
+        Object currentEmployee = getSessionAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
         if (currentUser == null) {
-            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
+            setSessionAttribute(request, AppConstants.ATTR_FLASH_ERROR,
                     "Inicia sesión para consultar el catálogo interno.");
             response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
             return;
         }
         if (currentEmployee == null) {
-            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
+            setSessionAttribute(request, AppConstants.ATTR_FLASH_ERROR,
                     "No dispones de permisos para gestionar los vehículos.");
             response.sendRedirect(request.getContextPath() + SecurityConstants.HOME_ENDPOINT);
             return;
@@ -244,15 +244,15 @@ public class VehicleServlet extends HttpServlet {
     }
 
     private void exposeFlashMessages(HttpServletRequest request) {
-        Object success = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
+        Object success = getSessionAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
         if (success != null) {
             request.setAttribute(AppConstants.ATTR_FLASH_SUCCESS, success);
-            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
+            removeSessionAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
         }
-        Object error = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_ERROR);
+        Object error = getSessionAttribute(request, AppConstants.ATTR_FLASH_ERROR);
         if (error != null) {
             request.setAttribute(AppConstants.ATTR_FLASH_ERROR, error);
-            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_ERROR);
+            removeSessionAttribute(request, AppConstants.ATTR_FLASH_ERROR);
         }
     }
 
@@ -341,5 +341,34 @@ public class VehicleServlet extends HttpServlet {
         List<VehicleDTO> list = results.getResults();
         int count = list != null ? list.size() : 0;
         return Integer.valueOf(count);
+    }
+
+    private Object getSessionAttribute(HttpServletRequest request, String name) {
+        if (request == null || name == null) {
+            return null;
+        }
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return null;
+        }
+        return session.getAttribute(name);
+    }
+
+    private void setSessionAttribute(HttpServletRequest request, String name, Object value) {
+        if (request == null || name == null) {
+            return;
+        }
+        HttpSession session = request.getSession();
+        session.setAttribute(name, value);
+    }
+
+    private void removeSessionAttribute(HttpServletRequest request, String name) {
+        if (request == null || name == null) {
+            return;
+        }
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.removeAttribute(name);
+        }
     }
 }
