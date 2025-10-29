@@ -4,8 +4,9 @@
 <fmt:message key="rental.dashboard.pageTitle" var="rentalDashboardTitle" />
 <c:set var="pageTitle" value="${rentalDashboardTitle}" />
 <%@ include file="/common/header.jsp" %>
+<c:set var="privateHome" value="${empty sessionScope.currentUser ? ctx.concat('/app/welcome') : ctx.concat('/app/home')}" />
 <c:if test="${empty currentEmployee}">
-    <c:redirect url="${ctx}/app/welcome" />
+    <c:redirect url="${privateHome}" />
 </c:if>
 <c:set var="filters" value="${rentalFilters}" />
 <c:set var="errors" value="${rentalFilterErrors}" />

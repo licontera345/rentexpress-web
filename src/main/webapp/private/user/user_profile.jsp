@@ -50,7 +50,7 @@
                         <button type="submit" class="btn btn-brand">
                             <i class="bi bi-save"></i> Guardar cambios
                         </button>
-                        <a class="btn btn-outline-secondary" href="${ctx}/app/welcome">
+                        <a class="btn btn-outline-secondary" href="${ctx}/app/home">
                             <i class="bi bi-arrow-left"></i> Volver al inicio
                         </a>
                     </div>

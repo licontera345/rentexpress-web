@@ -2,6 +2,7 @@ package com.pinguela.rentexpressweb.controller;
 
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.MediaConstants;
+import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.security.SessionManager;
 import com.pinguela.rentexpressweb.util.ImageStorage;
 import jakarta.servlet.ServletException;
@@ -104,7 +105,7 @@ public class UploadImageServlet extends HttpServlet {
         if (referer != null && !referer.trim().isEmpty()) {
             return referer;
         }
-        return request.getContextPath() + "/app/welcome";
+        return request.getContextPath() + SecurityConstants.HOME_ENDPOINT;
     }
 
     private String sanitizeEntity(String value) {

@@ -4,6 +4,7 @@
 <fmt:message key="reservation.success.pageTitle" var="reservationSuccessTitle" />
 <c:set var="pageTitle" value="${reservationSuccessTitle}" />
 <%@ include file="/common/header.jsp" %>
+<c:set var="privateHome" value="${empty sessionScope.currentUser ? ctx.concat('/app/welcome') : ctx.concat('/app/home')}" />
 <c:set var="summary" value="${reservationSummary}" />
 <c:if test="${summary == null}">
     <div class="alert alert-warning"><fmt:message key="reservation.success.empty" /></div>
@@ -110,7 +111,7 @@
         <a class="btn btn-brand" href="${ctx}/public/vehicles">
             <i class="bi bi-arrow-left me-2"></i><fmt:message key="reservation.success.backToCatalog" />
         </a>
-        <a class="btn btn-outline-brand" href="${ctx}/app/welcome">
+        <a class="btn btn-outline-brand" href="${privateHome}">
             <i class="bi bi-house-door me-2"></i><fmt:message key="reservation.success.goHome" />
         </a>
     </div>

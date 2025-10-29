@@ -58,6 +58,7 @@ public final class UserConstants {
     public static final String ATTR_PROFILE_DATA = "userProfileData";
     public static final String ATTR_PROFILE_FORM = "userProfileForm";
     public static final String ATTR_PROFILE_ERRORS = "userProfileErrors";
+    public static final String ATTR_ACTIVITY_LOG = "userActivityLog";
 
     public static final String ATTR_PROVINCES = "provinces";
     public static final String ATTR_CITIES = "cities";
