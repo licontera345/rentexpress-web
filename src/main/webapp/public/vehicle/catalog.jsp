@@ -162,7 +162,7 @@
                 <h1 class="h3 fw-semibold mb-0">Catálogo disponible</h1>
                 <p class="text-muted mb-0">
                     ${total} vehículos encontrados
-                    <c:if test="${results.total > 0}">
+                    <c:if test="${not empty results.totalRecords and results.totalRecords > 0}">
                         · mostrando ${results.fromRow} - ${results.toRow}
                     </c:if>
                 </p>
