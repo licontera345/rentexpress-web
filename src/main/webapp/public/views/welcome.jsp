@@ -120,10 +120,12 @@
                         </form>
                     </div>
                 </div>
-            </div>
-            <div class="row mt-4 justify-content-center justify-content-lg-end">
-                <div class="col-12 col-lg-6 d-flex justify-content-center justify-content-lg-end">
-                    <div class="hero-floating-card shadow-soft p-4 w-100" style="max-width: 420px;">
+                <div class="col-lg-6">
+                    <div class="position-relative text-center text-lg-start">
+                        <img src="https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=900&q=80"
+                             alt="RentExpress hero" class="img-fluid rounded-4 shadow-soft">
+                    </div>
+                    <div class="hero-floating-card shadow-soft p-4 w-100 mt-4 mx-auto mx-lg-0" style="max-width: 420px;">
                         <div class="d-flex align-items-center gap-3">
                             <div class="feature-icon m-0"><i class="bi bi-speedometer2"></i></div>
                             <div>
