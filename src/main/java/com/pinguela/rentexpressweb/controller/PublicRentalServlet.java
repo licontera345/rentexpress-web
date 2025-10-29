@@ -9,6 +9,7 @@ import com.pinguela.rentexpres.service.impl.RentalServiceImpl;
 import com.pinguela.rentexpres.service.impl.RentalStatusServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.RentalConstants;
+import com.pinguela.rentexpressweb.security.SessionManager;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -59,6 +60,10 @@ public class PublicRentalServlet extends HttpServlet {
      * @see HttpServlet#doGet(HttpServletRequest, HttpServletResponse)
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        if (SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE) == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
         request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Actividad de alquileres");
 
         Map<String, String> filters = buildFilters(request);

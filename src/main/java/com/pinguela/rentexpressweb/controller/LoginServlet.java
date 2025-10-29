@@ -97,6 +97,7 @@ public class LoginServlet extends HttpServlet {
         String sanitizedEmail = email != null ? email.trim() : null;
         RememberMeManager.forgetUser(response);
         SessionManager.removeAttribute(request, AppConstants.ATTR_CURRENT_USER);
+        SessionManager.removeAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
 
         String verificationCode = TwoFactorManager.initiate(request, sanitizedEmail, remember);
         SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_INFO,
