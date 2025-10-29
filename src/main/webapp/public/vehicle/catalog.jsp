@@ -109,8 +109,8 @@
                         <select class="form-select" id="status" name="${VehicleConstants.PARAM_STATUS}">
                             <option value="">Todos los estados</option>
                             <c:forEach var="status" items="${statuses}">
-                                <option value="${status.statusId}"
-                                        ${status.statusId eq filters[VehicleConstants.PARAM_STATUS] ? 'selected' : ''}>
+                                <option value="${status.vehicleStatusId}"
+                                        ${status.vehicleStatusId eq filters[VehicleConstants.PARAM_STATUS] ? 'selected' : ''}>
                                     ${status.statusName}
                                 </option>
                             </c:forEach>
