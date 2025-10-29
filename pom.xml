@@ -25,11 +25,11 @@
  </distributionManagement>
 	<dependencies>
 		<!-- tu middleware -->
-		<dependency>
-			<groupId>com.pinguela</groupId>
-			<artifactId>RentExpres-middleware</artifactId>
-			<version>1.0.0</version>
-		</dependency>
+                <dependency>
+                        <groupId>com.pinguela</groupId>
+                        <artifactId>RentExpres-middleware</artifactId>
+                        <version>1.0.0</version>
+                </dependency>
 		<!--   Jakarta EE APIs (Tomcat 10.x usa Jakarta namespaces)   -->
 		<dependency>
 			<groupId>jakarta.servlet</groupId>
