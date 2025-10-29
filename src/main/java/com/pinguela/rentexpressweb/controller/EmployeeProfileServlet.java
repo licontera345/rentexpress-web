@@ -188,8 +188,8 @@ public class EmployeeProfileServlet extends HttpServlet {
     }
 
     private Integer resolveEmployeeId(EmployeeDTO employee) {
-        if (employee.getEmployeeId() != null) {
-            return employee.getEmployeeId();
+        if (employee.getId() != null) {
+            return employee.getId();
         }
         return employee.getId();
     }
