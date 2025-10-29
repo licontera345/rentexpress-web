@@ -81,7 +81,8 @@ public class PublicVehicleDetailServlet extends HttpServlet {
         request.setAttribute(ReservationConstants.ATTR_HEADQUARTERS, loadHeadquarters());
 
         if (request.getAttribute(ReservationConstants.ATTR_RESERVATION_FORM) == null) {
-            request.setAttribute(ReservationConstants.ATTR_RESERVATION_FORM, buildDefaultForm(vehicleIdParam));
+            request.setAttribute(ReservationConstants.ATTR_RESERVATION_FORM,
+                    buildDefaultForm(request, vehicleIdParam));
         }
 
         request.getRequestDispatcher("/public/vehicle/vehicle_detail.jsp").forward(request, response);
@@ -159,9 +160,52 @@ public class PublicVehicleDetailServlet extends HttpServlet {
         }
     }
 
-    private Map<String, String> buildDefaultForm(String vehicleIdParam) {
+    private Map<String, String> buildDefaultForm(HttpServletRequest request, String vehicleIdParam) {
         Map<String, String> defaults = new HashMap<>();
         defaults.put(ReservationConstants.PARAM_VEHICLE_ID, vehicleIdParam);
+        String pickupDate = firstNonEmpty(
+                request.getParameter(ReservationConstants.PARAM_START_DATE),
+                request.getParameter(VehicleConstants.PARAM_PICKUP_DATE));
+        if (pickupDate != null) {
+            defaults.put(ReservationConstants.PARAM_START_DATE, pickupDate);
+        }
+
+        String returnDate = firstNonEmpty(
+                request.getParameter(ReservationConstants.PARAM_END_DATE),
+                request.getParameter(VehicleConstants.PARAM_RETURN_DATE));
+        if (returnDate != null) {
+            defaults.put(ReservationConstants.PARAM_END_DATE, returnDate);
+        }
+
+        String pickupHeadquarters = firstNonEmpty(
+                request.getParameter(ReservationConstants.PARAM_PICKUP_HEADQUARTERS),
+                request.getParameter(VehicleConstants.PARAM_HEADQUARTERS));
+        if (pickupHeadquarters != null) {
+            defaults.put(ReservationConstants.PARAM_PICKUP_HEADQUARTERS, pickupHeadquarters);
+        }
+
+        String returnHeadquarters = firstNonEmpty(
+                request.getParameter(ReservationConstants.PARAM_RETURN_HEADQUARTERS));
+        if (returnHeadquarters != null) {
+            defaults.put(ReservationConstants.PARAM_RETURN_HEADQUARTERS, returnHeadquarters);
+        }
         return defaults;
+    }
+
+    private String firstNonEmpty(String... values) {
+        if (values == null) {
+            return null;
+        }
+        for (String value : values) {
+            String sanitized = sanitize(value);
+            if (sanitized != null && !sanitized.isEmpty()) {
+                return sanitized;
+            }
+        }
+        return null;
+    }
+
+    private String sanitize(String value) {
+        return value != null ? value.trim() : null;
     }
 }

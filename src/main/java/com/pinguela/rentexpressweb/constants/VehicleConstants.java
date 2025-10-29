@@ -16,6 +16,10 @@ public final class VehicleConstants {
     public static final String PARAM_MAX_PRICE = "maxPrice";
     public static final String PARAM_SORT = "sort";
     public static final String PARAM_HEADQUARTERS = "headquarters";
+    public static final String PARAM_PICKUP_DATE = "pickupDate";
+    public static final String PARAM_PICKUP_TIME = "pickupTime";
+    public static final String PARAM_RETURN_DATE = "returnDate";
+    public static final String PARAM_RETURN_TIME = "returnTime";
     public static final String PARAM_ONLY_AVAILABLE = "onlyAvailable";
     public static final String PARAM_STATUS = "status";
     public static final String PARAM_MIN_YEAR = "minYear";
