@@ -1,12 +1,21 @@
 package com.pinguela.rentexpressweb.controller;
 
 import com.pinguela.rentexpres.exception.RentexpresException;
+import com.pinguela.rentexpres.model.AddressDTO;
+import com.pinguela.rentexpres.model.CityDTO;
+import com.pinguela.rentexpres.model.ProvinceDTO;
 import com.pinguela.rentexpres.model.Results;
 import com.pinguela.rentexpres.model.RoleDTO;
 import com.pinguela.rentexpres.model.UserCriteria;
 import com.pinguela.rentexpres.model.UserDTO;
+import com.pinguela.rentexpres.service.AddressService;
+import com.pinguela.rentexpres.service.CityService;
+import com.pinguela.rentexpres.service.ProvinceService;
 import com.pinguela.rentexpres.service.RoleService;
 import com.pinguela.rentexpres.service.UserService;
+import com.pinguela.rentexpres.service.impl.AddressServiceImpl;
+import com.pinguela.rentexpres.service.impl.CityServiceImpl;
+import com.pinguela.rentexpres.service.impl.ProvinceServiceImpl;
 import com.pinguela.rentexpres.service.impl.RoleServiceImpl;
 import com.pinguela.rentexpres.service.impl.UserServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
@@ -41,6 +50,9 @@ public class RegisterUserServlet extends HttpServlet {
     private static final Logger LOGGER = LogManager.getLogger(RegisterUserServlet.class);
     private final UserService userService = new UserServiceImpl();
     private final RoleService roleService = new RoleServiceImpl();
+    private final AddressService addressService = new AddressServiceImpl();
+    private final ProvinceService provinceService = new ProvinceServiceImpl();
+    private final CityService cityService = new CityServiceImpl();
 
     public RegisterUserServlet() {
         super();
@@ -50,8 +62,14 @@ public class RegisterUserServlet extends HttpServlet {
      * @see HttpServlet#doGet(HttpServletRequest, HttpServletResponse)
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        Map<String, String> formData = new HashMap<String, String>();
+        List<String> loadErrors = new ArrayList<String>();
+        prepareLocationData(request, loadErrors);
+        if (!loadErrors.isEmpty()) {
+            request.setAttribute("errors", loadErrors);
+        }
         request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Crea tu cuenta");
-        request.setAttribute("formData", new HashMap<String, String>());
+        request.setAttribute("formData", formData);
         request.getRequestDispatcher(Views.PUBLIC_REGISTER_USER).forward(request, response);
     }
 
@@ -65,6 +83,10 @@ public class RegisterUserServlet extends HttpServlet {
         String phone = trimToNull(request.getParameter(UserConstants.PARAM_PHONE));
         String password = request.getParameter(UserConstants.PARAM_PASSWORD);
         boolean acceptTerms = request.getParameter(UserConstants.PARAM_ACCEPT_TERMS) != null;
+        String street = trimToNull(request.getParameter(UserConstants.PARAM_STREET));
+        String number = trimToNull(request.getParameter(UserConstants.PARAM_NUMBER));
+        String provinceValue = trimToNull(request.getParameter(UserConstants.PARAM_PROVINCE_ID));
+        String cityValue = trimToNull(request.getParameter(UserConstants.PARAM_CITY_ID));
 
         if (fullName != null) {
             formData.put(UserConstants.PARAM_FULL_NAME, fullName);
@@ -80,6 +102,31 @@ public class RegisterUserServlet extends HttpServlet {
             formData.put(UserConstants.PARAM_PHONE, phone);
         } else {
             formData.put(UserConstants.PARAM_PHONE, "");
+        }
+        if (street != null) {
+            formData.put(UserConstants.PARAM_STREET, street);
+        } else {
+            formData.put(UserConstants.PARAM_STREET, "");
+        }
+        if (number != null) {
+            formData.put(UserConstants.PARAM_NUMBER, number);
+        } else {
+            formData.put(UserConstants.PARAM_NUMBER, "");
+        }
+        if (provinceValue != null) {
+            formData.put(UserConstants.PARAM_PROVINCE_ID, provinceValue);
+        } else {
+            formData.put(UserConstants.PARAM_PROVINCE_ID, "");
+        }
+        if (cityValue != null) {
+            formData.put(UserConstants.PARAM_CITY_ID, cityValue);
+        } else {
+            formData.put(UserConstants.PARAM_CITY_ID, "");
+        }
+        if (acceptTerms) {
+            formData.put(UserConstants.PARAM_ACCEPT_TERMS, "on");
+        } else {
+            formData.put(UserConstants.PARAM_ACCEPT_TERMS, "");
         }
 
         List<String> errors = new ArrayList<String>();
@@ -113,6 +160,67 @@ public class RegisterUserServlet extends HttpServlet {
             errors.add("Debes aceptar los términos y condiciones de uso.");
         }
 
+        if (street == null) {
+            errors.add("La calle de la dirección es obligatoria.");
+        } else if (street.length() > 255) {
+            errors.add("La calle no puede superar los 255 caracteres.");
+        }
+
+        if (number == null) {
+            errors.add("El número de la dirección es obligatorio.");
+        } else if (number.length() > 10) {
+            errors.add("El número de la dirección no puede superar los 10 caracteres.");
+        }
+
+        Integer provinceId = null;
+        if (provinceValue == null) {
+            errors.add("Selecciona la provincia de residencia.");
+        } else {
+            provinceId = parseInteger(provinceValue);
+            if (provinceId == null) {
+                errors.add("Selecciona una provincia válida.");
+            }
+        }
+
+        Integer cityId = null;
+        if (cityValue == null) {
+            errors.add("Selecciona la ciudad de residencia.");
+        } else {
+            cityId = parseInteger(cityValue);
+            if (cityId == null) {
+                errors.add("Selecciona una ciudad válida.");
+            }
+        }
+
+        ProvinceDTO selectedProvince = null;
+        if (provinceId != null) {
+            try {
+                selectedProvince = provinceService.findById(provinceId);
+                if (selectedProvince == null) {
+                    errors.add("La provincia seleccionada no existe.");
+                }
+            } catch (RentexpresException ex) {
+                LOGGER.error("Error comprobando la provincia {}", provinceId, ex);
+                errors.add("No se pudo validar la provincia seleccionada. Inténtalo de nuevo más tarde.");
+            }
+        }
+
+        CityDTO selectedCity = null;
+        if (cityId != null) {
+            try {
+                selectedCity = cityService.findById(cityId);
+                if (selectedCity == null) {
+                    errors.add("La ciudad seleccionada no existe.");
+                } else if (provinceId != null && selectedCity.getProvinceId() != null
+                        && !selectedCity.getProvinceId().equals(provinceId)) {
+                    errors.add("La ciudad seleccionada no pertenece a la provincia elegida.");
+                }
+            } catch (RentexpresException ex) {
+                LOGGER.error("Error comprobando la ciudad {}", cityId, ex);
+                errors.add("No se pudo validar la ciudad seleccionada. Inténtalo de nuevo más tarde.");
+            }
+        }
+
         String sanitizedEmail = email == null ? null : email.toLowerCase(Locale.ROOT);
 
         if (errors.isEmpty() && sanitizedEmail != null) {
@@ -139,7 +247,26 @@ public class RegisterUserServlet extends HttpServlet {
             }
         }
 
+        AddressDTO createdAddress = null;
+        if (errors.isEmpty() && cityId != null) {
+            AddressDTO address = new AddressDTO();
+            address.setStreet(street);
+            address.setNumber(number);
+            address.setCityId(cityId);
+            try {
+                if (addressService.create(address)) {
+                    createdAddress = address;
+                } else {
+                    errors.add("No se pudo guardar la dirección proporcionada.");
+                }
+            } catch (RentexpresException ex) {
+                LOGGER.error("Error creando la dirección para el registro de {}", sanitizedEmail, ex);
+                errors.add("Ha ocurrido un error al guardar la dirección. Inténtalo de nuevo más tarde.");
+            }
+        }
+
         if (!errors.isEmpty()) {
+            prepareLocationData(request, errors);
             request.setAttribute("errors", errors);
             request.setAttribute("formData", formData);
             request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Crea tu cuenta");
@@ -157,6 +284,9 @@ public class RegisterUserServlet extends HttpServlet {
         user.setPassword(sanitizedPassword);
         user.setRoleId(customerRoleId);
         user.setActiveStatus(Boolean.TRUE);
+        if (createdAddress != null) {
+            user.setAddressId(createdAddress.getAddressId());
+        }
 
         try {
             boolean created = userService.create(user);
@@ -169,11 +299,14 @@ public class RegisterUserServlet extends HttpServlet {
                 return;
             }
             errors.add("No se pudo completar el registro. Inténtalo de nuevo.");
+            cleanupAddress(createdAddress);
         } catch (RentexpresException ex) {
             LOGGER.error("Error creando el usuario {}", sanitizedEmail, ex);
             errors.add("Ha ocurrido un error al crear tu cuenta. Inténtalo de nuevo en unos minutos.");
+            cleanupAddress(createdAddress);
         }
 
+        prepareLocationData(request, errors);
         request.setAttribute("errors", errors);
         request.setAttribute("formData", formData);
         request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Crea tu cuenta");
@@ -259,6 +392,56 @@ public class RegisterUserServlet extends HttpServlet {
             lastName2 = null;
         }
         return new NameParts(firstName, lastName1, lastName2);
+    }
+
+    private Integer parseInteger(String value) {
+        try {
+            return Integer.valueOf(Integer.parseInt(value));
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
+    private void prepareLocationData(HttpServletRequest request, List<String> errors) {
+        List<ProvinceDTO> provinces = null;
+        try {
+            provinces = provinceService.findAll();
+        } catch (RentexpresException ex) {
+            LOGGER.error("Error cargando provincias", ex);
+            if (errors != null) {
+                errors.add("No se pudo cargar la lista de provincias. Inténtalo de nuevo más tarde.");
+            }
+        }
+        if (provinces == null) {
+            provinces = new ArrayList<ProvinceDTO>();
+        }
+        request.setAttribute(UserConstants.ATTR_PROVINCES, provinces);
+
+        List<CityDTO> cities = null;
+        try {
+            cities = cityService.findAll();
+        } catch (RentexpresException ex) {
+            LOGGER.error("Error cargando ciudades", ex);
+            if (errors != null) {
+                errors.add("No se pudo cargar la lista de ciudades. Inténtalo de nuevo más tarde.");
+            }
+        }
+        if (cities == null) {
+            cities = new ArrayList<CityDTO>();
+        }
+        request.setAttribute(UserConstants.ATTR_CITIES, cities);
+
+    }
+
+    private void cleanupAddress(AddressDTO address) {
+        if (address == null || address.getAddressId() == null) {
+            return;
+        }
+        try {
+            addressService.delete(address);
+        } catch (RentexpresException ex) {
+            LOGGER.error("No se pudo revertir la dirección {} tras un error de registro", address.getAddressId(), ex);
+        }
     }
 
     private static final class NameParts {
