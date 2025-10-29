@@ -1,5 +1,7 @@
 package com.pinguela.rentexpressweb.controller;
 
+import com.pinguela.rentexpressweb.constants.AppConstants;
+import com.pinguela.rentexpressweb.util.Views;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -19,23 +21,20 @@ public class EmployeeProfileServlet extends HttpServlet {
      */
     public EmployeeProfileServlet() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
     /**
-     * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+     * @see HttpServlet#doGet(HttpServletRequest, HttpServletResponse)
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // TODO Auto-generated method stub
-        response.getWriter().append("Served at: ").append(request.getContextPath()).append(" EmployeeProfileServlet");
+        request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Perfil del empleado");
+        request.getRequestDispatcher(Views.PRIVATE_EMPLOYEE_PROFILE).forward(request, response);
     }
 
     /**
-     * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+     * @see HttpServlet#doPost(HttpServletRequest, HttpServletResponse)
      */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // TODO Auto-generated method stub
         doGet(request, response);
     }
-
 }
