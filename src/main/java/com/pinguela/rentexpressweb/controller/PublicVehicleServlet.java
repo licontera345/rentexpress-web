@@ -198,6 +198,10 @@ public class PublicVehicleServlet extends HttpServlet {
         filters.put(VehicleConstants.PARAM_MIN_PRICE, sanitize(request.getParameter(VehicleConstants.PARAM_MIN_PRICE)));
         filters.put(VehicleConstants.PARAM_MAX_PRICE, sanitize(request.getParameter(VehicleConstants.PARAM_MAX_PRICE)));
         filters.put(VehicleConstants.PARAM_HEADQUARTERS, sanitize(request.getParameter(VehicleConstants.PARAM_HEADQUARTERS)));
+        filters.put(VehicleConstants.PARAM_PICKUP_DATE, sanitize(request.getParameter(VehicleConstants.PARAM_PICKUP_DATE)));
+        filters.put(VehicleConstants.PARAM_PICKUP_TIME, sanitize(request.getParameter(VehicleConstants.PARAM_PICKUP_TIME)));
+        filters.put(VehicleConstants.PARAM_RETURN_DATE, sanitize(request.getParameter(VehicleConstants.PARAM_RETURN_DATE)));
+        filters.put(VehicleConstants.PARAM_RETURN_TIME, sanitize(request.getParameter(VehicleConstants.PARAM_RETURN_TIME)));
         filters.put(VehicleConstants.PARAM_STATUS, sanitize(request.getParameter(VehicleConstants.PARAM_STATUS)));
         filters.put(VehicleConstants.PARAM_MIN_YEAR, sanitize(request.getParameter(VehicleConstants.PARAM_MIN_YEAR)));
         filters.put(VehicleConstants.PARAM_MAX_YEAR, sanitize(request.getParameter(VehicleConstants.PARAM_MAX_YEAR)));

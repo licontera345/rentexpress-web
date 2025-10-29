@@ -55,18 +55,8 @@
             <div class="row mt-4 justify-content-center">
                 <div class="col-12 col-xl-11 col-xxl-10">
                     <div class="hero-search-card shadow-soft">
-                        <form class="row gy-3" method="get" action="${ctx}/public/vehicles">
-                            <div class="col-12 col-lg-8">
-                                <label for="heroSearch" class="form-label fw-semibold text-secondary">¿Qué vehículo necesitas?</label>
-                                <div class="input-group input-group-lg">
-                                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                    <input type="text" class="form-control" id="heroSearch"
-                                           name="${VehicleConstants.PARAM_SEARCH}"
-                                           placeholder="Buscar auto"
-                                           value="${param.search}" />
-                                </div>
-                            </div>
-                            <div class="col-12 col-lg-4">
+                        <form class="row gy-3 align-items-end" method="get" action="${ctx}/public/vehicles">
+                            <div class="col-12 col-md-6 col-lg-4">
                                 <label for="heroHeadquarters" class="form-label fw-semibold text-secondary">Sede</label>
                                 <select id="heroHeadquarters" class="form-select form-select-lg"
                                         name="${VehicleConstants.PARAM_HEADQUARTERS}">
@@ -89,41 +79,29 @@
                                     </c:forEach>
                                 </select>
                             </div>
-                            <div class="col-6 col-md-3">
-                                <label for="heroPickupDate" class="form-label fw-semibold text-secondary">Fecha de recogida</label>
+                            <div class="col-6 col-md-3 col-lg-2">
+                                <label for="heroPickupDate" class="form-label fw-semibold text-secondary">Recogida</label>
                                 <input type="date" class="form-control form-control-lg" id="heroPickupDate"
                                        name="pickupDate" value="${param.pickupDate}" />
                             </div>
-                            <div class="col-6 col-md-3">
+                            <div class="col-6 col-md-3 col-lg-2">
                                 <label for="heroPickupTime" class="form-label fw-semibold text-secondary">Hora</label>
                                 <input type="time" class="form-control form-control-lg" id="heroPickupTime"
                                        name="pickupTime"
                                        value="${empty param.pickupTime ? '10:00' : param.pickupTime}" />
                             </div>
-                            <div class="col-6 col-md-3">
-                                <label for="heroDropoffDate" class="form-label fw-semibold text-secondary">Fecha de devolución</label>
+                            <div class="col-6 col-md-3 col-lg-2">
+                                <label for="heroDropoffDate" class="form-label fw-semibold text-secondary">Devolución</label>
                                 <input type="date" class="form-control form-control-lg" id="heroDropoffDate"
                                        name="returnDate" value="${param.returnDate}" />
                             </div>
-                            <div class="col-6 col-md-3">
+                            <div class="col-6 col-md-3 col-lg-2">
                                 <label for="heroDropoffTime" class="form-label fw-semibold text-secondary">Hora</label>
                                 <input type="time" class="form-control form-control-lg" id="heroDropoffTime"
                                        name="returnTime"
                                        value="${empty param.returnTime ? '10:00' : param.returnTime}" />
                             </div>
-                            <div class="col-12 col-lg-6">
-                                <div class="form-check form-switch mb-0 d-flex align-items-center gap-3">
-                                    <input class="form-check-input" type="checkbox" role="switch"
-                                           id="heroOnlyAvailable"
-                                           name="${VehicleConstants.PARAM_ONLY_AVAILABLE}"
-                                           value="true"
-                                           ${param.onlyAvailable == 'true' || param.onlyAvailable == 'on' ? 'checked' : ''} />
-                                    <label class="form-check-label fw-semibold text-secondary mb-0" for="heroOnlyAvailable">
-                                        Solo mostrar disponibles
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-12 col-lg-6 text-lg-end">
+                            <div class="col-12 col-md-6 col-lg-2 text-md-end">
                                 <button type="submit" class="btn btn-brand btn-lg px-5 w-100 w-lg-auto">
                                     <i class="bi bi-search me-2"></i>Buscar
                                 </button>
