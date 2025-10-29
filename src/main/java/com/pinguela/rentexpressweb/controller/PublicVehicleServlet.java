@@ -300,7 +300,12 @@ public class PublicVehicleServlet extends HttpServlet {
                     if (label.length() > 0) {
                         label.append(" · ");
                     }
-                    label.append(String.join(", ", locationParts));
+                    for (int i = 0; i < locationParts.size(); i++) {
+                        if (i > 0) {
+                            label.append(", ");
+                        }
+                        label.append(locationParts.get(i));
+                    }
                 }
                 names.put(dto.getHeadquartersId(), label.toString());
             }

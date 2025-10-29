@@ -4,11 +4,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -35,6 +32,7 @@ import com.pinguela.rentexpressweb.constants.ReservationConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.constants.VehicleConstants;
 import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.LegacyDateUtils;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -49,8 +47,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class PrivateReservationServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	private static final DateTimeFormatter DATE_INPUT_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE;
-	private static final DateTimeFormatter DATE_DISPLAY_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        private static final String DISPLAY_DATE_PATTERN = "dd/MM/yyyy";
 
 	private static final Logger LOGGER = LogManager.getLogger(PrivateReservationServlet.class);
 
@@ -117,17 +114,17 @@ public class PrivateReservationServlet extends HttpServlet {
 			return;
 		}
 
-		LocalDate startDate = parseDate(request.getParameter(ReservationConstants.PARAM_START_DATE),
-				"La fecha de recogida es obligatoria y debe tener formato válido.", errors);
-		LocalDate endDate = parseDate(request.getParameter(ReservationConstants.PARAM_END_DATE),
-				"La fecha de devolución es obligatoria y debe tener formato válido.", errors);
+                Date startDate = parseDate(request.getParameter(ReservationConstants.PARAM_START_DATE),
+                                "La fecha de recogida es obligatoria y debe tener formato válido.", errors);
+                Date endDate = parseDate(request.getParameter(ReservationConstants.PARAM_END_DATE),
+                                "La fecha de devolución es obligatoria y debe tener formato válido.", errors);
 		formData.put(ReservationConstants.PARAM_START_DATE,
 				request.getParameter(ReservationConstants.PARAM_START_DATE));
 		formData.put(ReservationConstants.PARAM_END_DATE, request.getParameter(ReservationConstants.PARAM_END_DATE));
 
-		if (startDate != null && endDate != null && !endDate.isAfter(startDate)) {
-			errors.add("La devolución debe ser posterior a la recogida.");
-		}
+                if (startDate != null && endDate != null && !endDate.after(startDate)) {
+                        errors.add("La devolución debe ser posterior a la recogida.");
+                }
 
 		List<HeadquartersDTO> headquarters = loadHeadquarters();
                 Map<Integer, HeadquartersDTO> headquartersById = new HashMap<>();
@@ -167,7 +164,7 @@ public class PrivateReservationServlet extends HttpServlet {
 			return;
 		}
 
-		int rentalDays = (int) ChronoUnit.DAYS.between(startDate, endDate);
+                int rentalDays = LegacyDateUtils.daysBetween(startDate, endDate);
 		BigDecimal dailyPrice = vehicle.getDailyPrice() == null ? BigDecimal.ZERO : vehicle.getDailyPrice();
 		BigDecimal vehicleSubtotal = dailyPrice.multiply(BigDecimal.valueOf(rentalDays));
 		BigDecimal total = vehicleSubtotal;
@@ -272,24 +269,23 @@ public class PrivateReservationServlet extends HttpServlet {
 		}
 	}
 
-	private LocalDate parseDate(String rawValue, String errorMessage, List<String> errors) {
-		if (rawValue == null || rawValue.trim().isEmpty()) {
-			errors.add(errorMessage);
-			return null;
-		}
-		try {
-			return LocalDate.parse(rawValue.trim(), DATE_INPUT_FORMAT);
-		} catch (DateTimeParseException ex) {
-			errors.add(errorMessage);
-			return null;
-		}
-	}
+        private Date parseDate(String rawValue, String errorMessage, List<String> errors) {
+                if (rawValue == null || rawValue.trim().isEmpty()) {
+                        errors.add(errorMessage);
+                        return null;
+                }
+                Date parsed = LegacyDateUtils.parseIsoDate(rawValue);
+                if (parsed == null) {
+                        errors.add(errorMessage);
+                }
+                return parsed;
+        }
 
 	private String generateReference() {
 		return "RS-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
 	}
 
-	private String formatDisplayDate(LocalDate date) {
-		return date != null ? date.format(DATE_DISPLAY_FORMAT) : "";
-	}
+        private String formatDisplayDate(Date date) {
+                return LegacyDateUtils.formatDate(date, DISPLAY_DATE_PATTERN);
+        }
 }

@@ -10,6 +10,7 @@ import com.pinguela.rentexpres.service.impl.RentalStatusServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.RentalConstants;
 import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.LegacyDateUtils;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -20,11 +21,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -45,8 +43,7 @@ public class PublicRentalServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     private static final Logger LOGGER = LogManager.getLogger(PublicRentalServlet.class);
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE;
-    private static final DateTimeFormatter DISPLAY_DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final String DISPLAY_DATE_PATTERN = "dd/MM/yyyy";
 
     private final RentalService rentalService = new RentalServiceImpl();
     private final RentalStatusService rentalStatusService = new RentalStatusServiceImpl();
@@ -71,12 +68,12 @@ public class PublicRentalServlet extends HttpServlet {
 
         Integer statusId = parseInteger(filters.get(RentalConstants.PARAM_STATUS), errors,
                 "El estado seleccionado no es válido.");
-        LocalDate startFrom = parseDate(filters.get(RentalConstants.PARAM_START_FROM), errors,
+        Date startFrom = parseDate(filters.get(RentalConstants.PARAM_START_FROM), errors,
                 "La fecha de inicio " + "desde" + " no es válida.");
-        LocalDate startTo = parseDate(filters.get(RentalConstants.PARAM_START_TO), errors,
+        Date startTo = parseDate(filters.get(RentalConstants.PARAM_START_TO), errors,
                 "La fecha de inicio " + "hasta" + " no es válida.");
 
-        if (startFrom != null && startTo != null && startFrom.isAfter(startTo)) {
+        if (startFrom != null && startTo != null && startFrom.after(startTo)) {
             errors.add("El rango de fechas no es coherente.");
         }
 
@@ -143,16 +140,15 @@ public class PublicRentalServlet extends HttpServlet {
         }
     }
 
-    private LocalDate parseDate(String value, List<String> errors, String message) {
+    private Date parseDate(String value, List<String> errors, String message) {
         if (value == null || value.isEmpty()) {
             return null;
         }
-        try {
-            return LocalDate.parse(value, DATE_FORMAT);
-        } catch (DateTimeParseException ex) {
+        Date parsed = LegacyDateUtils.parseIsoDate(value);
+        if (parsed == null) {
             errors.add(message);
-            return null;
         }
+        return parsed;
     }
 
     private BigDecimal parseDecimal(String value, List<String> errors, String message) {
@@ -201,7 +197,7 @@ public class PublicRentalServlet extends HttpServlet {
         return names;
     }
 
-    private List<RentalDTO> filterRentals(List<RentalDTO> rentals, Integer statusId, LocalDate startFrom, LocalDate startTo,
+    private List<RentalDTO> filterRentals(List<RentalDTO> rentals, Integer statusId, Date startFrom, Date startTo,
             BigDecimal minCost, BigDecimal maxCost) {
         List<RentalDTO> filtered = new ArrayList<>();
         for (RentalDTO rental : rentals) {
@@ -223,18 +219,21 @@ public class PublicRentalServlet extends HttpServlet {
         return filtered;
     }
 
-    private boolean matchesStartDate(RentalDTO rental, LocalDate startFrom, LocalDate startTo) {
+    private boolean matchesStartDate(RentalDTO rental, Date startFrom, Date startTo) {
         if (startFrom == null && startTo == null) {
             return true;
         }
         if (rental.getStartDateEffective() == null) {
             return false;
         }
-        LocalDate startDate = rental.getStartDateEffective().toLocalDate();
-        if (startFrom != null && startDate.isBefore(startFrom)) {
+        Date startDate = LegacyDateUtils.toDate(rental.getStartDateEffective());
+        if (startDate == null) {
             return false;
         }
-        if (startTo != null && startDate.isAfter(startTo)) {
+        if (startFrom != null && startDate.before(startFrom)) {
+            return false;
+        }
+        if (startTo != null && startDate.after(startTo)) {
             return false;
         }
         return true;
@@ -298,12 +297,10 @@ public class PublicRentalServlet extends HttpServlet {
         return summary;
     }
 
-    private long calculateDays(java.time.LocalDateTime start, java.time.LocalDateTime end) {
-        if (start == null || end == null) {
-            return 0L;
-        }
-        long days = ChronoUnit.DAYS.between(start.toLocalDate(), end.toLocalDate());
-        return Math.max(days, 0L);
+    private long calculateDays(Object start, Object end) {
+        Date startDate = LegacyDateUtils.toDate(start);
+        Date endDate = LegacyDateUtils.toDate(end);
+        return LegacyDateUtils.daysBetween(startDate, endDate);
     }
 
     private List<Map<String, Object>> buildRentalViews(List<RentalDTO> rentals, Map<Integer, String> statusNames) {
@@ -331,8 +328,8 @@ public class PublicRentalServlet extends HttpServlet {
         Collections.sort(rentals, new Comparator<RentalDTO>() {
             @Override
             public int compare(RentalDTO first, RentalDTO second) {
-                java.time.LocalDateTime firstDate = first != null ? first.getStartDateEffective() : null;
-                java.time.LocalDateTime secondDate = second != null ? second.getStartDateEffective() : null;
+                Date firstDate = first != null ? LegacyDateUtils.toDate(first.getStartDateEffective()) : null;
+                Date secondDate = second != null ? LegacyDateUtils.toDate(second.getStartDateEffective()) : null;
                 if (firstDate == null && secondDate == null) {
                     return 0;
                 }
@@ -356,10 +353,11 @@ public class PublicRentalServlet extends HttpServlet {
         return latest;
     }
 
-    private String formatDate(java.time.LocalDateTime dateTime) {
-        if (dateTime == null) {
+    private String formatDate(Object value) {
+        Date date = LegacyDateUtils.toDate(value);
+        if (date == null) {
             return "-";
         }
-        return DISPLAY_DATE.format(dateTime);
+        return LegacyDateUtils.formatDate(date, DISPLAY_DATE_PATTERN);
     }
 }

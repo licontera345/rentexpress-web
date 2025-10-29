@@ -10,6 +10,7 @@ import com.pinguela.rentexpres.service.impl.UserServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.FilterConstants;
 import com.pinguela.rentexpressweb.constants.UserConstants;
+import com.pinguela.rentexpressweb.util.LegacyDateUtils;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -18,9 +19,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -43,7 +43,7 @@ public class PublicUserServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     private static final Logger LOGGER = LogManager.getLogger(PublicUserServlet.class);
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    private static final String DATE_DISPLAY_PATTERN = "dd/MM/yyyy HH:mm";
 
     private final UserService userService = new UserServiceImpl();
     private final RoleService roleService = new RoleServiceImpl();
@@ -356,17 +356,19 @@ public class PublicUserServlet extends HttpServlet {
         return firstRole.compareToIgnoreCase(secondRole);
     }
 
-    private int compareCreatedDate(LocalDateTime first, LocalDateTime second) {
-        if (first == null && second == null) {
+    private int compareCreatedDate(Object first, Object second) {
+        Date firstDate = LegacyDateUtils.toDate(first);
+        Date secondDate = LegacyDateUtils.toDate(second);
+        if (firstDate == null && secondDate == null) {
             return 0;
         }
-        if (first == null) {
+        if (firstDate == null) {
             return 1;
         }
-        if (second == null) {
+        if (secondDate == null) {
             return -1;
         }
-        return second.compareTo(first);
+        return secondDate.compareTo(firstDate);
     }
 
     private int compareInteger(Integer first, Integer second) {
@@ -383,17 +385,25 @@ public class PublicUserServlet extends HttpServlet {
     }
 
     private String resolveFullName(UserDTO user) {
-        List<String> parts = new ArrayList<>();
-        if (user.getFirstName() != null) {
-            parts.add(user.getFirstName());
+        StringBuilder builder = new StringBuilder();
+        appendNamePart(builder, user.getFirstName());
+        appendNamePart(builder, user.getLastName1());
+        appendNamePart(builder, user.getLastName2());
+        return builder.toString().trim();
+    }
+
+    private void appendNamePart(StringBuilder builder, String value) {
+        if (value == null) {
+            return;
         }
-        if (user.getLastName1() != null) {
-            parts.add(user.getLastName1());
+        String trimmed = value.trim();
+        if (trimmed.isEmpty()) {
+            return;
         }
-        if (user.getLastName2() != null) {
-            parts.add(user.getLastName2());
+        if (builder.length() > 0) {
+            builder.append(' ');
         }
-        return String.join(" ", parts);
+        builder.append(trimmed);
     }
 
     private Map<String, Object> buildPagination(List<UserDTO> users, Map<String, String> filters) {
@@ -429,7 +439,7 @@ public class PublicUserServlet extends HttpServlet {
     private Map<String, Object> buildSummary(List<UserDTO> users) {
         long active = 0L;
         long inactive = 0L;
-        LocalDateTime lastCreated = null;
+        Date lastCreated = null;
         for (UserDTO user : users) {
             if (user == null) {
                 continue;
@@ -440,9 +450,10 @@ public class PublicUserServlet extends HttpServlet {
             } else if (Boolean.FALSE.equals(status)) {
                 inactive++;
             }
-            if (user.getCreatedAt() != null) {
-                if (lastCreated == null || user.getCreatedAt().isAfter(lastCreated)) {
-                    lastCreated = user.getCreatedAt();
+            Date createdAt = LegacyDateUtils.toDate(user.getCreatedAt());
+            if (createdAt != null) {
+                if (lastCreated == null || createdAt.after(lastCreated)) {
+                    lastCreated = createdAt;
                 }
             }
         }
@@ -451,7 +462,8 @@ public class PublicUserServlet extends HttpServlet {
         summary.put("total", Long.valueOf(users.size()));
         summary.put("active", Long.valueOf(active));
         summary.put("inactive", Long.valueOf(inactive));
-        summary.put("lastRegistration", lastCreated == null ? "-" : DATE_FORMATTER.format(lastCreated));
+        summary.put("lastRegistration",
+                lastCreated == null ? "-" : LegacyDateUtils.formatDate(lastCreated, DATE_DISPLAY_PATTERN));
         return summary;
     }
 
