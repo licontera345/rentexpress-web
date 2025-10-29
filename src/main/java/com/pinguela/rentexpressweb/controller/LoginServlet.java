@@ -45,10 +45,6 @@ public class LoginServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         RememberMeManager.applyRememberedUser(request);
         Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
-        if (currentUser != null) {
-            response.sendRedirect(request.getContextPath() + SecurityConstants.HOME_ENDPOINT);
-            return;
-        }
 
         if (TwoFactorManager.hasPendingVerification(request)) {
             response.sendRedirect(request.getContextPath() + "/app/auth/verify-2fa");
@@ -56,6 +52,12 @@ public class LoginServlet extends HttpServlet {
         }
 
         copyFlashMessages(request);
+        if (currentUser != null) {
+            request.setAttribute("alreadyAuthenticated", Boolean.TRUE);
+            if (request.getAttribute(AppConstants.ATTR_REMEMBERED_EMAIL) == null) {
+                request.setAttribute(AppConstants.ATTR_REMEMBERED_EMAIL, currentUser.toString());
+            }
+        }
         request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Inicia sesión");
 
         String rememberedEmail = RememberMeManager.resolveRememberedUser(request);
