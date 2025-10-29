@@ -5,16 +5,16 @@
         <div class="card card-common">
             <div class="card-header"><fmt:message key="login.title" /></div>
             <div class="card-body p-4">
-                <p class="text-muted"><fmt:message key="login.description" /></p>
+                <p class="text-muted"><fmt:message key="login.intro" /></p>
                 <c:if test="${alreadyAuthenticated}">
                     <div class="alert alert-warning d-flex flex-column flex-md-row align-items-md-center gap-2 justify-content-between">
                         <span>
-                            <fmt:message key="login.alreadyAuthenticated">
-                                <fmt:param value="${rememberedEmail}" />
+                            <fmt:message key="login.alreadyAuthenticated.message">
+                                <fmt:param value="<strong>${rememberedEmail}</strong>" />
                             </fmt:message>
                         </span>
                         <a class="btn btn-sm btn-outline-brand" href="${ctx}/app/welcome">
-                            <fmt:message key="login.goHome" />
+                            <fmt:message key="login.alreadyAuthenticated.cta" />
                         </a>
                     </div>
                 </c:if>
@@ -38,7 +38,7 @@
                     <div class="mb-3">
                         <label for="email" class="form-label"><fmt:message key="login.email" /></label>
                         <input type="email" class="form-control" id="email" name="email" required
-                               value="${not empty rememberedEmail ? rememberedEmail : ''}">
+                               value="${rememberedEmail}">
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label"><fmt:message key="login.password" /></label>
@@ -55,10 +55,10 @@
                         <button type="submit" class="btn btn-brand"><fmt:message key="login.button" /></button>
                         <div class="text-end">
                             <a href="${ctx}/app/users/register" class="text-decoration-none d-block">
-                                <fmt:message key="login.noAccount" />
+                                <fmt:message key="login.registerLink" />
                             </a>
                             <a href="${ctx}/app/password/forgot" class="text-decoration-none small">
-                                <fmt:message key="login.forgotPassword" />
+                                <fmt:message key="login.forgotLink" />
                             </a>
                         </div>
                     </div>
