@@ -115,7 +115,7 @@ public class LoginServlet extends HttpServlet {
 
         String normalizedEmail = sanitizedEmail != null ? sanitizedEmail.toLowerCase(Locale.ROOT) : null;
 
-        RememberMeManager.forgetUser(response);
+        RememberMeManager.forgetUser(request, response);
         SessionManager.removeAttribute(request, AppConstants.ATTR_CURRENT_USER);
         SessionManager.removeAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
 

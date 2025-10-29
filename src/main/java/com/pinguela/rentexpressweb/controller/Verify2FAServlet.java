@@ -116,9 +116,9 @@ public class Verify2FAServlet extends HttpServlet {
         SessionManager.setAttribute(request, AppConstants.ATTR_CURRENT_USER, email);
         EmployeeSessionResolver.resolveFromEmail(request, email);
         if (TwoFactorManager.shouldRemember(request)) {
-            RememberMeManager.rememberUser(response, email);
+            RememberMeManager.rememberUser(request, response, email);
         } else {
-            RememberMeManager.forgetUser(response);
+            RememberMeManager.forgetUser(request, response);
         }
 
         TwoFactorManager.clear(request);
