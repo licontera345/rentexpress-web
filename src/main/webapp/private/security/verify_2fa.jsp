@@ -15,13 +15,11 @@
                 <c:if test="${not empty flashInfo}">
                     <div class="alert alert-info">${flashInfo}</div>
                 </c:if>
-                <c:if test="${not empty errors}">
+                <c:if test="${not empty error}">
                     <div class="alert alert-danger">
-                        <ul class="mb-0">
-                            <c:forEach var="error" items="${errors}">
-                                <li>${error}</li>
-                            </c:forEach>
-                        </ul>
+                        <c:forEach var="entry" items="${error.entrySet()}">
+                            <div class="mb-1">${entry.value}</div>
+                        </c:forEach>
                     </div>
                 </c:if>
                 <form method="post" action="${ctx}/app/auth/verify-2fa" class="needs-validation" novalidate>

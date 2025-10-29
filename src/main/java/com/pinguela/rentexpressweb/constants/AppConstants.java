@@ -20,6 +20,7 @@ public final class AppConstants {
     public static final String ATTR_RECENT_REGISTRATIONS = "registeredUsers";
     public static final String ATTR_REMEMBERED_EMAIL = "rememberedEmail";
     public static final String ATTR_LOCALE = "appLocale";
+    public static final String ATTR_FORM_ERRORS = "error";
 
     public static final String PARAM_LANGUAGE = "lang";
 
