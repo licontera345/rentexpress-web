@@ -78,8 +78,8 @@
                             <select class="form-select" id="pickup" name="${ReservationConstants.PARAM_PICKUP_HEADQUARTERS}">
                                 <option value="">Selecciona una sede</option>
                                 <c:forEach var="hq" items="${headquarters}">
-                                    <option value="${hq.headquartersId}"
-                                            ${hq.headquartersId eq reservationForm[ReservationConstants.PARAM_PICKUP_HEADQUARTERS] ? 'selected' : ''}>
+                                    <option value="${hq.id}"
+                                            ${hq.id eq reservationForm[ReservationConstants.PARAM_PICKUP_HEADQUARTERS] ? 'selected' : ''}>
                                         ${hq.name} (${hq.city.cityName})
                                     </option>
                                 </c:forEach>
@@ -90,8 +90,8 @@
                             <select class="form-select" id="return" name="${ReservationConstants.PARAM_RETURN_HEADQUARTERS}">
                                 <option value="">Selecciona una sede</option>
                                 <c:forEach var="hq" items="${headquarters}">
-                                    <option value="${hq.headquartersId}"
-                                            ${hq.headquartersId eq reservationForm[ReservationConstants.PARAM_RETURN_HEADQUARTERS] ? 'selected' : ''}>
+                                    <option value="${hq.id}"
+                                            ${hq.id eq reservationForm[ReservationConstants.PARAM_RETURN_HEADQUARTERS] ? 'selected' : ''}>
                                         ${hq.name} (${hq.city.cityName})
                                     </option>
                                 </c:forEach>

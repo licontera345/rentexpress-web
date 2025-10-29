@@ -60,8 +60,8 @@
                         <select class="form-select" id="headquarters" name="${params.headquarters}">
                             <option value="">Todas las sedes</option>
                             <c:forEach var="hq" items="${headquarters}">
-                                <option value="${hq.headquartersId}"
-                                        ${hq.headquartersId eq filters[params.headquarters] ? 'selected' : ''}>
+                                <option value="${hq.id}"
+                                        ${hq.id eq filters[params.headquarters] ? 'selected' : ''}>
                                     <c:out value="${hq.name}" />
                                     <c:if test="${hq.city != null || hq.province != null}">
                                         &nbsp;·&nbsp;

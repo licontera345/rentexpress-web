@@ -30,7 +30,7 @@
                             <select class="form-select" id="headquarters" name="headquarters">
                                 <option value=""><fmt:message key="common.option.all.feminine" /></option>
                                 <c:forEach var="hq" items="${employeeHeadquarters}">
-                                    <option value="${hq.headquartersId}" ${hq.headquartersId == selectedEmployeeHeadquarters ? 'selected' : ''}>
+                                    <option value="${hq.id}" ${hq.id == selectedEmployeeHeadquarters ? 'selected' : ''}>
                                         ${hq.name}
                                     </option>
                                 </c:forEach>
