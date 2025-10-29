@@ -6,12 +6,16 @@ import com.pinguela.rentexpres.exception.DataException;
 import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.HeadquartersDTO;
 import com.pinguela.rentexpres.model.VehicleCategoryDTO;
+import com.pinguela.rentexpres.model.Results;
+import com.pinguela.rentexpres.model.VehicleCriteria;
 import com.pinguela.rentexpres.model.VehicleDTO;
 import com.pinguela.rentexpres.model.VehicleStatusDTO;
 import com.pinguela.rentexpres.service.VehicleCategoryService;
 import com.pinguela.rentexpres.service.VehicleService;
+import com.pinguela.rentexpres.service.VehicleStatusService;
 import com.pinguela.rentexpres.service.impl.VehicleCategoryServiceImpl;
 import com.pinguela.rentexpres.service.impl.VehicleServiceImpl;
+import com.pinguela.rentexpres.service.impl.VehicleStatusServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.VehicleConstants;
 import com.pinguela.rentexpres.util.JDBCUtils;
@@ -24,17 +28,17 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -50,10 +54,13 @@ public class PublicVehicleServlet extends HttpServlet {
 
     private final VehicleService vehicleService = new VehicleServiceImpl();
     private final VehicleCategoryService categoryService = new VehicleCategoryServiceImpl();
+    private final VehicleStatusService statusService = new VehicleStatusServiceImpl();
     private final HeadquartersDAO headquartersDAO = new HeadquartersDAOImpl();
 
     private static final int DEFAULT_AVAILABLE_STATUS_ID = 1;
     private static final Set<String> AVAILABLE_STATUS_KEYWORDS = new HashSet<>();
+    private static final List<Integer> PAGE_SIZE_OPTIONS = Collections
+            .unmodifiableList(Arrays.asList(10, 20, 25, 50, 100));
 
     static {
         AVAILABLE_STATUS_KEYWORDS.add("disponible");
@@ -84,35 +91,92 @@ public class PublicVehicleServlet extends HttpServlet {
             filterErrors.add("El precio mínimo no puede ser mayor que el máximo.");
         }
 
-        Integer categoryId = parseCategory(filters.get(VehicleConstants.PARAM_CATEGORY), filterErrors);
-        Integer headquartersId = parseHeadquarters(filters.get(VehicleConstants.PARAM_HEADQUARTERS), filterErrors);
-        boolean onlyAvailable = Boolean.parseBoolean(filters.get(VehicleConstants.PARAM_ONLY_AVAILABLE));
+        Integer categoryId = parseInteger(filters.get(VehicleConstants.PARAM_CATEGORY), filterErrors,
+                "La categoría seleccionada no es válida.");
+        Integer headquartersId = parseInteger(filters.get(VehicleConstants.PARAM_HEADQUARTERS), filterErrors,
+                "La sede seleccionada no es válida.");
+        Integer statusId = parseInteger(filters.get(VehicleConstants.PARAM_STATUS), filterErrors,
+                "El estado seleccionado no es válido.");
+        Integer minYear = parseYear(filters.get(VehicleConstants.PARAM_MIN_YEAR), filterErrors,
+                "El año mínimo debe ser un número de cuatro dígitos.");
+        Integer maxYear = parseYear(filters.get(VehicleConstants.PARAM_MAX_YEAR), filterErrors,
+                "El año máximo debe ser un número de cuatro dígitos.");
 
-        List<VehicleDTO> allVehicles = loadVehicles();
+        if (minYear != null && maxYear != null && minYear.intValue() > maxYear.intValue()) {
+            filterErrors.add("El año inicial no puede ser mayor que el final.");
+        }
+
+        boolean onlyAvailable = Boolean.parseBoolean(filters.get(VehicleConstants.PARAM_ONLY_AVAILABLE));
+        int page = parsePage(filters.get(VehicleConstants.PARAM_PAGE), filterErrors);
+        int pageSize = parsePageSize(filters.get(VehicleConstants.PARAM_PAGE_SIZE), filterErrors);
+
         List<VehicleCategoryDTO> categories = loadCategories(locale);
         Map<Integer, String> categoryNames = buildCategoryNames(categories);
         List<HeadquartersDTO> headquarters = loadHeadquarters();
         Map<Integer, String> headquartersNames = mapHeadquarters(headquarters);
+        List<VehicleStatusDTO> statuses = loadStatuses(locale);
+        Integer availableStatusId = resolveAvailableStatusId(statuses);
 
-        List<VehicleDTO> vehicles = filterVehicles(allVehicles,
-                filters.get(VehicleConstants.PARAM_SEARCH),
-                categoryId,
+        VehicleCriteria criteria = buildCriteria(filters,
                 minPrice,
                 maxPrice,
-                filters.get(VehicleConstants.PARAM_SORT),
+                categoryId,
                 headquartersId,
-                onlyAvailable);
+                statusId,
+                minYear,
+                maxYear,
+                onlyAvailable,
+                availableStatusId,
+                page,
+                pageSize);
+
+        Results<VehicleDTO> results = searchVehicles(criteria, filterErrors);
+        List<VehicleDTO> vehicles = results.getItems();
+
+        // Actualiza los filtros normalizados (paginación y orden efectivo)
+        filters.put(VehicleConstants.PARAM_PAGE, Integer.toString(results.getPage()));
+        filters.put(VehicleConstants.PARAM_PAGE_SIZE, Integer.toString(results.getPageSize()));
+        if (criteria.getVehicleStatusId() != null) {
+            filters.put(VehicleConstants.PARAM_STATUS, criteria.getVehicleStatusId().toString());
+        }
+        if (criteria.getCategoryId() != null) {
+            filters.put(VehicleConstants.PARAM_CATEGORY, criteria.getCategoryId().toString());
+        }
+        if (criteria.getCurrentHeadquartersId() != null) {
+            filters.put(VehicleConstants.PARAM_HEADQUARTERS, criteria.getCurrentHeadquartersId().toString());
+        }
+        if (criteria.getManufactureYearFrom() != null) {
+            filters.put(VehicleConstants.PARAM_MIN_YEAR, criteria.getManufactureYearFrom().toString());
+        }
+        if (criteria.getManufactureYearTo() != null) {
+            filters.put(VehicleConstants.PARAM_MAX_YEAR, criteria.getManufactureYearTo().toString());
+        }
+        if (criteria.getDailyPriceMin() != null) {
+            filters.put(VehicleConstants.PARAM_MIN_PRICE, criteria.getDailyPriceMin().toPlainString());
+        }
+        if (criteria.getDailyPriceMax() != null) {
+            filters.put(VehicleConstants.PARAM_MAX_PRICE, criteria.getDailyPriceMax().toPlainString());
+        }
+        if (criteria.getBrand() != null) {
+            filters.put(VehicleConstants.PARAM_BRAND, criteria.getBrand());
+        }
+        if (criteria.getModel() != null) {
+            filters.put(VehicleConstants.PARAM_MODEL, criteria.getModel());
+        }
 
         if (request.getParameter("notfound") != null) {
             filterErrors.add("El vehículo solicitado no existe o ya no está disponible. Se ha mostrado el catálogo completo.");
         }
 
         request.setAttribute(VehicleConstants.ATTR_VEHICLES, vehicles);
-        request.setAttribute(VehicleConstants.ATTR_TOTAL_RESULTS, vehicles.size());
+        request.setAttribute(VehicleConstants.ATTR_TOTAL_RESULTS, results.getTotal());
         request.setAttribute(VehicleConstants.ATTR_AVAILABLE_CATEGORIES, categories);
         request.setAttribute(VehicleConstants.ATTR_CATEGORY_NAMES, categoryNames);
         request.setAttribute(VehicleConstants.ATTR_HEADQUARTERS, headquarters);
         request.setAttribute(VehicleConstants.ATTR_HEADQUARTERS_NAMES, headquartersNames);
+        request.setAttribute(VehicleConstants.ATTR_AVAILABLE_STATUSES, statuses);
+        request.setAttribute(VehicleConstants.ATTR_PAGE_SIZES, PAGE_SIZE_OPTIONS);
+        request.setAttribute(VehicleConstants.ATTR_RESULTS, results);
         request.setAttribute(VehicleConstants.ATTR_FILTERS, filters);
         request.setAttribute(VehicleConstants.ATTR_FILTER_ERRORS, filterErrors);
         request.getRequestDispatcher("/public/vehicle/catalog.jsp").forward(request, response);
@@ -128,10 +192,17 @@ public class PublicVehicleServlet extends HttpServlet {
     private Map<String, String> buildFilters(HttpServletRequest request) {
         Map<String, String> filters = new HashMap<>();
         filters.put(VehicleConstants.PARAM_SEARCH, sanitize(request.getParameter(VehicleConstants.PARAM_SEARCH)));
+        filters.put(VehicleConstants.PARAM_BRAND, sanitize(request.getParameter(VehicleConstants.PARAM_BRAND)));
+        filters.put(VehicleConstants.PARAM_MODEL, sanitize(request.getParameter(VehicleConstants.PARAM_MODEL)));
         filters.put(VehicleConstants.PARAM_CATEGORY, sanitize(request.getParameter(VehicleConstants.PARAM_CATEGORY)));
         filters.put(VehicleConstants.PARAM_MIN_PRICE, sanitize(request.getParameter(VehicleConstants.PARAM_MIN_PRICE)));
         filters.put(VehicleConstants.PARAM_MAX_PRICE, sanitize(request.getParameter(VehicleConstants.PARAM_MAX_PRICE)));
         filters.put(VehicleConstants.PARAM_HEADQUARTERS, sanitize(request.getParameter(VehicleConstants.PARAM_HEADQUARTERS)));
+        filters.put(VehicleConstants.PARAM_STATUS, sanitize(request.getParameter(VehicleConstants.PARAM_STATUS)));
+        filters.put(VehicleConstants.PARAM_MIN_YEAR, sanitize(request.getParameter(VehicleConstants.PARAM_MIN_YEAR)));
+        filters.put(VehicleConstants.PARAM_MAX_YEAR, sanitize(request.getParameter(VehicleConstants.PARAM_MAX_YEAR)));
+        filters.put(VehicleConstants.PARAM_PAGE, sanitize(request.getParameter(VehicleConstants.PARAM_PAGE)));
+        filters.put(VehicleConstants.PARAM_PAGE_SIZE, sanitize(request.getParameter(VehicleConstants.PARAM_PAGE_SIZE)));
 
         String sort = sanitize(request.getParameter(VehicleConstants.PARAM_SORT));
         if (!VehicleConstants.VALUE_SORT_PRICE_ASC.equals(sort)
@@ -162,39 +233,6 @@ public class PublicVehicleServlet extends HttpServlet {
         }
     }
 
-    private Integer parseCategory(String rawValue, List<String> errors) {
-        if (rawValue == null || rawValue.trim().isEmpty()) {
-            return null;
-        }
-        try {
-            return Integer.valueOf(rawValue.trim());
-        } catch (NumberFormatException ex) {
-            errors.add("La categoría seleccionada no es válida.");
-            return null;
-        }
-    }
-
-    private Integer parseHeadquarters(String rawValue, List<String> errors) {
-        if (rawValue == null || rawValue.trim().isEmpty()) {
-            return null;
-        }
-        try {
-            return Integer.valueOf(rawValue.trim());
-        } catch (NumberFormatException ex) {
-            errors.add("La sede seleccionada no es válida.");
-            return null;
-        }
-    }
-
-    private List<VehicleDTO> loadVehicles() {
-        try {
-            return vehicleService.findAll();
-        } catch (RentexpresException ex) {
-            LOGGER.error("Error al cargar el catálogo de vehículos", ex);
-            return new ArrayList<>();
-        }
-    }
-
     private List<VehicleCategoryDTO> loadCategories(Locale locale) {
         try {
             String language = locale != null ? locale.getLanguage() : Locale.getDefault().getLanguage();
@@ -215,96 +253,6 @@ public class PublicVehicleServlet extends HttpServlet {
             }
         }
         return names;
-    }
-
-    private List<VehicleDTO> filterVehicles(List<VehicleDTO> vehicles, String search, Integer categoryId,
-            BigDecimal minPrice, BigDecimal maxPrice, String sort, Integer headquartersId, boolean onlyAvailable) {
-        if (vehicles == null || vehicles.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        return vehicles.stream()
-                .filter(vehicle -> matchesCategory(vehicle, categoryId))
-                .filter(vehicle -> matchesSearch(vehicle, search))
-                .filter(vehicle -> matchesMinPrice(vehicle, minPrice))
-                .filter(vehicle -> matchesMaxPrice(vehicle, maxPrice))
-                .filter(vehicle -> matchesHeadquarters(vehicle, headquartersId))
-                .filter(vehicle -> matchesAvailability(vehicle, onlyAvailable))
-                .sorted(resolveComparator(sort))
-                .collect(Collectors.toList());
-    }
-
-    private boolean matchesCategory(VehicleDTO vehicle, Integer categoryId) {
-        if (categoryId == null) {
-            return true;
-        }
-        return categoryId.equals(vehicle.getCategoryId());
-    }
-
-    private boolean matchesSearch(VehicleDTO vehicle, String search) {
-        if (search == null || search.trim().isEmpty()) {
-            return true;
-        }
-        String combined = (vehicle.getBrand() + " " + vehicle.getModel()).toLowerCase(Locale.ROOT);
-        return combined.contains(search.toLowerCase(Locale.ROOT));
-    }
-
-    private boolean matchesMinPrice(VehicleDTO vehicle, BigDecimal minPrice) {
-        if (minPrice == null) {
-            return true;
-        }
-        BigDecimal price = vehicle.getDailyPrice();
-        return price == null || price.compareTo(minPrice) >= 0;
-    }
-
-    private boolean matchesMaxPrice(VehicleDTO vehicle, BigDecimal maxPrice) {
-        if (maxPrice == null) {
-            return true;
-        }
-        BigDecimal price = vehicle.getDailyPrice();
-        return price == null || price.compareTo(maxPrice) <= 0;
-    }
-
-    private boolean matchesHeadquarters(VehicleDTO vehicle, Integer headquartersId) {
-        if (headquartersId == null) {
-            return true;
-        }
-        if (vehicle.getCurrentHeadquartersId() != null) {
-            return headquartersId.equals(vehicle.getCurrentHeadquartersId());
-        }
-        return vehicle.getCurrentHeadquarters() != null
-                && headquartersId.equals(vehicle.getCurrentHeadquarters().getHeadquartersId());
-    }
-
-    private boolean matchesAvailability(VehicleDTO vehicle, boolean onlyAvailable) {
-        if (!onlyAvailable) {
-            return true;
-        }
-        Integer statusId = vehicle.getVehicleStatusId();
-        if (statusId != null && statusId.intValue() == DEFAULT_AVAILABLE_STATUS_ID) {
-            return true;
-        }
-        VehicleStatusDTO status = vehicle.getVehicleStatus();
-        if (status == null || status.getStatusName() == null) {
-            return false;
-        }
-        String normalized = status.getStatusName().trim().toLowerCase(Locale.ROOT);
-        for (String keyword : AVAILABLE_STATUS_KEYWORDS) {
-            if (normalized.contains(keyword)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private Comparator<VehicleDTO> resolveComparator(String sort) {
-        if (VehicleConstants.VALUE_SORT_PRICE_DESC.equals(sort)) {
-            return Comparator.comparing(VehicleDTO::getDailyPrice, Comparator.nullsLast(BigDecimal::compareTo)).reversed();
-        }
-        if (VehicleConstants.VALUE_SORT_YEAR_DESC.equals(sort)) {
-            return Comparator.comparing(VehicleDTO::getManufactureYear, Comparator.nullsLast(Integer::compare)).reversed();
-        }
-        return Comparator.comparing(VehicleDTO::getDailyPrice, Comparator.nullsLast(BigDecimal::compareTo));
     }
 
     private List<HeadquartersDTO> loadHeadquarters() {
@@ -354,6 +302,185 @@ public class PublicVehicleServlet extends HttpServlet {
             }
         }
         return names;
+    }
+
+    private List<VehicleStatusDTO> loadStatuses(Locale locale) {
+        try {
+            String language = locale != null ? locale.getLanguage() : Locale.getDefault().getLanguage();
+            return statusService.findAll(language);
+        } catch (RentexpresException ex) {
+            LOGGER.error("Error al recuperar los estados de los vehículos", ex);
+            return new ArrayList<>();
+        }
+    }
+
+    private Integer resolveAvailableStatusId(List<VehicleStatusDTO> statuses) {
+        if (statuses != null) {
+            for (VehicleStatusDTO status : statuses) {
+                if (status == null || status.getStatusName() == null || status.getStatusId() == null) {
+                    continue;
+                }
+                String normalized = status.getStatusName().trim().toLowerCase(Locale.ROOT);
+                for (String keyword : AVAILABLE_STATUS_KEYWORDS) {
+                    if (normalized.contains(keyword)) {
+                        return status.getStatusId();
+                    }
+                }
+            }
+        }
+        return Integer.valueOf(DEFAULT_AVAILABLE_STATUS_ID);
+    }
+
+    private VehicleCriteria buildCriteria(Map<String, String> filters,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            Integer categoryId,
+            Integer headquartersId,
+            Integer statusId,
+            Integer minYear,
+            Integer maxYear,
+            boolean onlyAvailable,
+            Integer availableStatusId,
+            int page,
+            int pageSize) {
+        VehicleCriteria criteria = new VehicleCriteria();
+        criteria.setCategoryId(categoryId);
+        criteria.setCurrentHeadquartersId(headquartersId);
+        criteria.setDailyPriceMin(minPrice);
+        criteria.setDailyPriceMax(maxPrice);
+        criteria.setManufactureYearFrom(minYear);
+        criteria.setManufactureYearTo(maxYear);
+
+        String brand = filters.get(VehicleConstants.PARAM_BRAND);
+        String model = filters.get(VehicleConstants.PARAM_MODEL);
+        String search = filters.get(VehicleConstants.PARAM_SEARCH);
+
+        if (brand != null) {
+            criteria.setBrand(brand);
+        }
+        if (model != null) {
+            criteria.setModel(model);
+        }
+        if ((brand == null || brand.isEmpty()) && search != null && !search.isEmpty()) {
+            String[] parts = search.split("\\s+", 2);
+            criteria.setBrand(parts[0]);
+            if ((model == null || model.isEmpty()) && parts.length > 1) {
+                criteria.setModel(parts[1]);
+            }
+        }
+
+        if (statusId != null) {
+            criteria.setVehicleStatusId(statusId);
+        } else if (onlyAvailable && availableStatusId != null) {
+            criteria.setVehicleStatusId(availableStatusId);
+        }
+
+        criteria.setPage(Integer.valueOf(page));
+        criteria.setPageSize(Integer.valueOf(pageSize));
+
+        applySorting(criteria, filters.get(VehicleConstants.PARAM_SORT));
+        return criteria;
+    }
+
+    private Results<VehicleDTO> searchVehicles(VehicleCriteria criteria, List<String> errors) {
+        try {
+            Results<VehicleDTO> results = vehicleService.findByCriteria(criteria);
+            if (results == null) {
+                return emptyResults(criteria);
+            }
+            results.normalize();
+            return results;
+        } catch (RentexpresException ex) {
+            LOGGER.error("Error al ejecutar la búsqueda estructurada de vehículos", ex);
+            errors.add("No se pudo completar la búsqueda de vehículos. Inténtalo de nuevo más tarde.");
+            return emptyResults(criteria);
+        }
+    }
+
+    private Results<VehicleDTO> emptyResults(VehicleCriteria criteria) {
+        Results<VehicleDTO> results = new Results<>();
+        results.setItems(Collections.emptyList());
+        results.setPage(criteria.getSafePage());
+        results.setPageSize(criteria.getSafePageSize());
+        results.setTotal(0);
+        results.normalize();
+        return results;
+    }
+
+    private void applySorting(VehicleCriteria criteria, String sort) {
+        if (VehicleConstants.VALUE_SORT_PRICE_DESC.equals(sort)) {
+            criteria.setOrderBy("daily_price");
+            criteria.setOrderDir("DESC");
+        } else if (VehicleConstants.VALUE_SORT_YEAR_DESC.equals(sort)) {
+            criteria.setOrderBy("manufacture_year");
+            criteria.setOrderDir("DESC");
+        } else {
+            criteria.setOrderBy("daily_price");
+            criteria.setOrderDir("ASC");
+        }
+    }
+
+    private Integer parseInteger(String rawValue, List<String> errors, String errorMessage) {
+        if (rawValue == null || rawValue.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(rawValue.trim());
+        } catch (NumberFormatException ex) {
+            errors.add(errorMessage);
+            return null;
+        }
+    }
+
+    private Integer parseYear(String rawValue, List<String> errors, String errorMessage) {
+        if (rawValue == null || rawValue.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            int year = Integer.parseInt(rawValue.trim());
+            if (year < 1900 || year > 2100) {
+                errors.add("El año debe estar entre 1900 y 2100.");
+                return null;
+            }
+            return Integer.valueOf(year);
+        } catch (NumberFormatException ex) {
+            errors.add(errorMessage);
+            return null;
+        }
+    }
+
+    private int parsePage(String rawValue, List<String> errors) {
+        if (rawValue == null || rawValue.trim().isEmpty()) {
+            return 1;
+        }
+        try {
+            int parsed = Integer.parseInt(rawValue.trim());
+            if (parsed < 1) {
+                errors.add("La página seleccionada no es válida.");
+                return 1;
+            }
+            return parsed;
+        } catch (NumberFormatException ex) {
+            errors.add("La página seleccionada no es válida.");
+            return 1;
+        }
+    }
+
+    private int parsePageSize(String rawValue, List<String> errors) {
+        if (rawValue == null || rawValue.trim().isEmpty()) {
+            return 20;
+        }
+        try {
+            int parsed = Integer.parseInt(rawValue.trim());
+            if (!PAGE_SIZE_OPTIONS.contains(parsed)) {
+                errors.add("El tamaño de página seleccionado no es válido.");
+                return 20;
+            }
+            return parsed;
+        } catch (NumberFormatException ex) {
+            errors.add("El tamaño de página seleccionado no es válido.");
+            return 20;
+        }
     }
 
     private boolean parseBooleanFlag(String rawValue) {

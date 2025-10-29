@@ -10,6 +10,9 @@
 <c:set var="total" value="${totalVehicles}" />
 <c:set var="headquarters" value="${vehicleHeadquarters}" />
 <c:set var="headquartersNames" value="${vehicleHeadquartersNames}" />
+<c:set var="statuses" value="${vehicleStatuses}" />
+<c:set var="pageSizes" value="${vehiclePageSizes}" />
+<c:set var="results" value="${vehicleResults}" />
 
 <div class="row g-4">
     <div class="col-lg-3">
@@ -20,8 +23,24 @@
                     <div class="mb-3">
                         <label for="search" class="form-label">Buscar</label>
                         <input type="text" class="form-control" id="search" name="${VehicleConstants.PARAM_SEARCH}"
-                               placeholder="Marca, modelo, palabra clave"
+                               placeholder="Marca y modelo (por ejemplo, Ford Focus)"
                                value="${filters[VehicleConstants.PARAM_SEARCH]}">
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-12 col-xl-6">
+                            <label for="brand" class="form-label">Marca</label>
+                            <input type="text" class="form-control" id="brand"
+                                   name="${VehicleConstants.PARAM_BRAND}"
+                                   placeholder="Toyota"
+                                   value="${filters[VehicleConstants.PARAM_BRAND]}">
+                        </div>
+                        <div class="col-12 col-xl-6">
+                            <label for="model" class="form-label">Modelo</label>
+                            <input type="text" class="form-control" id="model"
+                                   name="${VehicleConstants.PARAM_MODEL}"
+                                   placeholder="Corolla"
+                                   value="${filters[VehicleConstants.PARAM_MODEL]}">
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="category" class="form-label">Categoría</label>
@@ -71,6 +90,32 @@
                                    value="${filters[VehicleConstants.PARAM_MAX_PRICE]}">
                         </div>
                     </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col">
+                            <label for="minYear" class="form-label">Año desde</label>
+                            <input type="number" min="1900" max="2100" class="form-control" id="minYear"
+                                   name="${VehicleConstants.PARAM_MIN_YEAR}"
+                                   value="${filters[VehicleConstants.PARAM_MIN_YEAR]}">
+                        </div>
+                        <div class="col">
+                            <label for="maxYear" class="form-label">Año hasta</label>
+                            <input type="number" min="1900" max="2100" class="form-control" id="maxYear"
+                                   name="${VehicleConstants.PARAM_MAX_YEAR}"
+                                   value="${filters[VehicleConstants.PARAM_MAX_YEAR]}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Estado</label>
+                        <select class="form-select" id="status" name="${VehicleConstants.PARAM_STATUS}">
+                            <option value="">Todos los estados</option>
+                            <c:forEach var="status" items="${statuses}">
+                                <option value="${status.statusId}"
+                                        ${status.statusId eq filters[VehicleConstants.PARAM_STATUS] ? 'selected' : ''}>
+                                    ${status.statusName}
+                                </option>
+                            </c:forEach>
+                        </select>
+                    </div>
                     <div class="mb-4">
                         <label for="sort" class="form-label">Ordenar por</label>
                         <select class="form-select" id="sort" name="${VehicleConstants.PARAM_SORT}">
@@ -94,6 +139,14 @@
                                ${filters[VehicleConstants.PARAM_ONLY_AVAILABLE] == 'true' ? 'checked' : ''} />
                         <label class="form-check-label" for="onlyAvailable">Solo mostrar vehículos disponibles</label>
                     </div>
+                    <div class="mb-4">
+                        <label for="pageSize" class="form-label">Resultados por página</label>
+                        <select class="form-select" id="pageSize" name="${VehicleConstants.PARAM_PAGE_SIZE}">
+                            <c:forEach var="size" items="${pageSizes}">
+                                <option value="${size}" ${size == results.pageSize ? 'selected' : ''}>${size}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-brand">Aplicar filtros</button>
                         <a class="btn btn-outline-brand" href="${ctx}/public/vehicles">Limpiar</a>
@@ -106,7 +159,12 @@
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
             <div>
                 <h1 class="h3 fw-semibold mb-0">Catálogo disponible</h1>
-                <p class="text-muted mb-0">${total} vehículos encontrados</p>
+                <p class="text-muted mb-0">
+                    ${total} vehículos encontrados
+                    <c:if test="${results.total > 0}">
+                        · mostrando ${results.fromRow} - ${results.toRow}
+                    </c:if>
+                </p>
             </div>
             <a class="btn btn-outline-brand" href="${ctx}/app/auth/login">
                 <i class="bi bi-box-arrow-in-right me-2"></i>Inicia sesión para gestionar tu reserva
@@ -189,6 +247,65 @@
                         </div>
                     </c:forEach>
                 </div>
+                <c:if test="${results.totalPages > 1}">
+                    <nav class="mt-4" aria-label="Paginación de vehículos">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item ${!results.hasPrev ? 'disabled' : ''}">
+                                <c:url var="prevUrl" value="/public/vehicles">
+                                    <c:param name="${VehicleConstants.PARAM_PAGE}" value="${results.page - 1}" />
+                                    <c:param name="${VehicleConstants.PARAM_PAGE_SIZE}" value="${results.pageSize}" />
+                                    <c:param name="${VehicleConstants.PARAM_SORT}" value="${filters[VehicleConstants.PARAM_SORT]}" />
+                                    <c:forEach var="entry" items="${filters}">
+                                        <c:if test="${entry.key ne VehicleConstants.PARAM_PAGE && entry.key ne VehicleConstants.PARAM_PAGE_SIZE && entry.key ne VehicleConstants.PARAM_SORT && entry.value ne null && entry.value ne ''}">
+                                            <c:param name="${entry.key}" value="${entry.value}" />
+                                        </c:if>
+                                    </c:forEach>
+                                </c:url>
+                                <c:set var="prevHref" value="${ctx}${prevUrl}" />
+                                <c:if test="${!results.hasPrev}">
+                                    <c:set var="prevHref" value="#" />
+                                </c:if>
+                                <a class="page-link" href="${prevHref}" aria-label="Anterior">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            <c:forEach begin="1" end="${results.totalPages}" var="pageNumber">
+                                <c:url var="pageUrl" value="/public/vehicles">
+                                    <c:param name="${VehicleConstants.PARAM_PAGE}" value="${pageNumber}" />
+                                    <c:param name="${VehicleConstants.PARAM_PAGE_SIZE}" value="${results.pageSize}" />
+                                    <c:param name="${VehicleConstants.PARAM_SORT}" value="${filters[VehicleConstants.PARAM_SORT]}" />
+                                    <c:forEach var="entry" items="${filters}">
+                                        <c:if test="${entry.key ne VehicleConstants.PARAM_PAGE && entry.key ne VehicleConstants.PARAM_PAGE_SIZE && entry.key ne VehicleConstants.PARAM_SORT && entry.value ne null && entry.value ne ''}">
+                                            <c:param name="${entry.key}" value="${entry.value}" />
+                                        </c:if>
+                                    </c:forEach>
+                                </c:url>
+                                <li class="page-item ${pageNumber == results.page ? 'active' : ''}">
+                                    <a class="page-link" href="${ctx}${pageUrl}">${pageNumber}</a>
+                                </li>
+                            </c:forEach>
+                            <li class="page-item ${!results.hasNext ? 'disabled' : ''}">
+                                <c:url var="nextUrl" value="/public/vehicles">
+                                    <c:param name="${VehicleConstants.PARAM_PAGE}" value="${results.page + 1}" />
+                                    <c:param name="${VehicleConstants.PARAM_PAGE_SIZE}" value="${results.pageSize}" />
+                                    <c:param name="${VehicleConstants.PARAM_SORT}" value="${filters[VehicleConstants.PARAM_SORT]}" />
+                                    <c:forEach var="entry" items="${filters}">
+                                        <c:if test="${entry.key ne VehicleConstants.PARAM_PAGE && entry.key ne VehicleConstants.PARAM_PAGE_SIZE && entry.key ne VehicleConstants.PARAM_SORT && entry.value ne null && entry.value ne ''}">
+                                            <c:param name="${entry.key}" value="${entry.value}" />
+                                        </c:if>
+                                    </c:forEach>
+                                </c:url>
+                                <c:set var="nextHref" value="${ctx}${nextUrl}" />
+                                <c:if test="${!results.hasNext}">
+                                    <c:set var="nextHref" value="#" />
+                                </c:if>
+                                <a class="page-link" href="${nextHref}" aria-label="Siguiente">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </c:if>
             </c:otherwise>
         </c:choose>
     </div>
