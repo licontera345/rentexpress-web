@@ -247,14 +247,4 @@
         </div>
     </div>
 </section>
-<c:if test="${not empty currentUser}">
-    <section class="mt-5">
-        <div class="card card-common">
-            <div class="card-header"><fmt:message key="home.session.title" /></div>
-            <div class="card-body">
-                <p class="mb-0"><fmt:message key="home.session.message" /> <strong>${currentUser}</strong>.</p>
-            </div>
-        </div>
-    </section>
-</c:if>
 <%@ include file="/common/footer.jsp" %>

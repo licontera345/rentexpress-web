@@ -31,10 +31,6 @@ public class WelcomeServlet extends HttpServlet {
         exposeFlashMessage(request);
 
         request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Bienvenido");
-        Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
-        if (currentUser != null) {
-            request.setAttribute(AppConstants.ATTR_CURRENT_USER, currentUser);
-        }
 
         request.getRequestDispatcher(Views.PUBLIC_WELCOME).forward(request, response);
     }
