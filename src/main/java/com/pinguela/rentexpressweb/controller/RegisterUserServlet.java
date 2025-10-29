@@ -320,7 +320,7 @@ public class RegisterUserServlet extends HttpServlet {
         user.setRoleId(customerRoleId);
         user.setActiveStatus(Boolean.TRUE);
         if (createdAddress != null) {
-            user.setAddressId(createdAddress.getAddressId());
+            user.setAddressId(createdAddress.getId());
         }
 
         try {
@@ -371,10 +371,10 @@ public class RegisterUserServlet extends HttpServlet {
     private boolean isEmailAlreadyRegistered(String email) throws RentexpresException {
         UserCriteria criteria = new UserCriteria();
         criteria.setEmail(email);
-        criteria.setPage(Integer.valueOf(1));
+        criteria.setPageNumber(Integer.valueOf(1));
         criteria.setPageSize(Integer.valueOf(1));
         Results<UserDTO> results = userService.findByCriteria(criteria);
-        return results != null && results.getItems() != null && !results.getItems().isEmpty();
+        return results != null && results.getResults() != null && !results.getResults().isEmpty();
     }
 
     private Integer resolveCustomerRoleId() throws RentexpresException {
@@ -451,13 +451,13 @@ public class RegisterUserServlet extends HttpServlet {
     }
 
     private void cleanupAddress(AddressDTO address) {
-        if (address == null || address.getAddressId() == null) {
+        if (address == null || address.getId() == null) {
             return;
         }
         try {
             addressService.delete(address);
         } catch (RentexpresException ex) {
-            LOGGER.error("No se pudo revertir la dirección {} tras un error de registro", address.getAddressId(), ex);
+            LOGGER.error("No se pudo revertir la dirección {} tras un error de registro", address.getId(), ex);
         }
     }
 

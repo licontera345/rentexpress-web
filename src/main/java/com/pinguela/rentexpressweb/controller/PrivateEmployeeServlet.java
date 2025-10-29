@@ -181,8 +181,8 @@ public class PrivateEmployeeServlet extends HttpServlet {
         Map<Integer, String> map = new LinkedHashMap<Integer, String>();
         for (int i = 0; i < headquarters.size(); i++) {
             HeadquartersDTO dto = headquarters.get(i);
-            if (dto != null && dto.getHeadquartersId() != null) {
-                map.put(dto.getHeadquartersId(), dto.getName());
+            if (dto != null && dto.getId() != null) {
+                map.put(dto.getId(), dto.getName());
             }
         }
         return map;

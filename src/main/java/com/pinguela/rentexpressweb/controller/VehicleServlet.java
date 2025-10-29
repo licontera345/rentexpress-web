@@ -80,8 +80,7 @@ public class VehicleServlet extends HttpServlet {
         VehicleCriteria criteria = buildCriteria(filters.get(VehicleConstants.PARAM_SEARCH), categoryId, statusId, page,
                 pageSize, filters.get(VehicleConstants.PARAM_SORT));
 
-        Results<VehicleDTO> results = searchVehicles(criteria, errors);
-
+   
         Locale locale = request.getLocale();
         List<VehicleCategoryDTO> categories = loadCategories(locale);
         List<VehicleStatusDTO> statuses = loadStatuses(locale);
@@ -95,10 +94,6 @@ public class VehicleServlet extends HttpServlet {
         request.setAttribute(VehicleConstants.ATTR_AVAILABLE_STATUSES, statuses);
         request.setAttribute(VehicleConstants.ATTR_CATEGORY_NAMES, categoryNames);
         request.setAttribute(VehicleConstants.ATTR_STATUS_NAMES, statusNames);
-        request.setAttribute(VehicleConstants.ATTR_RESULTS, results);
-        request.setAttribute(VehicleConstants.ATTR_VEHICLES, results.getItems());
-        request.setAttribute(VehicleConstants.ATTR_TOTAL_RESULTS, Integer.valueOf(results.getTotal()));
-
         request.getRequestDispatcher("/private/vehicle/vehicle_list.jsp").forward(request, response);
     }
 
@@ -134,7 +129,7 @@ public class VehicleServlet extends HttpServlet {
         VehicleCriteria criteria = new VehicleCriteria();
         criteria.setCategoryId(categoryId);
         criteria.setVehicleStatusId(statusId);
-        criteria.setPage(Integer.valueOf(page));
+        criteria.setPageNumber(Integer.valueOf(page));
         criteria.setPageSize(Integer.valueOf(pageSize));
 
         if (search != null && !search.isEmpty()) {
@@ -145,47 +140,10 @@ public class VehicleServlet extends HttpServlet {
             }
         }
 
-        applySorting(criteria, sort);
         return criteria;
     }
 
-    private Results<VehicleDTO> searchVehicles(VehicleCriteria criteria, List<String> errors) {
-        try {
-            Results<VehicleDTO> results = vehicleService.findByCriteria(criteria);
-            if (results == null) {
-                return emptyResults(criteria);
-            }
-            results.normalize();
-            return results;
-        } catch (RentexpresException ex) {
-            LOGGER.error("Error recuperando los vehículos", ex);
-            errors.add("No se pudo recuperar el listado de vehículos.");
-            return emptyResults(criteria);
-        }
-    }
-
-    private Results<VehicleDTO> emptyResults(VehicleCriteria criteria) {
-        Results<VehicleDTO> results = new Results<VehicleDTO>();
-        results.setItems(new ArrayList<VehicleDTO>());
-        results.setPage(criteria.getSafePage());
-        results.setPageSize(criteria.getSafePageSize());
-        results.setTotal(0);
-        results.normalize();
-        return results;
-    }
-
-    private void applySorting(VehicleCriteria criteria, String sort) {
-        if (VehicleConstants.VALUE_SORT_PRICE_DESC.equals(sort)) {
-            criteria.setOrderBy("daily_price");
-            criteria.setOrderDir("DESC");
-        } else if (VehicleConstants.VALUE_SORT_YEAR_DESC.equals(sort)) {
-            criteria.setOrderBy("manufacture_year");
-            criteria.setOrderDir("DESC");
-        } else {
-            criteria.setOrderBy("daily_price");
-            criteria.setOrderDir("ASC");
-        }
-    }
+   
 
     private List<VehicleCategoryDTO> loadCategories(Locale locale) {
         try {

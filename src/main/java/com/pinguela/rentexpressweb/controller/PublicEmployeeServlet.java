@@ -306,8 +306,8 @@ public class PublicEmployeeServlet extends HttpServlet {
     private Map<Integer, String> mapHeadquarters(List<HeadquartersDTO> headquarters) {
         Map<Integer, String> map = new LinkedHashMap<>();
         for (HeadquartersDTO dto : headquarters) {
-            if (dto != null && dto.getHeadquartersId() != null) {
-                map.put(dto.getHeadquartersId(), dto.getName());
+            if (dto != null && dto.getId() != null) {
+                map.put(dto.getId(), dto.getName());
             }
         }
         return map;
@@ -377,7 +377,7 @@ public class PublicEmployeeServlet extends HttpServlet {
                     result = compareCreatedDate(first.getCreatedAt(), second.getCreatedAt());
                 }
                 if (result == 0) {
-                    result = compareInteger(first.getEmployeeId(), second.getEmployeeId());
+                    result = compareInteger(first.getId(), second.getId());
                 }
                 return result;
             }

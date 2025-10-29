@@ -129,8 +129,8 @@ public class PrivateReservationServlet extends HttpServlet {
 		List<HeadquartersDTO> headquarters = loadHeadquarters();
                 Map<Integer, HeadquartersDTO> headquartersById = new HashMap<>();
                 for (HeadquartersDTO headquartersDTO : headquarters) {
-                        if (headquartersDTO != null && headquartersDTO.getHeadquartersId() != null) {
-                                headquartersById.put(headquartersDTO.getHeadquartersId(), headquartersDTO);
+                        if (headquartersDTO != null && headquartersDTO.getId() != null) {
+                                headquartersById.put(headquartersDTO.getId(), headquartersDTO);
                         }
                 }
 
