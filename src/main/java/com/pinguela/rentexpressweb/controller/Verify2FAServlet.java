@@ -14,8 +14,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,6 +28,18 @@ public class Verify2FAServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     private static final Logger LOGGER = LogManager.getLogger(Verify2FAServlet.class);
+    private static final String ATTR_PENDING_EMAIL = "pendingEmail";
+    private static final String ATTR_SECONDS_REMAINING = "secondsRemaining";
+    private static final String ATTR_SUBMITTED_CODE = "submittedCode";
+    private static final String ERROR_KEY_CODE = SecurityConstants.PARAM_2FA_CODE;
+    private static final String ERROR_KEY_GLOBAL = "global";
+    private static final String MESSAGE_CODE_REQUIRED = "Debes introducir el código de verificación.";
+    private static final String MESSAGE_CODE_LENGTH =
+            "El código debe tener " + SecurityConstants.TWO_FA_CODE_LENGTH + " dígitos.";
+    private static final String MESSAGE_CODE_EXPIRED = "El código ha caducado. Solicita uno nuevo.";
+    private static final String MESSAGE_CODE_INVALID = "El código introducido no es válido.";
+    private static final String MESSAGE_SESSION_EXPIRED = "Tu sesión de verificación ha caducado. Inicia sesión de nuevo.";
+    private static final String VIEW_VERIFY_2FA = "/private/security/verify_2fa.jsp";
 
     public Verify2FAServlet() {
         super();
@@ -38,8 +50,7 @@ public class Verify2FAServlet extends HttpServlet {
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         if (!TwoFactorManager.hasPendingVerification(request)) {
-            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
-                    "Tu sesión de verificación ha caducado. Inicia sesión de nuevo.");
+            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR, MESSAGE_SESSION_EXPIRED);
             response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
             return;
         }
@@ -58,9 +69,9 @@ public class Verify2FAServlet extends HttpServlet {
 
         copyFlashMessages(request);
         request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Verificación en dos pasos");
-        request.setAttribute("pendingEmail", TwoFactorManager.getPendingEmail(request));
-        request.setAttribute("secondsRemaining", Long.valueOf(TwoFactorManager.secondsUntilExpiration(request)));
-        request.getRequestDispatcher("/private/security/verify_2fa.jsp").forward(request, response);
+        request.setAttribute(ATTR_PENDING_EMAIL, TwoFactorManager.getPendingEmail(request));
+        request.setAttribute(ATTR_SECONDS_REMAINING, Long.valueOf(TwoFactorManager.secondsUntilExpiration(request)));
+        request.getRequestDispatcher(VIEW_VERIFY_2FA).forward(request, response);
     }
 
     /**
@@ -68,8 +79,7 @@ public class Verify2FAServlet extends HttpServlet {
      */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         if (!TwoFactorManager.hasPendingVerification(request)) {
-            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
-                    "Tu sesión de verificación ha caducado. Inicia sesión de nuevo.");
+            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR, MESSAGE_SESSION_EXPIRED);
             response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
             return;
         }
@@ -77,28 +87,28 @@ public class Verify2FAServlet extends HttpServlet {
         String code = request.getParameter(SecurityConstants.PARAM_2FA_CODE);
         String sanitizedCode = code != null ? code.trim() : "";
 
-        List<String> errors = new ArrayList<>();
+        Map<String, String> errors = new LinkedHashMap<String, String>();
         if (sanitizedCode.isEmpty()) {
-            errors.add("Debes introducir el código de verificación.");
+            errors.put(ERROR_KEY_CODE, MESSAGE_CODE_REQUIRED);
         } else if (!sanitizedCode.matches("\\d{" + SecurityConstants.TWO_FA_CODE_LENGTH + "}")) {
-            errors.add("El código debe tener " + SecurityConstants.TWO_FA_CODE_LENGTH + " dígitos.");
+            errors.put(ERROR_KEY_CODE, MESSAGE_CODE_LENGTH);
         }
 
         if (errors.isEmpty() && TwoFactorManager.isExpired(request)) {
-            errors.add("El código ha caducado. Solicita uno nuevo.");
+            errors.put(ERROR_KEY_GLOBAL, MESSAGE_CODE_EXPIRED);
         }
 
         if (errors.isEmpty() && !TwoFactorManager.matchesCode(request, sanitizedCode)) {
-            errors.add("El código introducido no es válido.");
+            errors.put(ERROR_KEY_GLOBAL, MESSAGE_CODE_INVALID);
         }
 
         if (!errors.isEmpty()) {
-            request.setAttribute("errors", errors);
-            request.setAttribute("submittedCode", sanitizedCode);
+            request.setAttribute(AppConstants.ATTR_FORM_ERRORS, errors);
+            request.setAttribute(ATTR_SUBMITTED_CODE, sanitizedCode);
             request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Verificación en dos pasos");
-            request.setAttribute("pendingEmail", TwoFactorManager.getPendingEmail(request));
-            request.setAttribute("secondsRemaining", Long.valueOf(TwoFactorManager.secondsUntilExpiration(request)));
-            request.getRequestDispatcher("/private/security/verify_2fa.jsp").forward(request, response);
+            request.setAttribute(ATTR_PENDING_EMAIL, TwoFactorManager.getPendingEmail(request));
+            request.setAttribute(ATTR_SECONDS_REMAINING, Long.valueOf(TwoFactorManager.secondsUntilExpiration(request)));
+            request.getRequestDispatcher(VIEW_VERIFY_2FA).forward(request, response);
             return;
         }
 

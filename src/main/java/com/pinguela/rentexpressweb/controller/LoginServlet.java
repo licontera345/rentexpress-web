@@ -16,8 +16,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Locale;
 
 import org.apache.logging.log4j.LogManager;
@@ -31,6 +31,14 @@ public class LoginServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     private static final Logger LOGGER = LogManager.getLogger(LoginServlet.class);
+    private static final String ATTR_ALREADY_AUTHENTICATED = "alreadyAuthenticated";
+    private static final String ERROR_KEY_EMAIL = UserConstants.PARAM_EMAIL;
+    private static final String ERROR_KEY_PASSWORD = UserConstants.PARAM_PASSWORD;
+    private static final String ERROR_KEY_GLOBAL = "global";
+    private static final String MESSAGE_EMAIL_REQUIRED = "El correo electrónico es obligatorio.";
+    private static final String MESSAGE_PASSWORD_REQUIRED = "La contraseña es obligatoria.";
+    private static final String MESSAGE_INVALID_CREDENTIALS =
+            "Credenciales no válidas. Revisa tu correo y contraseña.";
 
     /**
      * @see HttpServlet#HttpServlet()
@@ -61,7 +69,7 @@ public class LoginServlet extends HttpServlet {
 
         copyFlashMessages(request);
         if (currentUser != null) {
-            request.setAttribute("alreadyAuthenticated", Boolean.TRUE);
+            request.setAttribute(ATTR_ALREADY_AUTHENTICATED, Boolean.TRUE);
             if (request.getAttribute(AppConstants.ATTR_REMEMBERED_EMAIL) == null) {
                 request.setAttribute(AppConstants.ATTR_REMEMBERED_EMAIL, currentUser.toString());
             }
@@ -84,35 +92,37 @@ public class LoginServlet extends HttpServlet {
         String password = request.getParameter(UserConstants.PARAM_PASSWORD);
         boolean remember = request.getParameter(UserConstants.PARAM_REMEMBER_ME) != null;
 
-        List<String> errors = new ArrayList<>();
-        if (email == null || email.trim().isEmpty()) {
-            errors.add("El correo electrónico es obligatorio.");
+        Map<String, String> errors = new LinkedHashMap<String, String>();
+        String sanitizedEmail = email != null ? email.trim() : null;
+        if (sanitizedEmail == null || sanitizedEmail.isEmpty()) {
+            errors.put(ERROR_KEY_EMAIL, MESSAGE_EMAIL_REQUIRED);
         }
         if (password == null || password.trim().isEmpty()) {
-            errors.add("La contraseña es obligatoria.");
+            errors.put(ERROR_KEY_PASSWORD, MESSAGE_PASSWORD_REQUIRED);
         }
 
-        if (errors.isEmpty() && !authenticate(email, password)) {
-            errors.add("Credenciales no válidas. Revisa tu correo y contraseña.");
+        if (errors.isEmpty() && !authenticate(sanitizedEmail, password)) {
+            errors.put(ERROR_KEY_GLOBAL, MESSAGE_INVALID_CREDENTIALS);
         }
 
         if (!errors.isEmpty()) {
-            request.setAttribute("errors", errors);
+            request.setAttribute(AppConstants.ATTR_FORM_ERRORS, errors);
             request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Inicia sesión");
-            request.setAttribute(AppConstants.ATTR_REMEMBERED_EMAIL, email);
+            request.setAttribute(AppConstants.ATTR_REMEMBERED_EMAIL, sanitizedEmail);
             request.getRequestDispatcher(Views.PUBLIC_LOGIN).forward(request, response);
             return;
         }
 
-        String sanitizedEmail = email != null ? email.trim() : null;
+        String normalizedEmail = sanitizedEmail != null ? sanitizedEmail.toLowerCase(Locale.ROOT) : null;
+
         RememberMeManager.forgetUser(response);
         SessionManager.removeAttribute(request, AppConstants.ATTR_CURRENT_USER);
         SessionManager.removeAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
 
-        String verificationCode = TwoFactorManager.initiate(request, sanitizedEmail, remember);
+        String verificationCode = TwoFactorManager.initiate(request, normalizedEmail, remember);
         SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_INFO,
                 buildVerificationInfoMessage(sanitizedEmail, verificationCode, false));
-        LOGGER.info("Generado código 2FA {} para {}", verificationCode, sanitizedEmail);
+        LOGGER.info("Generado código 2FA {} para {}", verificationCode, normalizedEmail);
 
         response.sendRedirect(request.getContextPath() + "/app/auth/verify-2fa");
     }
@@ -121,12 +131,16 @@ public class LoginServlet extends HttpServlet {
         if (email == null || password == null) {
             return false;
         }
-        String sanitizedEmail = email.trim().toLowerCase(Locale.ROOT);
-        String storedHash = CredentialStore.findHashedPassword(getServletContext(), sanitizedEmail);
+        String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
+        if (normalizedEmail.isEmpty()) {
+            return false;
+        }
+        String storedHash = CredentialStore.findHashedPassword(getServletContext(), normalizedEmail);
         if (storedHash != null && PasswordEncoder.matches(password, storedHash)) {
             return true;
         }
 
+        LOGGER.warn("Intento de acceso fallido para {}", normalizedEmail);
         return false;
     }
 
