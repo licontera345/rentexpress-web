@@ -43,7 +43,7 @@ Aplicación web para la reserva y alquiler de coches desarrollada con Java Servl
   - [19.8 Control de caché en respuestas](#198-control-de-caché-en-respuestas)
   - [19.9 Uso del header `Accept-Language`](#199-uso-del-header-accept-language)
   - [19.10 CRUD de ejemplo con fotos](#1910-crud-de-ejemplo-con-fotos)
-
+prohibido:usar lambda ...muy prohibido 
 importante:uso java 1.8 siempre
 recuerda:no crearas nuevas cosas del middleware lo tuyo es hacer que lo que tengo en el middleware usarlo en el appweb si no esta no inventes
 
