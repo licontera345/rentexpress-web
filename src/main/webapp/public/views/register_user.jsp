@@ -99,7 +99,9 @@
                                 <fmt:message key="register.user.city.placeholder" />
                             </option>
                             <c:forEach var="city" items="${cities}">
-                                <option value="${city.id}" data-province="${city.provinceId}" <c:if test="${formData['cityId'] eq city.id}">selected</c:if>>
+                                <c:set var="cityId" value="${city != null && city.id != null ? city.id : 0}" />
+                                <c:set var="provinceId" value="${city != null ? city.provinceId : 0}" />
+                                <option value="${cityId}" data-province="${provinceId}" <c:if test="${formData['cityId'] eq cityId}">selected</c:if>>
                                     ${city.cityName}
                                 </option>
                             </c:forEach>
