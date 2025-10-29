@@ -1,14 +1,23 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<fmt:message key="page.resetPassword.title" var="resetPasswordTitle" />
+<c:set var="pageTitle" value="${resetPasswordTitle}" />
 <%@ include file="/common/header.jsp" %>
 <c:set var="errors" value="${resetPasswordErrors}" />
 <c:set var="pendingEmail" value="${pendingResetEmail}" />
 <div class="row justify-content-center">
     <div class="col-lg-6">
         <div class="card card-common">
-            <div class="card-header">Define una contraseña nueva</div>
+            <div class="card-header"><fmt:message key="page.resetPassword.title" /></div>
             <div class="card-body p-4">
-                <p class="text-muted">Estás actualizando la contraseña de <strong>${pendingEmail}</strong>. Elige una
-                    clave robusta para continuar.</p>
+                <p class="text-muted">
+                    <fmt:message key="resetPassword.intro">
+                        <fmt:param>
+                            <strong>${pendingEmail}</strong>
+                        </fmt:param>
+                    </fmt:message>
+                </p>
                 <c:if test="${not empty flashSuccess}">
                     <div class="alert alert-success">${flashSuccess}</div>
                 </c:if>
@@ -27,17 +36,17 @@
                 </c:if>
                 <form method="post" action="${ctx}/app/password/reset" class="needs-validation" novalidate>
                     <div class="mb-3">
-                        <label for="newPassword" class="form-label">Nueva contraseña</label>
+                        <label for="newPassword" class="form-label"><fmt:message key="resetPassword.label.newPassword" /></label>
                         <input type="password" class="form-control" id="newPassword" name="newPassword" minlength="8" required>
-                        <div class="form-text">Mínimo 8 caracteres. Usa mayúsculas, minúsculas y números.</div>
+                        <div class="form-text"><fmt:message key="resetPassword.help.newPassword" /></div>
                     </div>
                     <div class="mb-3">
-                        <label for="confirmPassword" class="form-label">Confirma la contraseña</label>
+                        <label for="confirmPassword" class="form-label"><fmt:message key="resetPassword.label.confirmPassword" /></label>
                         <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" minlength="8" required>
                     </div>
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <button type="submit" class="btn btn-brand">Actualizar contraseña</button>
-                        <a href="${ctx}/app/auth/login" class="text-decoration-none">Volver al inicio de sesión</a>
+                        <button type="submit" class="btn btn-brand"><fmt:message key="resetPassword.submit" /></button>
+                        <a href="${ctx}/app/auth/login" class="text-decoration-none"><fmt:message key="resetPassword.back" /></a>
                     </div>
                 </form>
             </div>

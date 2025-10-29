@@ -1,4 +1,8 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<fmt:message key="page.verifyReset.title" var="verifyResetTitle" />
+<c:set var="pageTitle" value="${verifyResetTitle}" />
 <%@ include file="/common/header.jsp" %>
 <c:set var="errors" value="${verifyResetErrors}" />
 <c:set var="submittedCode" value="${submittedResetCode}" />
@@ -7,10 +11,16 @@
 <div class="row justify-content-center">
     <div class="col-lg-6">
         <div class="card card-common">
-            <div class="card-header">Verifica tu código</div>
+            <div class="card-header"><fmt:message key="page.verifyReset.title" /></div>
             <div class="card-body p-4">
-                <p class="text-muted">Introduce el código de 6 dígitos que te hemos enviado a
-                    <strong>${pendingEmail}</strong>. Caduca en ${secondsRemaining} segundos.</p>
+                <p class="text-muted">
+                    <fmt:message key="verifyReset.intro">
+                        <fmt:param>
+                            <strong>${pendingEmail}</strong>
+                        </fmt:param>
+                        <fmt:param value="${secondsRemaining}" />
+                    </fmt:message>
+                </p>
                 <c:if test="${not empty flashSuccess}">
                     <div class="alert alert-success">${flashSuccess}</div>
                 </c:if>
@@ -29,16 +39,20 @@
                 </c:if>
                 <form method="post" action="${ctx}/app/password/verify-reset" class="needs-validation" novalidate>
                     <div class="mb-3">
-                        <label for="code" class="form-label">Código de verificación</label>
+                        <label for="code" class="form-label"><fmt:message key="verifyReset.label.code" /></label>
                         <input type="text" class="form-control" id="code" name="code" required pattern="\\d{6}"
                                maxlength="6" value="${not empty submittedCode ? submittedCode : ''}">
-                        <div class="form-text">El código es válido durante 60 segundos.</div>
+                        <div class="form-text">
+                            <fmt:message key="verifyReset.help.code">
+                                <fmt:param value="${secondsRemaining}" />
+                            </fmt:message>
+                        </div>
                     </div>
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <button type="submit" class="btn btn-brand">Validar</button>
+                        <button type="submit" class="btn btn-brand"><fmt:message key="verifyReset.submit" /></button>
                         <div class="text-end">
-                            <a href="${ctx}/app/password/verify-reset?resend=1" class="text-decoration-none d-block">Reenviar código</a>
-                            <a href="${ctx}/app/password/forgot" class="text-decoration-none small">Cambiar el correo</a>
+                            <a href="${ctx}/app/password/verify-reset?resend=1" class="text-decoration-none d-block"><fmt:message key="verifyReset.resend" /></a>
+                            <a href="${ctx}/app/password/forgot" class="text-decoration-none small"><fmt:message key="verifyReset.changeEmail" /></a>
                         </div>
                     </div>
                 </form>
