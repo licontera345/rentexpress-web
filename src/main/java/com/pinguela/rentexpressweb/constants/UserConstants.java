@@ -10,8 +10,17 @@ public final class UserConstants {
 
     public static final String PARAM_EMAIL = "email";
     public static final String PARAM_PASSWORD = "password";
+    public static final String PARAM_CONFIRM_PASSWORD = "confirmPassword";
     public static final String PARAM_FULL_NAME = "fullName";
+    public static final String PARAM_FIRST_NAME = "firstName";
+    public static final String PARAM_LAST_NAME1 = "lastName1";
+    public static final String PARAM_LAST_NAME2 = "lastName2";
+    public static final String PARAM_BIRTH_DATE = "birthDate";
     public static final String PARAM_PHONE = "phone";
+    public static final String PARAM_STREET = "street";
+    public static final String PARAM_NUMBER = "number";
+    public static final String PARAM_PROVINCE_ID = "provinceId";
+    public static final String PARAM_CITY_ID = "cityId";
     public static final String PARAM_ACCEPT_TERMS = "acceptTerms";
     public static final String PARAM_REMEMBER_ME = "remember";
 
@@ -43,4 +52,7 @@ public final class UserConstants {
     public static final String ATTR_PROFILE_DATA = "userProfileData";
     public static final String ATTR_PROFILE_FORM = "userProfileForm";
     public static final String ATTR_PROFILE_ERRORS = "userProfileErrors";
+
+    public static final String ATTR_PROVINCES = "provinces";
+    public static final String ATTR_CITIES = "cities";
 }

@@ -26,11 +26,29 @@
                     </div>
                 </c:if>
                 <form method="post" action="${ctx}/app/users/register" class="row g-3 needs-validation" novalidate>
-                    <div class="col-12">
-                        <label for="fullName" class="form-label"><fmt:message key="register.user.fullName" /></label>
-                        <input type="text" class="form-control" id="fullName" name="fullName" maxlength="120" required
-                               value="${not empty formData['fullName'] ? formData['fullName'] : ''}">
-                        <div class="form-text"><fmt:message key="register.user.fullName.help" /></div>
+                    <div class="col-md-6">
+                        <label for="firstName" class="form-label"><fmt:message key="register.user.firstName" /></label>
+                        <input type="text" class="form-control" id="firstName" name="firstName" maxlength="120" required
+                               value="${not empty formData['firstName'] ? formData['firstName'] : ''}">
+                        <div class="form-text"><fmt:message key="register.user.firstName.help" /></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="lastName1" class="form-label"><fmt:message key="register.user.lastName1" /></label>
+                        <input type="text" class="form-control" id="lastName1" name="lastName1" maxlength="120" required
+                               value="${not empty formData['lastName1'] ? formData['lastName1'] : ''}">
+                        <div class="form-text"><fmt:message key="register.user.lastName1.help" /></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="lastName2" class="form-label"><fmt:message key="register.user.lastName2" /></label>
+                        <input type="text" class="form-control" id="lastName2" name="lastName2" maxlength="120"
+                               value="${not empty formData['lastName2'] ? formData['lastName2'] : ''}">
+                        <div class="form-text"><fmt:message key="register.user.lastName2.help" /></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="birthDate" class="form-label"><fmt:message key="register.user.birthDate" /></label>
+                        <input type="date" class="form-control" id="birthDate" name="birthDate" required
+                               value="${not empty formData['birthDate'] ? formData['birthDate'] : ''}">
+                        <div class="form-text"><fmt:message key="register.user.birthDate.help" /></div>
                     </div>
                     <div class="col-md-6">
                         <label for="email" class="form-label"><fmt:message key="register.user.email" /></label>
@@ -47,13 +65,61 @@
                         <div class="form-text"><fmt:message key="register.user.phone.help" /></div>
                     </div>
                     <div class="col-12">
+                        <h2 class="h6 fw-semibold mt-2 mb-0"><fmt:message key="register.user.address.title" /></h2>
+                    </div>
+                    <div class="col-md-8">
+                        <label for="street" class="form-label"><fmt:message key="register.user.street" /></label>
+                        <input type="text" class="form-control" id="street" name="street" maxlength="255" required
+                               value="${not empty formData['street'] ? formData['street'] : ''}">
+                        <div class="form-text"><fmt:message key="register.user.street.help" /></div>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="number" class="form-label"><fmt:message key="register.user.number" /></label>
+                        <input type="text" class="form-control" id="number" name="number" maxlength="10" required
+                               value="${not empty formData['number'] ? formData['number'] : ''}">
+                        <div class="form-text"><fmt:message key="register.user.number.help" /></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="province" class="form-label"><fmt:message key="register.user.province" /></label>
+                        <select class="form-select" id="province" name="provinceId" required>
+                            <option value="" ${empty formData['provinceId'] ? 'selected' : ''}>
+                                <fmt:message key="register.user.province.placeholder" />
+                            </option>
+                            <c:forEach var="province" items="${provinces}">
+                                <option value="${province.provinceId}" <c:if test="${formData['provinceId'] eq province.provinceId}">selected</c:if>>
+                                    ${province.provinceName}
+                                </option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="city" class="form-label"><fmt:message key="register.user.city" /></label>
+                        <select class="form-select" id="city" name="cityId" required>
+                            <option value="" ${empty formData['cityId'] ? 'selected' : ''}>
+                                <fmt:message key="register.user.city.placeholder" />
+                            </option>
+                            <c:forEach var="city" items="${cities}">
+                                <option value="${city.cityId}" data-province="${city.provinceId}" <c:if test="${formData['cityId'] eq city.cityId}">selected</c:if>>
+                                    ${city.cityName}
+                                </option>
+                            </c:forEach>
+                        </select>
+                        <div class="form-text"><fmt:message key="register.user.city.help" /></div>
+                    </div>
+                    <div class="col-12">
                         <label for="password" class="form-label"><fmt:message key="register.user.password" /></label>
                         <input type="password" class="form-control" id="password" name="password" minlength="8" required autocomplete="new-password">
                         <div class="form-text"><fmt:message key="register.user.password.help" /></div>
                     </div>
                     <div class="col-12">
+                        <label for="confirmPassword" class="form-label"><fmt:message key="register.user.confirmPassword" /></label>
+                        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" minlength="8" required autocomplete="new-password">
+                        <div class="form-text"><fmt:message key="register.user.confirmPassword.help" /></div>
+                    </div>
+                    <div class="col-12">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="on" id="acceptTerms" name="acceptTerms" required>
+                            <input class="form-check-input" type="checkbox" value="on" id="acceptTerms" name="acceptTerms" required
+                                   ${formData['acceptTerms'] eq 'on' ? 'checked' : ''}>
                             <label class="form-check-label" for="acceptTerms">
                                 <fmt:message key="register.user.acceptTerms">
                                     <fmt:param>
@@ -68,6 +134,52 @@
                         <a href="${ctx}/app/auth/login" class="text-decoration-none"><fmt:message key="register.user.already" /></a>
                     </div>
                 </form>
+                <script>
+                    (function () {
+                        var provinceSelect = document.getElementById('province');
+                        var citySelect = document.getElementById('city');
+                        if (!provinceSelect || !citySelect) {
+                            return;
+                        }
+
+                        function filterCities() {
+                            var selectedProvince = provinceSelect.value;
+                            var hasVisible = false;
+                            for (var i = 0; i < citySelect.options.length; i++) {
+                                var option = citySelect.options[i];
+                                if (!option.value) {
+                                    option.hidden = false;
+                                    continue;
+                                }
+                                var optionProvince = option.getAttribute('data-province');
+                                if (selectedProvince && optionProvince === selectedProvince) {
+                                    option.hidden = false;
+                                    hasVisible = true;
+                                } else {
+                                    option.hidden = true;
+                                }
+                            }
+                            if (!selectedProvince) {
+                                citySelect.value = '';
+                                citySelect.disabled = true;
+                            } else if (!hasVisible) {
+                                citySelect.value = '';
+                                citySelect.disabled = true;
+                            } else {
+                                var currentOption = citySelect.options[citySelect.selectedIndex];
+                                if (!currentOption || currentOption.hidden) {
+                                    citySelect.value = '';
+                                }
+                                citySelect.disabled = false;
+                            }
+                        }
+
+                        filterCities();
+                        provinceSelect.addEventListener('change', function () {
+                            filterCities();
+                        });
+                    })();
+                </script>
             </div>
         </div>
         <div class="card border-0 bg-light">
