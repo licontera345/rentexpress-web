@@ -1,3 +1,4 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ include file="/common/header.jsp" %>
 <c:set var="errors" value="${forgotPasswordErrors}" />
 <c:set var="email" value="${forgotPasswordEmail}" />
@@ -6,8 +7,7 @@
         <div class="card card-common">
             <div class="card-header">Recupera tu contraseña</div>
             <div class="card-body p-4">
-                <p class="text-muted">Introduce el correo con el que te registraste. Te enviaremos un código temporal
-                    (académico) para validar que eres el propietario de la cuenta.</p>
+                <p class="text-muted">Introduce el correo con el que te registraste. Te enviaremos un código temporal para validar tu identidad y restablecer el acceso.</p>
                 <c:if test="${not empty flashSuccess}">
                     <div class="alert alert-success">${flashSuccess}</div>
                 </c:if>

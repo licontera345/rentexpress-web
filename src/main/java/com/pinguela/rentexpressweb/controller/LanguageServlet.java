@@ -5,6 +5,7 @@ import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.security.SessionManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -37,6 +38,12 @@ public class LanguageServlet extends HttpServlet {
                 SessionManager.setAttribute(request, AppConstants.ATTR_LOCALE, normalized);
                 SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
                         "Idioma actualizado a " + normalized.toUpperCase(Locale.ROOT) + ".");
+                Cookie localeCookie = new Cookie(AppConstants.ATTR_LOCALE, normalized);
+                localeCookie.setPath(request.getContextPath().isEmpty() ? "/" : request.getContextPath());
+                localeCookie.setMaxAge(60 * 60 * 24 * 365);
+                localeCookie.setHttpOnly(true);
+                localeCookie.setSecure(request.isSecure());
+                response.addCookie(localeCookie);
             } else {
                 SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
                         "Idioma no soportado. Se mantienen las traducciones actuales.");

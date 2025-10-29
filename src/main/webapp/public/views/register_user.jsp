@@ -1,11 +1,11 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ include file="/common/header.jsp" %>
 <div class="row justify-content-center">
     <div class="col-lg-7">
         <div class="card card-common mb-4">
-            <div class="card-header">Crear una cuenta de estudiante</div>
+            <div class="card-header">Crear una cuenta de cliente</div>
             <div class="card-body p-4">
-                <p class="text-muted">Este formulario guarda los últimos registros en memoria para que puedas
-                    practicar el flujo de alta antes de conectar tus DAO reales.</p>
+                <p class="text-muted">Completa tus datos personales para habilitar el acceso a RentExpress y gestionar reservas reales en cualquiera de nuestras sedes.</p>
                 <c:if test="${not empty errors}">
                     <div class="alert alert-danger">
                         <ul class="mb-0">
@@ -34,15 +34,14 @@
                     <div class="col-12">
                         <label for="password" class="form-label">Contraseña</label>
                         <input type="password" class="form-control" id="password" name="password" required>
-                        <small class="text-muted">Podrás sustituir esta lógica por un hash seguro cuando integres tu
-                            servicio de usuarios.</small>
+                        <small class="text-muted">Utiliza una contraseña robusta con al menos 8 caracteres, combinando letras, números y símbolos.</small>
                     </div>
                     <div class="col-12">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="on" id="acceptTerms" name="acceptTerms"
                                    required>
                             <label class="form-check-label" for="acceptTerms">
-                                Acepto los términos académicos de RentExpress.
+                                Acepto los términos y condiciones de RentExpress.
                             </label>
                         </div>
                     </div>
@@ -56,11 +55,11 @@
     </div>
     <div class="col-lg-5">
         <div class="card card-common">
-            <div class="card-header">Últimos registros simulados</div>
+            <div class="card-header">Últimos clientes registrados</div>
             <div class="card-body">
                 <c:choose>
                     <c:when test="${empty registeredUsers}">
-                        <p class="text-muted mb-0">Aún no hay registros. ¡Sé el primero en estrenar la plataforma!</p>
+                        <p class="text-muted mb-0">Todavía no hay clientes registrados. Completa el formulario para dar de alta el primero.</p>
                     </c:when>
                     <c:otherwise>
                         <ul class="list-group list-group-flush">

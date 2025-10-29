@@ -1,3 +1,4 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ include file="/common/header.jsp" %>
 <c:set var="errors" value="${verifyResetErrors}" />
 <c:set var="submittedCode" value="${submittedResetCode}" />
