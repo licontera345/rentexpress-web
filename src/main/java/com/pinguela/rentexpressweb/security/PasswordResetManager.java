@@ -1,8 +1,6 @@
 package com.pinguela.rentexpressweb.security;
 
 import java.security.SecureRandom;
-import java.time.Duration;
-import java.time.Instant;
 
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
 
@@ -24,9 +22,8 @@ public final class PasswordResetManager {
 
     public static String initiate(HttpServletRequest request, String email) {
         String code = generateCode();
-        long expiration = Instant.now()
-                .plusSeconds(SecurityConstants.TWO_FA_CODE_VALIDITY_SECONDS)
-                .toEpochMilli();
+        long expiration = System.currentTimeMillis()
+                + (SecurityConstants.TWO_FA_CODE_VALIDITY_SECONDS * 1000L);
         SessionManager.setAttribute(request, ATTR_RESET_EMAIL, email);
         SessionManager.setAttribute(request, ATTR_RESET_CODE, code);
         SessionManager.setAttribute(request, ATTR_RESET_EXPIRATION, expiration);
@@ -52,20 +49,23 @@ public final class PasswordResetManager {
     }
 
     public static boolean isExpired(HttpServletRequest request) {
-        Instant expiration = resolveExpiration(request);
+        Long expiration = resolveExpirationMillis(request);
         if (expiration == null) {
             return true;
         }
-        return Instant.now().isAfter(expiration);
+        return System.currentTimeMillis() > expiration.longValue();
     }
 
     public static long secondsUntilExpiration(HttpServletRequest request) {
-        Instant expiration = resolveExpiration(request);
+        Long expiration = resolveExpirationMillis(request);
         if (expiration == null) {
             return 0L;
         }
-        long seconds = Duration.between(Instant.now(), expiration).getSeconds();
-        return Math.max(0L, seconds);
+        long remaining = expiration.longValue() - System.currentTimeMillis();
+        if (remaining <= 0L) {
+            return 0L;
+        }
+        return remaining / 1000L;
     }
 
     public static boolean matchesCode(HttpServletRequest request, String providedCode) {
@@ -89,17 +89,14 @@ public final class PasswordResetManager {
         SessionManager.removeAttribute(request, ATTR_RESET_VERIFIED);
     }
 
-    private static Instant resolveExpiration(HttpServletRequest request) {
+    private static Long resolveExpirationMillis(HttpServletRequest request) {
         Object value = SessionManager.getAttribute(request, ATTR_RESET_EXPIRATION);
         if (value instanceof Long) {
-            return Instant.ofEpochMilli(((Long) value).longValue());
-        }
-        if (value instanceof Instant) {
-            return (Instant) value;
+            return (Long) value;
         }
         if (value instanceof String) {
             try {
-                return Instant.ofEpochMilli(Long.parseLong((String) value));
+                return Long.valueOf(Long.parseLong((String) value));
             } catch (NumberFormatException ex) {
                 return null;
             }

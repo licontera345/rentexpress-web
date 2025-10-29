@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -39,6 +40,8 @@ import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import com.pinguela.rentexpressweb.util.LegacyDateUtils;
 
 /**
  * Listado público de empleados de RentExpress. Permite filtrar por rol, sede y
@@ -411,17 +414,19 @@ public class PublicEmployeeServlet extends HttpServlet {
         return firstName.compareToIgnoreCase(secondName);
     }
 
-    private int compareCreatedDate(java.time.LocalDateTime first, java.time.LocalDateTime second) {
-        if (first == null && second == null) {
+    private int compareCreatedDate(Object first, Object second) {
+        Date firstDate = LegacyDateUtils.toDate(first);
+        Date secondDate = LegacyDateUtils.toDate(second);
+        if (firstDate == null && secondDate == null) {
             return 0;
         }
-        if (first == null) {
+        if (firstDate == null) {
             return 1;
         }
-        if (second == null) {
+        if (secondDate == null) {
             return -1;
         }
-        return second.compareTo(first);
+        return secondDate.compareTo(firstDate);
     }
 
     private int compareInteger(Integer first, Integer second) {
@@ -438,17 +443,25 @@ public class PublicEmployeeServlet extends HttpServlet {
     }
 
     private String resolveFullName(EmployeeDTO employee) {
-        List<String> parts = new ArrayList<>();
-        if (employee.getFirstName() != null) {
-            parts.add(employee.getFirstName());
+        StringBuilder builder = new StringBuilder();
+        appendNamePart(builder, employee.getFirstName());
+        appendNamePart(builder, employee.getLastName1());
+        appendNamePart(builder, employee.getLastName2());
+        return builder.toString().trim();
+    }
+
+    private void appendNamePart(StringBuilder builder, String value) {
+        if (value == null) {
+            return;
         }
-        if (employee.getLastName1() != null) {
-            parts.add(employee.getLastName1());
+        String trimmed = value.trim();
+        if (trimmed.isEmpty()) {
+            return;
         }
-        if (employee.getLastName2() != null) {
-            parts.add(employee.getLastName2());
+        if (builder.length() > 0) {
+            builder.append(' ');
         }
-        return String.join(" ", parts);
+        builder.append(trimmed);
     }
 
     private Map<String, Object> buildPagination(List<EmployeeDTO> employees, Map<String, String> filters) {

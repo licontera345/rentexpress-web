@@ -1,8 +1,6 @@
 package com.pinguela.rentexpressweb.security;
 
 import java.security.SecureRandom;
-import java.time.Duration;
-import java.time.Instant;
 
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
 
@@ -20,9 +18,8 @@ public final class TwoFactorManager {
 
     public static String initiate(HttpServletRequest request, String email, boolean remember) {
         String code = generateCode();
-        long expiration = Instant.now()
-                .plusSeconds(SecurityConstants.TWO_FA_CODE_VALIDITY_SECONDS)
-                .toEpochMilli();
+        long expiration = System.currentTimeMillis()
+                + (SecurityConstants.TWO_FA_CODE_VALIDITY_SECONDS * 1000L);
         SessionManager.setAttribute(request, SecurityConstants.ATTR_PENDING_2FA_EMAIL, email);
         SessionManager.setAttribute(request, SecurityConstants.ATTR_PENDING_2FA_CODE, code);
         SessionManager.setAttribute(request, SecurityConstants.ATTR_PENDING_2FA_EXPIRATION, expiration);
@@ -59,20 +56,23 @@ public final class TwoFactorManager {
     }
 
     public static boolean isExpired(HttpServletRequest request) {
-        Instant expiration = resolveExpiration(request);
+        Long expiration = resolveExpirationMillis(request);
         if (expiration == null) {
             return true;
         }
-        return Instant.now().isAfter(expiration);
+        return System.currentTimeMillis() > expiration.longValue();
     }
 
     public static long secondsUntilExpiration(HttpServletRequest request) {
-        Instant expiration = resolveExpiration(request);
+        Long expiration = resolveExpirationMillis(request);
         if (expiration == null) {
             return 0L;
         }
-        long seconds = Duration.between(Instant.now(), expiration).getSeconds();
-        return Math.max(seconds, 0L);
+        long remaining = expiration.longValue() - System.currentTimeMillis();
+        if (remaining <= 0L) {
+            return 0L;
+        }
+        return remaining / 1000L;
     }
 
     public static boolean matchesCode(HttpServletRequest request, String providedCode) {
@@ -93,18 +93,15 @@ public final class TwoFactorManager {
         return String.format("%0" + SecurityConstants.TWO_FA_CODE_LENGTH + "d", number);
     }
 
-    private static Instant resolveExpiration(HttpServletRequest request) {
+    private static Long resolveExpirationMillis(HttpServletRequest request) {
         Object value = SessionManager.getAttribute(request, SecurityConstants.ATTR_PENDING_2FA_EXPIRATION);
         if (value instanceof Long) {
-            return Instant.ofEpochMilli(((Long) value).longValue());
-        }
-        if (value instanceof Instant) {
-            return (Instant) value;
+            return (Long) value;
         }
         if (value instanceof String) {
             try {
                 long millis = Long.parseLong((String) value);
-                return Instant.ofEpochMilli(millis);
+                return Long.valueOf(millis);
             } catch (NumberFormatException ex) {
                 return null;
             }
