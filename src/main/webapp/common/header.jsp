@@ -44,25 +44,28 @@
                 <li class="nav-item"><a class="nav-link" href="${ctx}/public/rentals"><fmt:message key="nav.rentals" /></a></li>
             </ul>
             <div class="d-flex flex-wrap align-items-center gap-3">
+                <c:set var="currentFlag" value="fi-es" />
+                <c:choose>
+                    <c:when test="${htmlLang eq 'en'}">
+                        <c:set var="currentFlag" value="fi-gb" />
+                    </c:when>
+                    <c:when test="${htmlLang eq 'fr'}">
+                        <c:set var="currentFlag" value="fi-fr" />
+                    </c:when>
+                </c:choose>
                 <form class="d-flex align-items-center gap-2 language-switcher" method="post" action="${ctx}/app/settings/language">
                     <span class="text-muted small fw-semibold text-uppercase"><fmt:message key="nav.language.label" /></span>
-                    <div class="btn-group" role="group">
-                        <button type="submit" name="lang" value="es"
-                                class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 ${htmlLang eq 'es' ? 'active' : ''}">
-                            <span class="fi fi-es rounded-circle"></span>
-                            <span class="d-none d-lg-inline"><fmt:message key="nav.language.es" /></span>
+                    <span class="fi ${currentFlag} rounded-circle"></span>
+                    <select class="form-select form-select-sm language-select" name="lang" onchange="this.form.submit()">
+                        <option value="es" ${htmlLang eq 'es' ? 'selected' : ''}><fmt:message key="nav.language.es" /></option>
+                        <option value="en" ${htmlLang eq 'en' ? 'selected' : ''}><fmt:message key="nav.language.en" /></option>
+                        <option value="fr" ${htmlLang eq 'fr' ? 'selected' : ''}><fmt:message key="nav.language.fr" /></option>
+                    </select>
+                    <noscript>
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">
+                            <fmt:message key="nav.language.submit" />
                         </button>
-                        <button type="submit" name="lang" value="en"
-                                class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 ${htmlLang eq 'en' ? 'active' : ''}">
-                            <span class="fi fi-gb rounded-circle"></span>
-                            <span class="d-none d-lg-inline"><fmt:message key="nav.language.en" /></span>
-                        </button>
-                        <button type="submit" name="lang" value="fr"
-                                class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 ${htmlLang eq 'fr' ? 'active' : ''}">
-                            <span class="fi fi-fr rounded-circle"></span>
-                            <span class="d-none d-lg-inline"><fmt:message key="nav.language.fr" /></span>
-                        </button>
-                    </div>
+                    </noscript>
                 </form>
                 <div class="d-flex gap-2">
                     <a class="btn btn-outline-brand" href="${ctx}/app/auth/login"><fmt:message key="nav.login" /></a>

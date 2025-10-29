@@ -81,6 +81,27 @@ main {
     transform: translateY(-2px);
 }
 
+.language-switcher .language-select {
+    min-width: 160px;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(102, 178, 255, 0.4);
+    padding-inline: 1.25rem 2rem;
+    color: var(--rentexpress-text-dark);
+    background-color: rgba(102, 178, 255, 0.08);
+    box-shadow: 0 6px 18px rgba(102, 178, 255, 0.15);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.language-switcher .language-select:focus {
+    border-color: var(--rentexpress-primary);
+    box-shadow: 0 12px 24px rgba(102, 178, 255, 0.25);
+    background-color: #ffffff;
+}
+
+.language-switcher .language-select option {
+    color: var(--rentexpress-text-dark);
+}
+
 .card-common {
     border-radius: 0.75rem;
     box-shadow: 0 8px 24px rgba(22, 28, 45, 0.08);
