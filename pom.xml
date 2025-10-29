@@ -17,7 +17,12 @@
 			<url>https://gitlab.com/api/v4/projects/75635928/packages/maven</url>
 		</repository>
 	</repositories>
-
+<distributionManagement>
+   <repository>
+      <id>gitlab-maven</id>
+      <url>https://gitlab.com/api/v4/projects/75635928/packages/maven</url>
+    </repository>
+ </distributionManagement>
 	<dependencies>
 		<!-- tu middleware -->
 		<dependency>
