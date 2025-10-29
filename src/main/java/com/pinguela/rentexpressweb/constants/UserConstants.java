@@ -15,6 +15,8 @@ public final class UserConstants {
     public static final String PARAM_ACCEPT_TERMS = "acceptTerms";
     public static final String PARAM_REMEMBER_ME = "remember";
 
+    public static final String ROLE_NAME_CUSTOMER = "Customer";
+
     public static final String PARAM_SEARCH = "search";
     public static final String PARAM_ROLE = "role";
     public static final String PARAM_ACTIVE = "active";
