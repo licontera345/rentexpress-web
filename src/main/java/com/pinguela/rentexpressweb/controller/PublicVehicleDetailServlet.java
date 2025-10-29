@@ -84,6 +84,8 @@ public class PublicVehicleDetailServlet extends HttpServlet {
                     buildDefaultForm(request, vehicleIdParam));
         }
 
+        exposeReservationParameterNames(request);
+
         request.getRequestDispatcher("/public/vehicle/vehicle_detail.jsp").forward(request, response);
     }
 
@@ -198,6 +200,16 @@ public class PublicVehicleDetailServlet extends HttpServlet {
             defaults.put(ReservationConstants.PARAM_RETURN_HEADQUARTERS, returnHeadquarters);
         }
         return defaults;
+    }
+
+    private void exposeReservationParameterNames(HttpServletRequest request) {
+        request.setAttribute(ReservationConstants.ATTR_PARAM_VEHICLE_ID, ReservationConstants.PARAM_VEHICLE_ID);
+        request.setAttribute(ReservationConstants.ATTR_PARAM_START_DATE, ReservationConstants.PARAM_START_DATE);
+        request.setAttribute(ReservationConstants.ATTR_PARAM_END_DATE, ReservationConstants.PARAM_END_DATE);
+        request.setAttribute(ReservationConstants.ATTR_PARAM_PICKUP_HEADQUARTERS,
+                ReservationConstants.PARAM_PICKUP_HEADQUARTERS);
+        request.setAttribute(ReservationConstants.ATTR_PARAM_RETURN_HEADQUARTERS,
+                ReservationConstants.PARAM_RETURN_HEADQUARTERS);
     }
 
     private String firstNonEmpty(String... values) {

@@ -24,4 +24,11 @@ public final class RentalConstants {
     public static final String ATTR_STATUS_COUNTS = "rentalStatusCounts";
     public static final String ATTR_RENTAL_SUMMARY = "rentalSummary";
     public static final String ATTR_CONVERSION_RESULT = "rentalConversionResult";
+
+    public static final String ATTR_PARAM_ACTION = "rentalParamAction";
+    public static final String ATTR_PARAM_STATUS = "rentalParamStatus";
+    public static final String ATTR_PARAM_START_FROM = "rentalParamStartFrom";
+    public static final String ATTR_PARAM_START_TO = "rentalParamStartTo";
+    public static final String ATTR_PARAM_MIN_COST = "rentalParamMinCost";
+    public static final String ATTR_PARAM_MAX_COST = "rentalParamMaxCost";
 }

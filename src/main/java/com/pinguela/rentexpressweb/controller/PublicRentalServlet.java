@@ -103,7 +103,7 @@ public class PublicRentalServlet extends HttpServlet {
         request.setAttribute(RentalConstants.ATTR_RENTALS, buildRentalViews(filtered, statusNames));
         request.setAttribute(RentalConstants.ATTR_LATEST_RENTALS, buildRentalViews(latestRentals, statusNames));
         request.setAttribute(RentalConstants.ATTR_RENTAL_SUMMARY, summary);
-
+        exposeParameterNames(request);
         request.getRequestDispatcher("/public/rental/rentals_report.jsp").forward(request, response);
     }
 
@@ -122,6 +122,15 @@ public class PublicRentalServlet extends HttpServlet {
         filters.put(RentalConstants.PARAM_MIN_COST, sanitize(request.getParameter(RentalConstants.PARAM_MIN_COST)));
         filters.put(RentalConstants.PARAM_MAX_COST, sanitize(request.getParameter(RentalConstants.PARAM_MAX_COST)));
         return filters;
+    }
+
+    private void exposeParameterNames(HttpServletRequest request) {
+        request.setAttribute(RentalConstants.ATTR_PARAM_ACTION, RentalConstants.PARAM_ACTION);
+        request.setAttribute(RentalConstants.ATTR_PARAM_STATUS, RentalConstants.PARAM_STATUS);
+        request.setAttribute(RentalConstants.ATTR_PARAM_START_FROM, RentalConstants.PARAM_START_FROM);
+        request.setAttribute(RentalConstants.ATTR_PARAM_START_TO, RentalConstants.PARAM_START_TO);
+        request.setAttribute(RentalConstants.ATTR_PARAM_MIN_COST, RentalConstants.PARAM_MIN_COST);
+        request.setAttribute(RentalConstants.ATTR_PARAM_MAX_COST, RentalConstants.PARAM_MAX_COST);
     }
 
     private String sanitize(String value) {

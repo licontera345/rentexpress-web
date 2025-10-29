@@ -19,4 +19,10 @@ public final class ReservationConstants {
     public static final String ATTR_RESERVATION_FORM = "reservationForm";
     public static final String ATTR_RESERVATION_SUMMARY = "reservationSummary";
     public static final String ATTR_RESERVATION_REFERENCE = "reservationReference";
+
+    public static final String ATTR_PARAM_VEHICLE_ID = "reservationParamVehicleId";
+    public static final String ATTR_PARAM_START_DATE = "reservationParamStartDate";
+    public static final String ATTR_PARAM_END_DATE = "reservationParamEndDate";
+    public static final String ATTR_PARAM_PICKUP_HEADQUARTERS = "reservationParamPickupHeadquarters";
+    public static final String ATTR_PARAM_RETURN_HEADQUARTERS = "reservationParamReturnHeadquarters";
 }
