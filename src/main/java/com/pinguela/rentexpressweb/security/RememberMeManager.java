@@ -18,7 +18,11 @@ public final class RememberMeManager {
     }
 
     public static void rememberUser(HttpServletResponse response, String email) {
-        String encoded = Base64.getEncoder().encodeToString(email.getBytes(StandardCharsets.UTF_8));
+        if (response == null || email == null || email.trim().isEmpty()) {
+            return;
+        }
+        String normalized = email.trim();
+        String encoded = Base64.getEncoder().encodeToString(normalized.getBytes(StandardCharsets.UTF_8));
         CookieUtils.addCookie(response, SecurityConstants.REMEMBER_ME_COOKIE, encoded,
                 SecurityConstants.REMEMBER_ME_MAX_AGE, SecurityConstants.COOKIE_PATH, true, false);
     }
@@ -28,13 +32,35 @@ public final class RememberMeManager {
     }
 
     public static String resolveRememberedUser(HttpServletRequest request) {
-        return CookieUtils.findCookie(request, SecurityConstants.REMEMBER_ME_COOKIE)
+        if (request == null) {
+            return null;
+        }
+        String decoded = CookieUtils.findCookie(request, SecurityConstants.REMEMBER_ME_COOKIE)
                 .map(cookie -> decode(cookie.getValue()))
                 .orElse(null);
+        if (decoded == null) {
+            return null;
+        }
+        String normalized = decoded.trim();
+        if (normalized.isEmpty()) {
+            return null;
+        }
+        if (!CredentialStore.isKnownEmail(request.getServletContext(), normalized)) {
+            return null;
+        }
+        return normalized;
     }
 
     public static void applyRememberedUser(HttpServletRequest request) {
         Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
+        if (currentUser instanceof String) {
+            String normalized = ((String) currentUser).trim();
+            if (normalized.isEmpty() || !CredentialStore.isKnownEmail(request.getServletContext(), normalized)) {
+                SessionManager.removeAttribute(request, AppConstants.ATTR_CURRENT_USER);
+                SessionManager.removeAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
+                currentUser = null;
+            }
+        }
         if (currentUser != null) {
             EmployeeSessionResolver.refresh(request);
             return;

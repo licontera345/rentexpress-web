@@ -45,6 +45,14 @@ public class LoginServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         RememberMeManager.applyRememberedUser(request);
         Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
+        if (currentUser instanceof String) {
+            String normalized = ((String) currentUser).trim();
+            if (normalized.isEmpty() || !CredentialStore.isKnownEmail(getServletContext(), normalized)) {
+                SessionManager.removeAttribute(request, AppConstants.ATTR_CURRENT_USER);
+                SessionManager.removeAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
+                currentUser = null;
+            }
+        }
 
         if (TwoFactorManager.hasPendingVerification(request)) {
             response.sendRedirect(request.getContextPath() + "/app/auth/verify-2fa");
