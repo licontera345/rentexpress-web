@@ -111,16 +111,16 @@
                     </div>
                 </div>
                 <div class="col-lg-6">
-                    <div class="position-relative">
+                    <div class="position-relative text-center text-lg-start">
                         <img src="https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=900&q=80"
                              alt="RentExpress hero" class="img-fluid rounded-4 shadow-soft">
-                        <div class="position-absolute bottom-0 start-50 translate-middle-x hero-floating-card p-4 w-100" style="max-width: 420px;">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="feature-icon m-0"><i class="bi bi-speedometer2"></i></div>
-                                <div>
-                                    <p class="mb-1 fw-semibold text-uppercase small text-muted"><fmt:message key="home.hero.float.label" /></p>
-                                    <p class="mb-0 fw-semibold"><fmt:message key="home.hero.float.value" /></p>
-                                </div>
+                    </div>
+                    <div class="hero-floating-card shadow-soft p-4 w-100 mt-4 mx-auto mx-lg-0" style="max-width: 420px;">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="feature-icon m-0"><i class="bi bi-speedometer2"></i></div>
+                            <div>
+                                <p class="mb-1 fw-semibold text-uppercase small text-muted"><fmt:message key="home.hero.float.label" /></p>
+                                <p class="mb-0 fw-semibold"><fmt:message key="home.hero.float.value" /></p>
                             </div>
                         </div>
                     </div>
