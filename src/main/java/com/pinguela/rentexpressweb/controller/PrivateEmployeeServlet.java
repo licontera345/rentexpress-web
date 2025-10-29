@@ -215,16 +215,19 @@ public class PrivateEmployeeServlet extends HttpServlet {
             return true;
         }
         String normalized = search.toLowerCase(Locale.ROOT);
-        if (employee.getEmail() != null
-                && employee.getEmail().toLowerCase(Locale.ROOT).contains(normalized)) {
+        if (contains(employee.getFirstName(), normalized)) {
             return true;
         }
-        if (employee.getFullName() != null
-                && employee.getFullName().toLowerCase(Locale.ROOT).contains(normalized)) {
+        if (contains(employee.getLastName1(), normalized)) {
             return true;
         }
-        if (employee.getEmployeeName() != null
-                && employee.getEmployeeName().toLowerCase(Locale.ROOT).contains(normalized)) {
+        if (contains(employee.getLastName2(), normalized)) {
+            return true;
+        }
+        if (contains(employee.getEmail(), normalized)) {
+            return true;
+        }
+        if (contains(employee.getEmployeeName(), normalized)) {
             return true;
         }
         return false;
@@ -246,6 +249,10 @@ public class PrivateEmployeeServlet extends HttpServlet {
             return !active.booleanValue();
         }
         return status.booleanValue() == active.booleanValue();
+    }
+
+    private boolean contains(String value, String search) {
+        return value != null && value.toLowerCase(Locale.ROOT).contains(search);
     }
 
     private Map<String, Object> buildSummary(List<EmployeeDTO> all, List<EmployeeDTO> filtered) {
