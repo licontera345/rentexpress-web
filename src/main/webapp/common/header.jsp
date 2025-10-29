@@ -5,6 +5,11 @@
 <fmt:setBundle basename="i18n.Messages" />
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 <c:set var="currentEmployee" value="${sessionScope.currentEmployee}" />
+<c:set var="currentUserEmail" value="${sessionScope.currentUser}" />
+<c:set var="profileData" value="${sessionScope.userProfileData}" />
+<c:set var="homePath" value="${empty currentUserEmail ? '/app/welcome' : '/app/home'}" />
+<c:set var="rawDisplayName" value="${not empty profileData.fullName ? profileData.fullName : currentUserEmail}" />
+<c:set var="displayName" value="${empty rawDisplayName ? currentUserEmail : rawDisplayName}" />
 <c:set var="htmlLang" value="es" />
 <c:if test="${empty sessionScope.appLocale and not empty cookie.appLocale.value}">
     <c:set var="htmlLang" value="${cookie.appLocale.value}" />
@@ -34,7 +39,7 @@
 <body class="bg-light d-flex flex-column min-vh-100">
 <header class="bg-white shadow-sm">
     <nav class="navbar navbar-expand-lg navbar-light container py-3">
-        <a class="navbar-brand fw-bold text-brand" href="${ctx}/app/welcome">
+        <a class="navbar-brand fw-bold text-brand" href="${ctx}${homePath}">
             <i class="bi bi-geo-alt-fill me-2"></i><fmt:message key="nav.brand" />
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -43,7 +48,7 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link" href="${ctx}/app/welcome"><fmt:message key="nav.home" /></a></li>
+                <li class="nav-item"><a class="nav-link" href="${ctx}${homePath}"><fmt:message key="nav.home" /></a></li>
                 <li class="nav-item"><a class="nav-link" href="${ctx}/public/vehicles"><fmt:message key="nav.catalog" /></a></li>
                 <c:if test="${not empty currentEmployee}">
                     <li class="nav-item"><a class="nav-link" href="${ctx}/app/rentals/private"><fmt:message key="nav.rentals" /></a></li>
@@ -73,10 +78,39 @@
                         </button>
                     </noscript>
                 </form>
-                <div class="d-flex gap-2">
-                    <a class="btn btn-outline-brand" href="${ctx}/app/auth/login"><fmt:message key="nav.login" /></a>
-                    <a class="btn btn-brand" href="${ctx}/app/users/register"><fmt:message key="nav.register" /></a>
-                </div>
+                <c:choose>
+                    <c:when test="${not empty currentUserEmail}">
+                        <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-2">
+                            <span class="text-muted small fw-semibold">
+                                <fmt:message key="nav.welcomeUser">
+                                    <fmt:param value="${displayName}" />
+                                </fmt:message>
+                            </span>
+                            <div class="d-flex gap-2">
+                                <a class="btn btn-outline-brand" href="${ctx}/app/home">
+                                    <i class="bi bi-speedometer me-2"></i>
+                                    <fmt:message key="nav.dashboard" />
+                                </a>
+                                <a class="btn btn-outline-secondary" href="${ctx}/app/users/private">
+                                    <i class="bi bi-person-circle me-2"></i>
+                                    <fmt:message key="nav.profile" />
+                                </a>
+                                <form method="post" action="${ctx}/app/auth/logout" class="d-inline">
+                                    <button type="submit" class="btn btn-brand">
+                                        <i class="bi bi-box-arrow-right me-2"></i>
+                                        <fmt:message key="nav.logout" />
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <div class="d-flex gap-2">
+                            <a class="btn btn-outline-brand" href="${ctx}/app/auth/login"><fmt:message key="nav.login" /></a>
+                            <a class="btn btn-brand" href="${ctx}/app/users/register"><fmt:message key="nav.register" /></a>
+                        </div>
+                    </c:otherwise>
+                </c:choose>
             </div>
         </div>
     </nav>

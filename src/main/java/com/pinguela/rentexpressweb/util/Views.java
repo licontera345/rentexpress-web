@@ -17,6 +17,7 @@ public final class Views {
     public static final String PUBLIC_VERIFY_RESET = "/public/views/verify_reset.jsp";
     public static final String PUBLIC_RESET_PASSWORD = "/public/views/reset_password.jsp";
 
+    public static final String PRIVATE_USER_HOME = "/private/user/user_home.jsp";
     public static final String PRIVATE_USER_PROFILE = "/private/user/user_profile.jsp";
     public static final String PRIVATE_EMPLOYEE_PROFILE = "/private/employee/employee_profile.jsp";
 }

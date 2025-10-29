@@ -9,6 +9,7 @@ import com.pinguela.rentexpressweb.security.RememberMeManager;
 import com.pinguela.rentexpressweb.security.SessionManager;
 import com.pinguela.rentexpressweb.security.TwoFactorManager;
 import com.pinguela.rentexpressweb.util.MessageResolver;
+import com.pinguela.rentexpressweb.util.UserActivityTracker;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -140,6 +141,8 @@ public class Verify2FAServlet extends HttpServlet {
 
         TwoFactorManager.clear(request);
         LOGGER.info("Verificación 2FA completada para {}", email);
+        UserActivityTracker.record(request, "home.dashboard.activity.login", "bi bi-box-arrow-in-right",
+                request.getRemoteAddr());
         SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
                 MessageResolver.getMessage(request, "flash.login.success"));
         response.sendRedirect(request.getContextPath() + SecurityConstants.HOME_ENDPOINT);

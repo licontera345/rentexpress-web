@@ -4,6 +4,7 @@ import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.security.SessionManager;
 import com.pinguela.rentexpressweb.util.MessageResolver;
+import com.pinguela.rentexpressweb.util.UserActivityTracker;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.Cookie;
@@ -46,6 +47,10 @@ public class LanguageServlet extends HttpServlet {
                 localeCookie.setHttpOnly(true);
                 localeCookie.setSecure(request.isSecure());
                 response.addCookie(localeCookie);
+                if (SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER) != null) {
+                    UserActivityTracker.record(request, "home.dashboard.activity.languageChanged", "bi bi-translate",
+                            normalized.toUpperCase(Locale.ROOT));
+                }
             } else {
                 SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
                         MessageResolver.getMessage(request, "flash.language.unsupported"));

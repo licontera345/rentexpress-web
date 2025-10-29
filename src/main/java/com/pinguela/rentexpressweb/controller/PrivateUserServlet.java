@@ -7,6 +7,7 @@ import com.pinguela.rentexpressweb.constants.UserConstants;
 import com.pinguela.rentexpressweb.security.CredentialStore;
 import com.pinguela.rentexpressweb.security.SessionManager;
 import com.pinguela.rentexpressweb.util.ImageStorage;
+import com.pinguela.rentexpressweb.util.UserActivityTracker;
 import com.pinguela.rentexpressweb.util.Views;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -165,6 +166,7 @@ public class PrivateUserServlet extends HttpServlet {
         SessionManager.setAttribute(request, UserConstants.ATTR_PROFILE_DATA, profile);
         SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
                 "Perfil actualizado correctamente.");
+        UserActivityTracker.record(request, "home.dashboard.activity.profileUpdated", "bi bi-person-check-fill");
 
         response.sendRedirect(request.getContextPath() + "/app/users/private");
     }
