@@ -4,16 +4,16 @@
 <c:set var="user" value="${selectedUser}" />
 <section class="mb-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="h3 mb-0">Ficha de usuario</h1>
-        <a href="${ctx}/public/users" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+        <h1 class="h3 mb-0"><fmt:message key="public.user.detail.title" /></h1>
+        <a href="${ctx}/public/users" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> <fmt:message key="common.button.back" /></a>
     </div>
     <div class="row g-4">
         <div class="col-lg-8">
             <div class="card card-common">
-                <div class="card-header">Información principal</div>
+                <div class="card-header"><fmt:message key="public.user.detail.mainInfo" /></div>
                 <div class="card-body">
                     <dl class="row mb-0">
-                        <dt class="col-sm-4">Nombre completo</dt>
+                        <dt class="col-sm-4"><fmt:message key="public.user.detail.fullName" /></dt>
                         <dd class="col-sm-8">
                             <c:choose>
                                 <c:when test="${not empty user.firstName}">
@@ -24,26 +24,40 @@
                                 </c:otherwise>
                             </c:choose>
                         </dd>
-                        <dt class="col-sm-4">Correo electrónico</dt>
+                        <dt class="col-sm-4"><fmt:message key="common.table.header.email" /></dt>
                         <dd class="col-sm-8">${user.email}</dd>
-                        <dt class="col-sm-4">Teléfono</dt>
-                        <dd class="col-sm-8">${empty user.phone ? 'No informado' : user.phone}</dd>
-                        <dt class="col-sm-4">Rol asignado</dt>
-                        <dd class="col-sm-8">${empty selectedUserRole ? 'Sin rol asignado' : selectedUserRole}</dd>
-                        <dt class="col-sm-4">Estado</dt>
+                        <dt class="col-sm-4"><fmt:message key="common.field.phone" /></dt>
+                        <dd class="col-sm-8">
+                            <c:choose>
+                                <c:when test="${empty user.phone}">
+                                    <fmt:message key="public.user.detail.phone.missing" />
+                                </c:when>
+                                <c:otherwise>${user.phone}</c:otherwise>
+                            </c:choose>
+                        </dd>
+                        <dt class="col-sm-4"><fmt:message key="public.user.detail.role" /></dt>
+                        <dd class="col-sm-8">
+                            <c:choose>
+                                <c:when test="${empty selectedUserRole}">
+                                    <fmt:message key="public.user.detail.role.missing" />
+                                </c:when>
+                                <c:otherwise>${selectedUserRole}</c:otherwise>
+                            </c:choose>
+                        </dd>
+                        <dt class="col-sm-4"><fmt:message key="common.table.header.status" /></dt>
                         <dd class="col-sm-8">
                             <span class="badge ${user.activeStatus ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'}">
-                                ${user.activeStatus ? 'Activo' : 'Inactivo'}
+                                <fmt:message key="${user.activeStatus ? 'status.active' : 'status.inactive'}" />
                             </span>
                         </dd>
-                        <dt class="col-sm-4">Fecha de alta</dt>
+                        <dt class="col-sm-4"><fmt:message key="public.user.detail.createdAt" /></dt>
                         <dd class="col-sm-8">
                             <c:choose>
                                 <c:when test="${not empty user.createdAt}">${user.createdAt}</c:when>
                                 <c:otherwise>-</c:otherwise>
                             </c:choose>
                         </dd>
-                        <dt class="col-sm-4">Última actualización</dt>
+                        <dt class="col-sm-4"><fmt:message key="public.user.detail.updatedAt" /></dt>
                         <dd class="col-sm-8">
                             <c:choose>
                                 <c:when test="${not empty user.updatedAt}">${user.updatedAt}</c:when>
@@ -56,13 +70,13 @@
         </div>
         <div class="col-lg-4">
             <div class="card card-common">
-                <div class="card-header">Acciones recomendadas</div>
+                <div class="card-header"><fmt:message key="public.user.detail.recommended.title" /></div>
                 <div class="card-body">
-                    <p class="text-muted">Supervisa la actividad del usuario y coordina con tu equipo de atención al cliente para garantizar una experiencia fluida.</p>
+                    <p class="text-muted"><fmt:message key="public.user.detail.recommended.description" /></p>
                     <ul class="list-unstyled small mb-0">
-                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Revisa sus reservas activas antes de modificar datos personales.</li>
-                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Valida el correo y el teléfono antes de habilitar nuevas autorizaciones.</li>
-                        <li><i class="bi bi-check-circle text-success"></i> Documenta cualquier cambio relevante en el CRM corporativo.</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> <fmt:message key="public.user.detail.recommended.item1" /></li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> <fmt:message key="public.user.detail.recommended.item2" /></li>
+                        <li><i class="bi bi-check-circle text-success"></i> <fmt:message key="public.user.detail.recommended.item3" /></li>
                     </ul>
                 </div>
             </div>

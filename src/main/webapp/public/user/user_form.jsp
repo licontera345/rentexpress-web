@@ -1,13 +1,13 @@
 <div class="card card-common mt-4 mt-lg-0">
-    <div class="card-header">Crear nuevas cuentas</div>
+    <div class="card-header"><fmt:message key="public.user.form.title" /></div>
     <div class="card-body">
-        <p class="text-muted">Gestiona el alta de clientes desde la zona pública o deriva a tu equipo comercial para que completen el formulario oficial de registro.</p>
+        <p class="text-muted"><fmt:message key="public.user.form.description" /></p>
         <div class="d-grid gap-2">
             <a class="btn btn-outline-brand" href="${ctx}/app/users/register">
-                <i class="bi bi-person-plus"></i> Abrir formulario de registro
+                <i class="bi bi-person-plus"></i> <fmt:message key="public.user.form.registerLink" />
             </a>
             <a class="btn btn-outline-secondary" href="${ctx}/app/auth/login">
-                <i class="bi bi-box-arrow-in-right"></i> Acceder con una cuenta existente
+                <i class="bi bi-box-arrow-in-right"></i> <fmt:message key="public.user.form.loginLink" />
             </a>
         </div>
     </div>
