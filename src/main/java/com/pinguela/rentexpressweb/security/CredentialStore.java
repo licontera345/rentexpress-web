@@ -25,7 +25,10 @@ public final class CredentialStore {
         String key = sanitize(email);
         rememberEmail(context, key);
         Map<String, String> credentials = getCredentialMap(context);
-        credentials.computeIfAbsent(key, ignored -> PasswordEncoder.hash(rawPassword));
+        if (!credentials.containsKey(key)) {
+            String hashedPassword = PasswordEncoder.hash(rawPassword);
+            credentials.put(key, hashedPassword);
+        }
     }
 
     public static void updatePassword(ServletContext context, String email, String rawPassword) {

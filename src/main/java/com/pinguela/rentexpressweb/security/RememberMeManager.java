@@ -3,6 +3,7 @@ package com.pinguela.rentexpressweb.security;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.util.CookieUtils;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -35,9 +36,11 @@ public final class RememberMeManager {
         if (request == null) {
             return null;
         }
-        String decoded = CookieUtils.findCookie(request, SecurityConstants.REMEMBER_ME_COOKIE)
-                .map(cookie -> decode(cookie.getValue()))
-                .orElse(null);
+        String decoded = null;
+        Cookie rememberCookie = CookieUtils.findCookie(request, SecurityConstants.REMEMBER_ME_COOKIE);
+        if (rememberCookie != null) {
+            decoded = decode(rememberCookie.getValue());
+        }
         if (decoded == null) {
             return null;
         }

@@ -4,8 +4,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.util.Optional;
-
 /**
  * Utilidades para el manejo de cookies.
  */
@@ -14,19 +12,21 @@ public final class CookieUtils {
     private CookieUtils() {
     }
 
-    public static Optional<Cookie> findCookie(HttpServletRequest request, String name) {
-        if (request.getCookies() == null || name == null) {
-            return Optional.empty();
+    public static Cookie findCookie(HttpServletRequest request, String name) {
+        if (request == null || name == null) {
+            return null;
         }
         Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie != null && name.equals(cookie.getName())) {
-                    return Optional.of(cookie);
-                }
+        if (cookies == null) {
+            return null;
+        }
+        for (int i = 0; i < cookies.length; i++) {
+            Cookie cookie = cookies[i];
+            if (cookie != null && name.equals(cookie.getName())) {
+                return cookie;
             }
         }
-        return Optional.empty();
+        return null;
     }
 
     public static void addCookie(HttpServletResponse response, String name, String value,
