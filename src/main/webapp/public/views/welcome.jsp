@@ -25,7 +25,27 @@
                             <fmt:message key="home.hero.ctaSecondary" />
                         </a>
                     </div>
-                    <div class="hero-search-card shadow-soft mt-4">
+                    <div class="hero-trust mt-4">
+                        <div class="trust-item">
+                            <i class="bi bi-shield-check"></i>
+                            <span><fmt:message key="home.hero.trust.security" /></span>
+                        </div>
+                        <div class="trust-item">
+                            <i class="bi bi-clock-history"></i>
+                            <span><fmt:message key="home.hero.trust.support" /></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="position-relative text-center text-lg-start">
+                        <img src="https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=900&q=80"
+                             alt="RentExpress hero" class="img-fluid rounded-4 shadow-soft">
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4 justify-content-center justify-content-lg-start">
+                <div class="col-12 col-lg-11 col-xl-9 col-xxl-8">
+                    <div class="hero-search-card shadow-soft">
                         <form class="row gy-3 align-items-end" method="get" action="${ctx}/public/vehicles">
                             <div class="col-12 col-lg-4">
                                 <label for="heroSearch" class="form-label fw-semibold text-secondary">¿Qué vehículo necesitas?</label>
@@ -99,28 +119,16 @@
                             </div>
                         </form>
                     </div>
-                    <div class="hero-trust mt-4">
-                        <div class="trust-item">
-                            <i class="bi bi-shield-check"></i>
-                            <span><fmt:message key="home.hero.trust.security" /></span>
-                        </div>
-                        <div class="trust-item">
-                            <i class="bi bi-clock-history"></i>
-                            <span><fmt:message key="home.hero.trust.support" /></span>
-                        </div>
-                    </div>
                 </div>
-                <div class="col-lg-6">
-                    <div class="position-relative">
-                        <img src="https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=900&q=80"
-                             alt="RentExpress hero" class="img-fluid rounded-4 shadow-soft">
-                        <div class="position-absolute bottom-0 start-50 translate-middle-x hero-floating-card p-4 w-100" style="max-width: 420px;">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="feature-icon m-0"><i class="bi bi-speedometer2"></i></div>
-                                <div>
-                                    <p class="mb-1 fw-semibold text-uppercase small text-muted"><fmt:message key="home.hero.float.label" /></p>
-                                    <p class="mb-0 fw-semibold"><fmt:message key="home.hero.float.value" /></p>
-                                </div>
+            </div>
+            <div class="row mt-4 justify-content-center justify-content-lg-end">
+                <div class="col-12 col-lg-6 d-flex justify-content-center justify-content-lg-end">
+                    <div class="hero-floating-card shadow-soft p-4 w-100" style="max-width: 420px;">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="feature-icon m-0"><i class="bi bi-speedometer2"></i></div>
+                            <div>
+                                <p class="mb-1 fw-semibold text-uppercase small text-muted"><fmt:message key="home.hero.float.label" /></p>
+                                <p class="mb-0 fw-semibold"><fmt:message key="home.hero.float.value" /></p>
                             </div>
                         </div>
                     </div>
