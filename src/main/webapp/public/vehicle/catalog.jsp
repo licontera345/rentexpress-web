@@ -239,7 +239,22 @@
                                             <span class="text-muted fs-6">/día</span>
                                         </div>
                                     </div>
-                                    <a class="btn btn-brand" href="${ctx}/public/vehicles/detail?vehicleId=${vehicle.vehicleId}">
+                                    <c:url var="detailUrl" value="/public/vehicles/detail">
+                                        <c:param name="${VehicleConstants.PARAM_VEHICLE_ID}" value="${vehicle.vehicleId}" />
+                                        <c:if test="${not empty filters[VehicleConstants.PARAM_HEADQUARTERS]}">
+                                            <c:param name="${VehicleConstants.PARAM_HEADQUARTERS}"
+                                                     value="${filters[VehicleConstants.PARAM_HEADQUARTERS]}" />
+                                        </c:if>
+                                        <c:if test="${not empty filters[VehicleConstants.PARAM_PICKUP_DATE]}">
+                                            <c:param name="${VehicleConstants.PARAM_PICKUP_DATE}"
+                                                     value="${filters[VehicleConstants.PARAM_PICKUP_DATE]}" />
+                                        </c:if>
+                                        <c:if test="${not empty filters[VehicleConstants.PARAM_RETURN_DATE]}">
+                                            <c:param name="${VehicleConstants.PARAM_RETURN_DATE}"
+                                                     value="${filters[VehicleConstants.PARAM_RETURN_DATE]}" />
+                                        </c:if>
+                                    </c:url>
+                                    <a class="btn btn-brand" href="${ctx}${detailUrl}">
                                         Ver detalles
                                     </a>
                                 </div>
