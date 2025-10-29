@@ -378,20 +378,60 @@ public class RegisterUserServlet extends HttpServlet {
     }
 
     private Integer resolveCustomerRoleId() throws RentexpresException {
+        Integer fallbackRoleId = Integer.valueOf(UserConstants.ROLE_ID_CUSTOMER_FALLBACK);
         List<RoleDTO> roles = roleService.findAll();
-        if (roles == null) {
-            return null;
+        if (roles == null || roles.isEmpty()) {
+            LOGGER.info("No se pudieron obtener roles desde el servicio. Se usará el rol por defecto {}.", fallbackRoleId);
+            return fallbackRoleId;
         }
         for (RoleDTO role : roles) {
-            if (role == null || role.getRoleName() == null) {
+            if (role == null) {
                 continue;
             }
-            String roleName = role.getRoleName().trim();
-            if (UserConstants.ROLE_NAME_CUSTOMER.equalsIgnoreCase(roleName)) {
+            String roleName = role.getRoleName();
+            if (roleName == null) {
+                continue;
+            }
+            String trimmedName = roleName.trim();
+            if (isCustomerRoleName(trimmedName)) {
                 return role.getRoleId();
             }
         }
-        return null;
+        for (RoleDTO role : roles) {
+            if (role == null) {
+                continue;
+            }
+            Integer roleId = role.getRoleId();
+            if (roleId != null && roleId.equals(fallbackRoleId)) {
+                LOGGER.info("No se encontró un rol de cliente por nombre. Se usará el id {} obtenido del servicio.",
+                        fallbackRoleId);
+                return roleId;
+            }
+        }
+        LOGGER.info("No se encontró un rol de cliente en el servicio. Se usará el id por defecto {}.", fallbackRoleId);
+        return fallbackRoleId;
+    }
+
+    private boolean isCustomerRoleName(String roleName) {
+        if (roleName == null) {
+            return false;
+        }
+        if (UserConstants.ROLE_NAME_CUSTOMER.equalsIgnoreCase(roleName)) {
+            return true;
+        }
+        if (UserConstants.ROLE_NAME_CUSTOMER_ES.equalsIgnoreCase(roleName)) {
+            return true;
+        }
+        if (UserConstants.ROLE_NAME_CUSTOMER_EN.equalsIgnoreCase(roleName)) {
+            return true;
+        }
+        if (UserConstants.ROLE_NAME_CUSTOMER_USER.equalsIgnoreCase(roleName)) {
+            return true;
+        }
+        if (UserConstants.ROLE_NAME_CUSTOMER_CODE.equalsIgnoreCase(roleName)) {
+            return true;
+        }
+        return false;
     }
 
     private String trimToNull(String value) {
