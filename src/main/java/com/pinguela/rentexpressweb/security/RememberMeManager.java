@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Locale;
 
 /**
  * Gestión muy básica de la funcionalidad "remember me".
@@ -18,18 +19,20 @@ public final class RememberMeManager {
     private RememberMeManager() {
     }
 
-    public static void rememberUser(HttpServletResponse response, String email) {
+    public static void rememberUser(HttpServletRequest request, HttpServletResponse response, String email) {
         if (response == null || email == null || email.trim().isEmpty()) {
             return;
         }
-        String normalized = email.trim();
+        String normalized = email.trim().toLowerCase(Locale.ROOT);
         String encoded = Base64.getEncoder().encodeToString(normalized.getBytes(StandardCharsets.UTF_8));
+        boolean secure = request != null && request.isSecure();
         CookieUtils.addCookie(response, SecurityConstants.REMEMBER_ME_COOKIE, encoded,
-                SecurityConstants.REMEMBER_ME_MAX_AGE, SecurityConstants.COOKIE_PATH, true, false);
+                SecurityConstants.REMEMBER_ME_MAX_AGE, SecurityConstants.COOKIE_PATH, true, secure);
     }
 
-    public static void forgetUser(HttpServletResponse response) {
-        CookieUtils.removeCookie(response, SecurityConstants.REMEMBER_ME_COOKIE, SecurityConstants.COOKIE_PATH);
+    public static void forgetUser(HttpServletRequest request, HttpServletResponse response) {
+        boolean secure = request != null && request.isSecure();
+        CookieUtils.removeCookie(response, SecurityConstants.REMEMBER_ME_COOKIE, SecurityConstants.COOKIE_PATH, secure);
     }
 
     public static String resolveRememberedUser(HttpServletRequest request) {

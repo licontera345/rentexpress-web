@@ -39,12 +39,12 @@ public final class CookieUtils {
         response.addCookie(cookie);
     }
 
-    public static void removeCookie(HttpServletResponse response, String name, String path) {
+    public static void removeCookie(HttpServletResponse response, String name, String path, boolean secure) {
         Cookie cookie = new Cookie(name, "");
         cookie.setPath(path != null ? path : "/");
         cookie.setMaxAge(0);
         cookie.setHttpOnly(true);
-        cookie.setSecure(false);
+        cookie.setSecure(secure);
         response.addCookie(cookie);
     }
 }
