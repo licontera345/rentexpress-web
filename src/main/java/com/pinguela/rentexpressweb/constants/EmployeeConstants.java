@@ -34,4 +34,5 @@ public final class EmployeeConstants {
     public static final String ATTR_SELECTED_EMPLOYEE = "selectedEmployee";
     public static final String ATTR_SELECTED_ROLE_NAME = "selectedEmployeeRole";
     public static final String ATTR_SELECTED_HEADQUARTERS = "selectedEmployeeHeadquarters";
+    public static final String ATTR_EMPLOYEE_PROFILE = "employeeProfile";
 }
