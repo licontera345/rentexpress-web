@@ -179,6 +179,8 @@ public class PublicVehicleServlet extends HttpServlet {
         request.setAttribute(VehicleConstants.ATTR_RESULTS, results);
         request.setAttribute(VehicleConstants.ATTR_VEHICLES, vehicles);
         request.setAttribute(VehicleConstants.ATTR_TOTAL_RESULTS, resolveTotalRecords(results));
+        request.setAttribute(VehicleConstants.ATTR_RESULTS_FROM_ROW, resolveFromRow(results));
+        request.setAttribute(VehicleConstants.ATTR_RESULTS_TO_ROW, resolveToRow(results));
 
         request.getRequestDispatcher("/public/vehicle/catalog.jsp").forward(request, response);
     }
@@ -550,5 +552,42 @@ public class PublicVehicleServlet extends HttpServlet {
         List<VehicleDTO> list = results.getResults();
         int count = list != null ? list.size() : 0;
         return Integer.valueOf(count);
+    }
+
+    private Integer resolveFromRow(Results<VehicleDTO> results) {
+        Integer totalRecords = resolveTotalRecords(results);
+        if (totalRecords.intValue() == 0) {
+            return Integer.valueOf(0);
+        }
+        int pageNumber = 1;
+        if (results != null && results.getPageNumber() != null && results.getPageNumber().intValue() > 0) {
+            pageNumber = results.getPageNumber().intValue();
+        }
+        int pageSize = totalRecords.intValue();
+        if (results != null && results.getPageSize() != null && results.getPageSize().intValue() > 0) {
+            pageSize = results.getPageSize().intValue();
+        }
+        int fromRow = ((pageNumber - 1) * pageSize) + 1;
+        if (fromRow > totalRecords.intValue()) {
+            fromRow = totalRecords.intValue();
+        }
+        return Integer.valueOf(fromRow);
+    }
+
+    private Integer resolveToRow(Results<VehicleDTO> results) {
+        Integer totalRecords = resolveTotalRecords(results);
+        if (totalRecords.intValue() == 0) {
+            return Integer.valueOf(0);
+        }
+        Integer fromRow = resolveFromRow(results);
+        int pageSize = totalRecords.intValue();
+        if (results != null && results.getPageSize() != null && results.getPageSize().intValue() > 0) {
+            pageSize = results.getPageSize().intValue();
+        }
+        int toRow = fromRow.intValue() + pageSize - 1;
+        if (toRow > totalRecords.intValue()) {
+            toRow = totalRecords.intValue();
+        }
+        return Integer.valueOf(toRow);
     }
 }

@@ -42,6 +42,8 @@ public final class VehicleConstants {
     public static final String ATTR_AVAILABLE_STATUSES = "vehicleStatuses";
     public static final String ATTR_PAGE_SIZES = "vehiclePageSizes";
     public static final String ATTR_RESULTS = "vehicleResults";
+    public static final String ATTR_RESULTS_FROM_ROW = "vehicleResultsFromRow";
+    public static final String ATTR_RESULTS_TO_ROW = "vehicleResultsToRow";
     public static final String ATTR_SELECTED_CATEGORY_NAME = "selectedVehicleCategoryName";
     public static final String ATTR_SELECTED_VEHICLE = "selectedVehicle";
     public static final String ATTR_RELATED_VEHICLES = "relatedVehicles";
