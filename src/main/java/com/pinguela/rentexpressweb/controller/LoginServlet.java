@@ -1,7 +1,11 @@
 package com.pinguela.rentexpressweb.controller;
 
+import com.pinguela.rentexpres.exception.RentexpresException;
+import com.pinguela.rentexpres.model.UserDTO;
 import com.pinguela.rentexpres.service.MailService;
+import com.pinguela.rentexpres.service.UserService;
 import com.pinguela.rentexpres.service.impl.MailServiceImpl;
+import com.pinguela.rentexpres.service.impl.UserServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.constants.UserConstants;
@@ -20,6 +24,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -50,6 +55,7 @@ public class LoginServlet extends HttpServlet {
     private static final String MESSAGE_KEY_MAIL_BODY = "mail.2fa.body";
 
     private final MailService mailService = new MailServiceImpl();
+    private final UserService userService = new UserServiceImpl();
 
     /**
      * @see HttpServlet#HttpServlet()
@@ -114,7 +120,11 @@ public class LoginServlet extends HttpServlet {
             errors.put(ERROR_KEY_PASSWORD, resolveMessage(bundle, MESSAGE_KEY_PASSWORD_REQUIRED));
         }
 
-        if (errors.isEmpty() && !authenticate(sanitizedEmail, password)) {
+        UserDTO authenticatedUser = null;
+        if (errors.isEmpty()) {
+            authenticatedUser = authenticate(sanitizedEmail, password);
+        }
+        if (errors.isEmpty() && authenticatedUser == null) {
             errors.put(ERROR_KEY_GLOBAL, resolveMessage(bundle, MESSAGE_KEY_INVALID_CREDENTIALS));
         }
 
@@ -126,17 +136,18 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-        String normalizedEmail = sanitizedEmail != null ? sanitizedEmail.toLowerCase(Locale.ROOT) : null;
+        String loginEmail = resolveLoginEmail(authenticatedUser, sanitizedEmail);
+        String normalizedEmail = loginEmail != null ? loginEmail.toLowerCase(Locale.ROOT) : null;
 
         RememberMeManager.forgetUser(request, response);
         SessionManager.removeAttribute(request, AppConstants.ATTR_CURRENT_USER);
         SessionManager.removeAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
 
         String verificationCode = TwoFactorManager.initiate(request, normalizedEmail, remember);
-        boolean emailSent = sendVerificationCodeByEmail(request, normalizedEmail, verificationCode);
+        boolean emailSent = sendVerificationCodeByEmail(request, loginEmail, verificationCode);
         if (emailSent) {
             SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_INFO,
-                    buildVerificationInfoMessage(request, sanitizedEmail, false));
+                    buildVerificationInfoMessage(request, loginEmail, false));
             LOGGER.info("Generado código 2FA para {}", normalizedEmail);
             response.sendRedirect(request.getContextPath() + "/app/auth/verify-2fa");
         } else {
@@ -147,21 +158,93 @@ public class LoginServlet extends HttpServlet {
         }
     }
 
-    private boolean authenticate(String email, String password) {
-        if (email == null || password == null) {
-            return false;
+    private UserDTO authenticate(String identifier, String password) {
+        if (identifier == null || password == null) {
+            return null;
         }
-        String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
-        if (normalizedEmail.isEmpty()) {
-            return false;
+        String normalizedIdentifier = identifier.trim().toLowerCase(Locale.ROOT);
+        if (normalizedIdentifier.isEmpty()) {
+            return null;
         }
-        String storedHash = CredentialStore.findHashedPassword(getServletContext(), normalizedEmail);
-        if (storedHash != null && PasswordEncoder.matches(password, storedHash)) {
-            return true;
+        try {
+            UserDTO user = findUserByIdentifier(normalizedIdentifier);
+            if (user == null) {
+                LOGGER.warn("Intento de acceso fallido para {}", normalizedIdentifier);
+                return null;
+            }
+            if (Boolean.FALSE.equals(user.getActiveStatus())) {
+                LOGGER.warn("Intento de acceso para usuario inactivo {}", normalizedIdentifier);
+                return null;
+            }
+            String storedHash = user.getPassword();
+            if (storedHash == null || !PasswordEncoder.matches(password, storedHash)) {
+                LOGGER.warn("Intento de acceso fallido para {}", normalizedIdentifier);
+                return null;
+            }
+            rememberResolvedIdentifiers(user, normalizedIdentifier);
+            return user;
+        } catch (RentexpresException ex) {
+            LOGGER.error("Error autenticando al usuario {}", normalizedIdentifier, ex);
+            return null;
         }
+    }
 
-        LOGGER.warn("Intento de acceso fallido para {}", normalizedEmail);
-        return false;
+    private void rememberResolvedIdentifiers(UserDTO user, String identifier) {
+        if (identifier != null) {
+            CredentialStore.rememberEmail(getServletContext(), identifier);
+        }
+        if (user != null && user.getEmail() != null) {
+            CredentialStore.rememberEmail(getServletContext(), user.getEmail());
+        }
+        if (user != null && user.getUsername() != null) {
+            CredentialStore.rememberEmail(getServletContext(), user.getUsername());
+        }
+    }
+
+    private UserDTO findUserByIdentifier(String identifier) throws RentexpresException {
+        if (identifier == null) {
+            return null;
+        }
+        List<UserDTO> users = userService.findAll();
+        if (users == null || users.isEmpty()) {
+            return null;
+        }
+        for (UserDTO user : users) {
+            if (user == null) {
+                continue;
+            }
+            if (matchesIdentifier(user.getEmail(), identifier)) {
+                return user;
+            }
+            if (matchesIdentifier(user.getUsername(), identifier)) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    private boolean matchesIdentifier(String candidate, String identifier) {
+        if (candidate == null || identifier == null) {
+            return false;
+        }
+        String normalizedCandidate = candidate.trim().toLowerCase(Locale.ROOT);
+        return normalizedCandidate.equals(identifier);
+    }
+
+    private String resolveLoginEmail(UserDTO user, String providedIdentifier) {
+        if (user != null && user.getEmail() != null) {
+            String email = user.getEmail().trim();
+            if (!email.isEmpty()) {
+                return email;
+            }
+        }
+        if (providedIdentifier != null) {
+            String sanitized = providedIdentifier.trim();
+            if (!sanitized.isEmpty()) {
+                return sanitized;
+            }
+        }
+        return null;
     }
 
     private void copyFlashMessages(HttpServletRequest request) {
