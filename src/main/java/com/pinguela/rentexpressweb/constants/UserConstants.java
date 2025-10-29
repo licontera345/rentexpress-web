@@ -10,7 +10,12 @@ public final class UserConstants {
 
     public static final String PARAM_EMAIL = "email";
     public static final String PARAM_PASSWORD = "password";
+    public static final String PARAM_CONFIRM_PASSWORD = "confirmPassword";
     public static final String PARAM_FULL_NAME = "fullName";
+    public static final String PARAM_FIRST_NAME = "firstName";
+    public static final String PARAM_LAST_NAME1 = "lastName1";
+    public static final String PARAM_LAST_NAME2 = "lastName2";
+    public static final String PARAM_BIRTH_DATE = "birthDate";
     public static final String PARAM_PHONE = "phone";
     public static final String PARAM_STREET = "street";
     public static final String PARAM_NUMBER = "number";

@@ -31,6 +31,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -78,30 +80,49 @@ public class RegisterUserServlet extends HttpServlet {
      */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Map<String, String> formData = new HashMap<String, String>();
-        String fullName = trimToNull(request.getParameter(UserConstants.PARAM_FULL_NAME));
+        String firstName = trimToNull(request.getParameter(UserConstants.PARAM_FIRST_NAME));
+        String lastName1 = trimToNull(request.getParameter(UserConstants.PARAM_LAST_NAME1));
+        String lastName2 = trimToNull(request.getParameter(UserConstants.PARAM_LAST_NAME2));
+        String birthDateValue = trimToNull(request.getParameter(UserConstants.PARAM_BIRTH_DATE));
         String email = trimToNull(request.getParameter(UserConstants.PARAM_EMAIL));
         String phone = trimToNull(request.getParameter(UserConstants.PARAM_PHONE));
         String password = request.getParameter(UserConstants.PARAM_PASSWORD);
+        String confirmPassword = request.getParameter(UserConstants.PARAM_CONFIRM_PASSWORD);
         boolean acceptTerms = request.getParameter(UserConstants.PARAM_ACCEPT_TERMS) != null;
         String street = trimToNull(request.getParameter(UserConstants.PARAM_STREET));
         String number = trimToNull(request.getParameter(UserConstants.PARAM_NUMBER));
         String provinceValue = trimToNull(request.getParameter(UserConstants.PARAM_PROVINCE_ID));
         String cityValue = trimToNull(request.getParameter(UserConstants.PARAM_CITY_ID));
 
-        if (fullName != null) {
-            formData.put(UserConstants.PARAM_FULL_NAME, fullName);
-        } else {
-            formData.put(UserConstants.PARAM_FULL_NAME, "");
+        formData.put(UserConstants.PARAM_FIRST_NAME, firstName != null ? firstName : "");
+        formData.put(UserConstants.PARAM_LAST_NAME1, lastName1 != null ? lastName1 : "");
+        formData.put(UserConstants.PARAM_LAST_NAME2, lastName2 != null ? lastName2 : "");
+        formData.put(UserConstants.PARAM_BIRTH_DATE, birthDateValue != null ? birthDateValue : "");
+        formData.put(UserConstants.PARAM_EMAIL, email != null ? email : "");
+        formData.put(UserConstants.PARAM_PHONE, phone != null ? phone : "");
+        formData.put(UserConstants.PARAM_STREET, street != null ? street : "");
+        formData.put(UserConstants.PARAM_NUMBER, number != null ? number : "");
+        formData.put(UserConstants.PARAM_PROVINCE_ID, provinceValue != null ? provinceValue : "");
+        formData.put(UserConstants.PARAM_CITY_ID, cityValue != null ? cityValue : "");
+        formData.put(UserConstants.PARAM_ACCEPT_TERMS, acceptTerms ? "on" : "");
+
+        List<String> errors = new ArrayList<String>();
+        LocalDate birthDate = null;
+
+        if (firstName == null) {
+            errors.add("El nombre es obligatorio.");
+        } else if (firstName.length() > 120) {
+            errors.add("El nombre no puede superar los 120 caracteres.");
         }
-        if (email != null) {
-            formData.put(UserConstants.PARAM_EMAIL, email);
-        } else {
-            formData.put(UserConstants.PARAM_EMAIL, "");
+
+        if (lastName1 == null) {
+            errors.add("El primer apellido es obligatorio.");
+        } else if (lastName1.length() > 120) {
+            errors.add("El primer apellido no puede superar los 120 caracteres.");
         }
-        if (phone != null) {
-            formData.put(UserConstants.PARAM_PHONE, phone);
-        } else {
-            formData.put(UserConstants.PARAM_PHONE, "");
+
+        if (lastName2 != null && lastName2.length() > 120) {
+            errors.add("El segundo apellido no puede superar los 120 caracteres.");
         }
         if (street != null) {
             formData.put(UserConstants.PARAM_STREET, street);
@@ -129,16 +150,19 @@ public class RegisterUserServlet extends HttpServlet {
             formData.put(UserConstants.PARAM_ACCEPT_TERMS, "");
         }
 
-        List<String> errors = new ArrayList<String>();
-        NameParts nameParts = null;
-        if (fullName == null) {
-            errors.add("El nombre completo es obligatorio.");
+        if (birthDateValue == null) {
+            errors.add("La fecha de nacimiento es obligatoria.");
         } else {
-            nameParts = extractNameParts(fullName);
-            if (nameParts == null) {
-                errors.add("Indica tu nombre y al menos un apellido.");
+            try {
+                birthDate = LocalDate.parse(birthDateValue);
+                if (birthDate.isAfter(LocalDate.now())) {
+                    errors.add("La fecha de nacimiento no puede ser futura.");
+                }
+            } catch (DateTimeParseException ex) {
+                errors.add("Indica una fecha de nacimiento válida (formato AAAA-MM-DD).");
             }
         }
+
         if (email == null) {
             errors.add("El correo electrónico es obligatorio.");
         } else if (!isValidEmail(email)) {
@@ -150,6 +174,13 @@ public class RegisterUserServlet extends HttpServlet {
             errors.add("Debes indicar una contraseña.");
         } else if (sanitizedPassword.length() < 8) {
             errors.add("La contraseña debe tener al menos 8 caracteres.");
+        }
+
+        String sanitizedConfirm = confirmPassword == null ? null : confirmPassword.trim();
+        if (sanitizedConfirm == null || sanitizedConfirm.isEmpty()) {
+            errors.add("Debes confirmar la contraseña.");
+        } else if (sanitizedPassword != null && !sanitizedPassword.equals(sanitizedConfirm)) {
+            errors.add("Las contraseñas no coinciden.");
         }
 
         if (phone != null && phone.length() > 20) {
@@ -277,9 +308,10 @@ public class RegisterUserServlet extends HttpServlet {
         UserDTO user = new UserDTO();
         user.setUsername(sanitizedEmail);
         user.setEmail(sanitizedEmail);
-        user.setFirstName(nameParts.getFirstName());
-        user.setLastName1(nameParts.getLastName1());
-        user.setLastName2(nameParts.getLastName2());
+        user.setFirstName(firstName);
+        user.setLastName1(lastName1);
+        user.setLastName2(lastName2);
+        user.setBirthDate(birthDate);
         user.setPhone(phone);
         user.setPassword(sanitizedPassword);
         user.setRoleId(customerRoleId);
@@ -293,6 +325,7 @@ public class RegisterUserServlet extends HttpServlet {
             if (created) {
                 CredentialStore.updatePassword(getServletContext(), sanitizedEmail, sanitizedPassword);
                 LOGGER.info("Registrado nuevo usuario {}", sanitizedEmail);
+                sendWelcomeEmail(sanitizedEmail, firstName);
                 SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
                         "Registro completado. Ya puedes iniciar sesión con tu correo y contraseña.");
                 response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
@@ -311,6 +344,25 @@ public class RegisterUserServlet extends HttpServlet {
         request.setAttribute("formData", formData);
         request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Crea tu cuenta");
         request.getRequestDispatcher(Views.PUBLIC_REGISTER_USER).forward(request, response);
+    }
+
+    private void sendWelcomeEmail(String email, String firstName) {
+        if (email == null) {
+            return;
+        }
+        String nameForMessage = firstName != null ? firstName : "cliente";
+        StringBuilder message = new StringBuilder();
+        message.append("Hola ");
+        message.append(nameForMessage);
+        message.append(",\n\nGracias por registrarte en RentExpress. Tu cuenta ya está lista y puedes iniciar sesión para reservar tu próximo vehículo.\n\n");
+        message.append("¡Te esperamos!\nEquipo RentExpress");
+        try {
+            if (!mailService.send(email, "Bienvenido a RentExpress", message.toString())) {
+                LOGGER.error("No se pudo enviar el correo de bienvenida a {}", email);
+            }
+        } catch (RuntimeException ex) {
+            LOGGER.error("Error inesperado enviando el correo de bienvenida a {}", email, ex);
+        }
     }
 
     private boolean isEmailAlreadyRegistered(String email) throws RentexpresException {
@@ -356,40 +408,26 @@ public class RegisterUserServlet extends HttpServlet {
         return dotIndex > atIndex + 1 && dotIndex < email.length() - 1;
     }
 
-    private NameParts extractNameParts(String fullName) {
-        String normalized = fullName.trim().replaceAll("\\s+", " ");
-        if (normalized.isEmpty()) {
+    private Integer parseInteger(String value) {
+        try {
+            return Integer.valueOf(Integer.parseInt(value));
+        } catch (NumberFormatException ex) {
             return null;
         }
-        int lastSpace = normalized.lastIndexOf(' ');
-        if (lastSpace <= 0) {
-            return null;
-        }
-        String lastName1 = normalized.substring(lastSpace + 1).trim();
-        String beforeLast = normalized.substring(0, lastSpace).trim();
-        if (beforeLast.isEmpty()) {
-            return null;
-        }
-        int secondLastSpace = beforeLast.lastIndexOf(' ');
-        String firstName;
-        String lastName2 = null;
-        if (secondLastSpace > 0) {
-            lastName2 = beforeLast.substring(secondLastSpace + 1).trim();
-            firstName = beforeLast.substring(0, secondLastSpace).trim();
-            if (firstName.isEmpty()) {
-                firstName = beforeLast.substring(0, secondLastSpace).trim();
+    }
+
+    private void prepareLocationData(HttpServletRequest request, List<String> errors) {
+        List<ProvinceDTO> provinces = null;
+        try {
+            provinces = provinceService.findAll();
+        } catch (RentexpresException ex) {
+            LOGGER.error("Error cargando provincias", ex);
+            if (errors != null) {
+                errors.add("No se pudo cargar la lista de provincias. Inténtalo de nuevo más tarde.");
             }
-        } else {
-            firstName = beforeLast;
         }
-        if (firstName == null || firstName.isEmpty()) {
-            return null;
-        }
-        if (lastName1.isEmpty()) {
-            return null;
-        }
-        if (lastName2 != null && lastName2.isEmpty()) {
-            lastName2 = null;
+        if (provinces == null) {
+            provinces = new ArrayList<ProvinceDTO>();
         }
         return new NameParts(firstName, lastName1, lastName2);
     }
@@ -449,22 +487,30 @@ public class RegisterUserServlet extends HttpServlet {
         private final String lastName1;
         private final String lastName2;
 
-        private NameParts(String firstName, String lastName1, String lastName2) {
-            this.firstName = firstName;
-            this.lastName1 = lastName1;
-            this.lastName2 = lastName2;
+        List<CityDTO> cities = null;
+        try {
+            cities = cityService.findAll();
+        } catch (RentexpresException ex) {
+            LOGGER.error("Error cargando ciudades", ex);
+            if (errors != null) {
+                errors.add("No se pudo cargar la lista de ciudades. Inténtalo de nuevo más tarde.");
+            }
         }
-
-        public String getFirstName() {
-            return firstName;
+        if (cities == null) {
+            cities = new ArrayList<CityDTO>();
         }
+        request.setAttribute(UserConstants.ATTR_CITIES, cities);
 
-        public String getLastName1() {
-            return lastName1;
+    }
+
+    private void cleanupAddress(AddressDTO address) {
+        if (address == null || address.getAddressId() == null) {
+            return;
         }
-
-        public String getLastName2() {
-            return lastName2;
+        try {
+            addressService.delete(address);
+        } catch (RentexpresException ex) {
+            LOGGER.error("No se pudo revertir la dirección {} tras un error de registro", address.getAddressId(), ex);
         }
     }
 }
