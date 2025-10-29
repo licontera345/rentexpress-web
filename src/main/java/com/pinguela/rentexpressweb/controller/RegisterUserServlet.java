@@ -22,10 +22,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -42,10 +39,6 @@ public class RegisterUserServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     private static final Logger LOGGER = LogManager.getLogger(RegisterUserServlet.class);
-    private static final int RECENT_REGISTRATION_LIMIT = 5;
-    private static final DateTimeFormatter RECENT_REGISTRATION_FORMATTER =
-            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-
     private final UserService userService = new UserServiceImpl();
     private final RoleService roleService = new RoleServiceImpl();
 
@@ -59,7 +52,6 @@ public class RegisterUserServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Crea tu cuenta");
         request.setAttribute("formData", new HashMap<String, String>());
-        request.setAttribute(AppConstants.ATTR_RECENT_REGISTRATIONS, loadRecentRegistrations());
         request.getRequestDispatcher(Views.PUBLIC_REGISTER_USER).forward(request, response);
     }
 
@@ -151,7 +143,6 @@ public class RegisterUserServlet extends HttpServlet {
             request.setAttribute("errors", errors);
             request.setAttribute("formData", formData);
             request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Crea tu cuenta");
-            request.setAttribute(AppConstants.ATTR_RECENT_REGISTRATIONS, loadRecentRegistrations());
             request.getRequestDispatcher(Views.PUBLIC_REGISTER_USER).forward(request, response);
             return;
         }
@@ -186,66 +177,7 @@ public class RegisterUserServlet extends HttpServlet {
         request.setAttribute("errors", errors);
         request.setAttribute("formData", formData);
         request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Crea tu cuenta");
-        request.setAttribute(AppConstants.ATTR_RECENT_REGISTRATIONS, loadRecentRegistrations());
         request.getRequestDispatcher(Views.PUBLIC_REGISTER_USER).forward(request, response);
-    }
-
-    private List<RecentRegistration> loadRecentRegistrations() {
-        UserCriteria criteria = new UserCriteria();
-        criteria.setPage(Integer.valueOf(1));
-        criteria.setPageSize(Integer.valueOf(RECENT_REGISTRATION_LIMIT));
-        criteria.setOrderBy("created_at");
-        criteria.setOrderDir("DESC");
-
-        try {
-            Results<UserDTO> results = userService.findByCriteria(criteria);
-            if (results == null || results.getItems() == null) {
-                return Collections.emptyList();
-            }
-            List<UserDTO> items = results.getItems();
-            List<RecentRegistration> recent = new ArrayList<RecentRegistration>(items.size());
-            for (UserDTO user : items) {
-                if (user == null) {
-                    continue;
-                }
-                recent.add(toRecentRegistration(user));
-            }
-            return recent;
-        } catch (RentexpresException ex) {
-            LOGGER.error("No se pudieron recuperar los últimos usuarios registrados", ex);
-            return Collections.emptyList();
-        }
-    }
-
-    private RecentRegistration toRecentRegistration(UserDTO user) {
-        String fullName = buildFullName(user);
-        LocalDateTime createdAt = user.getCreatedAt();
-        String formatted = createdAt != null ? createdAt.format(RECENT_REGISTRATION_FORMATTER) : "Sin fecha";
-        String email = user.getEmail();
-        String phone = user.getPhone();
-        return new RecentRegistration(fullName, email, phone, formatted);
-    }
-
-    private String buildFullName(UserDTO user) {
-        StringBuilder builder = new StringBuilder();
-        appendIfPresent(builder, user.getFirstName());
-        appendIfPresent(builder, user.getLastName1());
-        appendIfPresent(builder, user.getLastName2());
-        return builder.toString();
-    }
-
-    private void appendIfPresent(StringBuilder builder, String value) {
-        if (value == null) {
-            return;
-        }
-        String trimmed = value.trim();
-        if (trimmed.isEmpty()) {
-            return;
-        }
-        if (builder.length() > 0) {
-            builder.append(' ');
-        }
-        builder.append(trimmed);
     }
 
     private boolean isEmailAlreadyRegistered(String email) throws RentexpresException {
@@ -327,36 +259,6 @@ public class RegisterUserServlet extends HttpServlet {
             lastName2 = null;
         }
         return new NameParts(firstName, lastName1, lastName2);
-    }
-
-    public static final class RecentRegistration {
-        private final String fullName;
-        private final String email;
-        private final String phone;
-        private final String registeredAt;
-
-        private RecentRegistration(String fullName, String email, String phone, String registeredAt) {
-            this.fullName = fullName;
-            this.email = email;
-            this.phone = phone;
-            this.registeredAt = registeredAt;
-        }
-
-        public String getFullName() {
-            return fullName;
-        }
-
-        public String getEmail() {
-            return email;
-        }
-
-        public String getPhone() {
-            return phone;
-        }
-
-        public String getRegisteredAt() {
-            return registeredAt;
-        }
     }
 
     private static final class NameParts {
