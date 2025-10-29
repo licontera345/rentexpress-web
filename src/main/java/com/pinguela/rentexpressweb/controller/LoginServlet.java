@@ -17,8 +17,10 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Locale;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,10 +37,11 @@ public class LoginServlet extends HttpServlet {
     private static final String ERROR_KEY_EMAIL = UserConstants.PARAM_EMAIL;
     private static final String ERROR_KEY_PASSWORD = UserConstants.PARAM_PASSWORD;
     private static final String ERROR_KEY_GLOBAL = "global";
-    private static final String MESSAGE_EMAIL_REQUIRED = "El correo electrónico es obligatorio.";
-    private static final String MESSAGE_PASSWORD_REQUIRED = "La contraseña es obligatoria.";
-    private static final String MESSAGE_INVALID_CREDENTIALS =
-            "Credenciales no válidas. Revisa tu correo y contraseña.";
+    private static final String BUNDLE_BASE_NAME = "i18n.Messages";
+    private static final String MESSAGE_KEY_EMAIL_REQUIRED = "login.error.requiredEmail";
+    private static final String MESSAGE_KEY_PASSWORD_REQUIRED = "login.error.requiredPassword";
+    private static final String MESSAGE_KEY_INVALID_CREDENTIALS = "login.error.invalidCredentials";
+    private static final String MESSAGE_KEY_PAGE_TITLE = "login.title";
 
     /**
      * @see HttpServlet#HttpServlet()
@@ -74,7 +77,8 @@ public class LoginServlet extends HttpServlet {
                 request.setAttribute(AppConstants.ATTR_REMEMBERED_EMAIL, currentUser.toString());
             }
         }
-        request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Inicia sesión");
+        ResourceBundle bundle = resolveBundle(request);
+        request.setAttribute(AppConstants.ATTR_PAGE_TITLE, resolveMessage(bundle, MESSAGE_KEY_PAGE_TITLE));
 
         String rememberedEmail = RememberMeManager.resolveRememberedUser(request);
         if (rememberedEmail != null) {
@@ -92,22 +96,23 @@ public class LoginServlet extends HttpServlet {
         String password = request.getParameter(UserConstants.PARAM_PASSWORD);
         boolean remember = request.getParameter(UserConstants.PARAM_REMEMBER_ME) != null;
 
+        ResourceBundle bundle = resolveBundle(request);
         Map<String, String> errors = new LinkedHashMap<String, String>();
         String sanitizedEmail = email != null ? email.trim() : null;
         if (sanitizedEmail == null || sanitizedEmail.isEmpty()) {
-            errors.put(ERROR_KEY_EMAIL, MESSAGE_EMAIL_REQUIRED);
+            errors.put(ERROR_KEY_EMAIL, resolveMessage(bundle, MESSAGE_KEY_EMAIL_REQUIRED));
         }
         if (password == null || password.trim().isEmpty()) {
-            errors.put(ERROR_KEY_PASSWORD, MESSAGE_PASSWORD_REQUIRED);
+            errors.put(ERROR_KEY_PASSWORD, resolveMessage(bundle, MESSAGE_KEY_PASSWORD_REQUIRED));
         }
 
         if (errors.isEmpty() && !authenticate(sanitizedEmail, password)) {
-            errors.put(ERROR_KEY_GLOBAL, MESSAGE_INVALID_CREDENTIALS);
+            errors.put(ERROR_KEY_GLOBAL, resolveMessage(bundle, MESSAGE_KEY_INVALID_CREDENTIALS));
         }
 
         if (!errors.isEmpty()) {
             request.setAttribute(AppConstants.ATTR_FORM_ERRORS, errors);
-            request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Inicia sesión");
+            request.setAttribute(AppConstants.ATTR_PAGE_TITLE, resolveMessage(bundle, MESSAGE_KEY_PAGE_TITLE));
             request.setAttribute(AppConstants.ATTR_REMEMBERED_EMAIL, sanitizedEmail);
             request.getRequestDispatcher(Views.PUBLIC_LOGIN).forward(request, response);
             return;
@@ -169,5 +174,32 @@ public class LoginServlet extends HttpServlet {
         return String.format(
                 "%s a %s. Por tratarse de un entorno académico, el código es %s y caduca en %d segundos.",
                 intro, email, code, SecurityConstants.TWO_FA_CODE_VALIDITY_SECONDS);
+    }
+
+    private ResourceBundle resolveBundle(HttpServletRequest request) {
+        Locale locale = request.getLocale();
+        Object configuredLocale = SessionManager.getAttribute(request, AppConstants.ATTR_LOCALE);
+        if (configuredLocale instanceof String) {
+            String language = ((String) configuredLocale).trim();
+            if (!language.isEmpty()) {
+                locale = new Locale(language);
+            }
+        }
+        if (locale == null) {
+            locale = Locale.getDefault();
+        }
+        return ResourceBundle.getBundle(BUNDLE_BASE_NAME, locale);
+    }
+
+    private String resolveMessage(ResourceBundle bundle, String key) {
+        if (bundle == null || key == null) {
+            return "";
+        }
+        try {
+            return bundle.getString(key);
+        } catch (MissingResourceException ex) {
+            LOGGER.warn("No se encontró el mensaje {} en el bundle {}", key, BUNDLE_BASE_NAME);
+            return "";
+        }
     }
 }
