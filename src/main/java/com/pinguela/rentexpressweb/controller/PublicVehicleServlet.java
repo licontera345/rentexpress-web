@@ -317,13 +317,13 @@ public class PublicVehicleServlet extends HttpServlet {
     private Integer resolveAvailableStatusId(List<VehicleStatusDTO> statuses) {
         if (statuses != null) {
             for (VehicleStatusDTO status : statuses) {
-                if (status == null || status.getStatusName() == null || status.getStatusId() == null) {
+                if (status == null || status.getStatusName() == null || status.getVehicleStatusId() == null) {
                     continue;
                 }
                 String normalized = status.getStatusName().trim().toLowerCase(Locale.ROOT);
                 for (String keyword : AVAILABLE_STATUS_KEYWORDS) {
                     if (normalized.contains(keyword)) {
-                        return status.getStatusId();
+                        return status.getVehicleStatusId();
                     }
                 }
             }
