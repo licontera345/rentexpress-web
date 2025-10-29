@@ -1,5 +1,8 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ page import="com.pinguela.rentexpressweb.constants.VehicleConstants" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<fmt:message key="${requestScope.pageTitle}" var="resolvedWelcomeTitle" />
+<c:set var="pageTitle" value="${resolvedWelcomeTitle}" scope="request" />
 <%@ include file="/common/header.jsp" %>
 <c:if test="${not empty flashSuccess}">
     <div class="alert alert-success shadow-soft border-0">${flashSuccess}</div>
@@ -38,8 +41,9 @@
                 </div>
                 <div class="col-lg-6">
                     <div class="position-relative text-center text-lg-start">
+                        <fmt:message key="home.hero.image.alt" var="homeHeroImageAlt" />
                         <img src="https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=900&q=80"
-                             alt="RentExpress hero" class="img-fluid rounded-4 shadow-soft">
+                             alt="${homeHeroImageAlt}" class="img-fluid rounded-4 shadow-soft">
                     </div>
                     <div class="hero-floating-card shadow-soft p-4 w-100 mt-4 mx-auto mx-lg-0" style="max-width: 420px;">
                         <div class="d-flex align-items-center gap-3">
@@ -57,10 +61,12 @@
                     <div class="hero-search-card shadow-soft">
                         <form class="row gy-3 align-items-end" method="get" action="${ctx}/public/vehicles">
                             <div class="col-12 col-md-6 col-lg-4">
-                                <label for="heroHeadquarters" class="form-label fw-semibold text-secondary">Sede</label>
+                                <label for="heroHeadquarters" class="form-label fw-semibold text-secondary">
+                                    <fmt:message key="home.hero.form.headquarters.label" />
+                                </label>
                                 <select id="heroHeadquarters" class="form-select form-select-lg"
-                                        name="${VehicleConstants.PARAM_HEADQUARTERS}">
-                                    <option value="">Todas las sedes</option>
+                                        name="${requestScope.vehicleParamHeadquarters}">
+                                    <option value=""><fmt:message key="home.hero.form.headquarters.all" /></option>
                                     <c:forEach var="hq" items="${requestScope.vehicleHeadquarters}">
                                         <option value="${hq.headquartersId}"
                                                 ${param.headquarters == hq.headquartersId ? 'selected' : ''}>
@@ -80,30 +86,38 @@
                                 </select>
                             </div>
                             <div class="col-6 col-md-3 col-lg-2">
-                                <label for="heroPickupDate" class="form-label fw-semibold text-secondary">Recogida</label>
+                                <label for="heroPickupDate" class="form-label fw-semibold text-secondary">
+                                    <fmt:message key="home.hero.form.pickupDate.label" />
+                                </label>
                                 <input type="date" class="form-control form-control-lg" id="heroPickupDate"
-                                       name="pickupDate" value="${param.pickupDate}" />
+                                       name="${requestScope.vehicleParamPickupDate}" value="${param.pickupDate}" />
                             </div>
                             <div class="col-6 col-md-3 col-lg-2">
-                                <label for="heroPickupTime" class="form-label fw-semibold text-secondary">Hora</label>
+                                <label for="heroPickupTime" class="form-label fw-semibold text-secondary">
+                                    <fmt:message key="home.hero.form.pickupTime.label" />
+                                </label>
                                 <input type="time" class="form-control form-control-lg" id="heroPickupTime"
-                                       name="pickupTime"
+                                       name="${requestScope.vehicleParamPickupTime}"
                                        value="${empty param.pickupTime ? '10:00' : param.pickupTime}" />
                             </div>
                             <div class="col-6 col-md-3 col-lg-2">
-                                <label for="heroDropoffDate" class="form-label fw-semibold text-secondary">Devolución</label>
+                                <label for="heroDropoffDate" class="form-label fw-semibold text-secondary">
+                                    <fmt:message key="home.hero.form.returnDate.label" />
+                                </label>
                                 <input type="date" class="form-control form-control-lg" id="heroDropoffDate"
-                                       name="returnDate" value="${param.returnDate}" />
+                                       name="${requestScope.vehicleParamReturnDate}" value="${param.returnDate}" />
                             </div>
                             <div class="col-6 col-md-3 col-lg-2">
-                                <label for="heroDropoffTime" class="form-label fw-semibold text-secondary">Hora</label>
+                                <label for="heroDropoffTime" class="form-label fw-semibold text-secondary">
+                                    <fmt:message key="home.hero.form.returnTime.label" />
+                                </label>
                                 <input type="time" class="form-control form-control-lg" id="heroDropoffTime"
-                                       name="returnTime"
+                                       name="${requestScope.vehicleParamReturnTime}"
                                        value="${empty param.returnTime ? '10:00' : param.returnTime}" />
                             </div>
                             <div class="col-12 col-md-6 col-lg-2 text-md-end">
                                 <button type="submit" class="btn btn-brand btn-lg px-5 w-100 w-lg-auto">
-                                    <i class="bi bi-search me-2"></i>Buscar
+                                    <i class="bi bi-search me-2"></i><fmt:message key="home.hero.form.submit" />
                                 </button>
                             </div>
                         </form>
@@ -234,11 +248,11 @@
                     </div>
                     <button class="carousel-control-prev" type="button" data-bs-target="#carouselDestacados" data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
+                        <span class="visually-hidden"><fmt:message key="home.hero.carousel.prev" /></span>
                     </button>
                     <button class="carousel-control-next" type="button" data-bs-target="#carouselDestacados" data-bs-slide="next">
                         <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
+                        <span class="visually-hidden"><fmt:message key="home.hero.carousel.next" /></span>
                     </button>
                 </div>
             </c:when>
