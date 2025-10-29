@@ -79,8 +79,11 @@ public class VehicleServlet extends HttpServlet {
 
         VehicleCriteria criteria = buildCriteria(filters.get(VehicleConstants.PARAM_SEARCH), categoryId, statusId, page,
                 pageSize, filters.get(VehicleConstants.PARAM_SORT));
+        criteria.normalize();
 
-   
+        Results<VehicleDTO> results = searchVehicles(criteria, errors);
+        List<VehicleDTO> vehicles = results.getResults();
+
         Locale locale = request.getLocale();
         List<VehicleCategoryDTO> categories = loadCategories(locale);
         List<VehicleStatusDTO> statuses = loadStatuses(locale);
@@ -94,6 +97,10 @@ public class VehicleServlet extends HttpServlet {
         request.setAttribute(VehicleConstants.ATTR_AVAILABLE_STATUSES, statuses);
         request.setAttribute(VehicleConstants.ATTR_CATEGORY_NAMES, categoryNames);
         request.setAttribute(VehicleConstants.ATTR_STATUS_NAMES, statusNames);
+        request.setAttribute(VehicleConstants.ATTR_RESULTS, results);
+        request.setAttribute(VehicleConstants.ATTR_VEHICLES, vehicles);
+        request.setAttribute(VehicleConstants.ATTR_TOTAL_RESULTS,
+                results.getTotalRecords() != null ? results.getTotalRecords() : Integer.valueOf(results.getTotal()));
         request.getRequestDispatcher("/private/vehicle/vehicle_list.jsp").forward(request, response);
     }
 
@@ -139,6 +146,8 @@ public class VehicleServlet extends HttpServlet {
                 criteria.setModel(parts[1]);
             }
         }
+
+        applySort(criteria, sort);
 
         return criteria;
     }
@@ -264,5 +273,70 @@ public class VehicleServlet extends HttpServlet {
         }
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private void applySort(VehicleCriteria criteria, String sortValue) {
+        if (criteria == null) {
+            return;
+        }
+        String orderBy = "daily_price";
+        String orderDir = "ASC";
+        if (VehicleConstants.VALUE_SORT_PRICE_DESC.equals(sortValue)) {
+            orderDir = "DESC";
+        } else if (VehicleConstants.VALUE_SORT_YEAR_DESC.equals(sortValue)) {
+            orderBy = "manufacture_year";
+            orderDir = "DESC";
+        } else if (!VehicleConstants.VALUE_SORT_PRICE_ASC.equals(sortValue)) {
+            orderBy = "vehicle_id";
+            orderDir = "DESC";
+        }
+        criteria.setOrderBy(orderBy);
+        criteria.setOrderDir(orderDir);
+    }
+
+    private Results<VehicleDTO> searchVehicles(VehicleCriteria criteria, List<String> errors) {
+        try {
+            Results<VehicleDTO> results = vehicleService.findByCriteria(criteria);
+            return normalizeResults(results, criteria);
+        } catch (RentexpresException ex) {
+            LOGGER.error("Error al recuperar el catálogo interno de vehículos", ex);
+            if (errors != null) {
+                errors.add("No se pudo cargar el catálogo interno. Inténtalo de nuevo más tarde.");
+            }
+            return normalizeResults(null, criteria);
+        }
+    }
+
+    private Results<VehicleDTO> normalizeResults(Results<VehicleDTO> results, VehicleCriteria criteria) {
+        if (results == null) {
+            results = new Results<VehicleDTO>();
+        }
+        if (results.getResults() == null) {
+            results.setResults(new ArrayList<VehicleDTO>());
+        }
+        if (results.getItems() == null) {
+            results.setItems(results.getResults());
+        }
+        if (criteria != null) {
+            int safePage = criteria.getSafePage();
+            int safePageSize = criteria.getSafePageSize();
+            if (results.getPage() <= 0) {
+                results.setPage(safePage);
+            }
+            if (results.getPageNumber() == null) {
+                results.setPageNumber(Integer.valueOf(safePage));
+            }
+            if (results.getPageSize() <= 0) {
+                results.setPageSize(safePageSize);
+            }
+            if (results.getPageSizeObject() == null) {
+                results.setPageSize(Integer.valueOf(safePageSize));
+            }
+        }
+        if (results.getTotalRecords() == null) {
+            results.setTotalRecords(Integer.valueOf(results.getResults().size()));
+        }
+        results.normalize();
+        return results;
     }
 }

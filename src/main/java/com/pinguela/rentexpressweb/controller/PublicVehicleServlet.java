@@ -148,9 +148,43 @@ public class PublicVehicleServlet extends HttpServlet {
         List<HeadquartersDTO> headquarters = loadHeadquarters();
         Map<Integer, String> headquartersNames = mapHeadquarters(headquarters);
         List<VehicleStatusDTO> statuses = loadStatuses(locale);
+        Map<Integer, String> statusNames = buildStatusNames(statuses);
         Integer availableStatusId = resolveAvailableStatusId(statuses);
+
+        VehicleCriteria criteria = buildCriteria(filters,
+                minPrice,
+                maxPrice,
+                categoryId,
+                headquartersId,
+                statusId,
+                minYear,
+                maxYear,
+                onlyAvailable,
+                availableStatusId,
+                page,
+                pageSize);
+        criteria.normalize();
+
+        Results<VehicleDTO> results = searchVehicles(criteria, filterErrors);
+        List<VehicleDTO> vehicles = results.getResults();
+
+        request.setAttribute(VehicleConstants.ATTR_FILTERS, filters);
+        request.setAttribute(VehicleConstants.ATTR_FILTER_ERRORS, filterErrors);
+        request.setAttribute(VehicleConstants.ATTR_AVAILABLE_CATEGORIES, categories);
+        request.setAttribute(VehicleConstants.ATTR_CATEGORY_NAMES, categoryNames);
+        request.setAttribute(VehicleConstants.ATTR_HEADQUARTERS, headquarters);
+        request.setAttribute(VehicleConstants.ATTR_HEADQUARTERS_NAMES, headquartersNames);
+        request.setAttribute(VehicleConstants.ATTR_AVAILABLE_STATUSES, statuses);
+        request.setAttribute(VehicleConstants.ATTR_STATUS_NAMES, statusNames);
+        request.setAttribute(VehicleConstants.ATTR_PAGE_SIZES, PAGE_SIZE_OPTIONS);
+        request.setAttribute(VehicleConstants.ATTR_RESULTS, results);
+        request.setAttribute(VehicleConstants.ATTR_VEHICLES, vehicles);
+        request.setAttribute(VehicleConstants.ATTR_TOTAL_RESULTS,
+                results.getTotalRecords() != null ? results.getTotalRecords() : Integer.valueOf(results.getTotal()));
+
+        request.getRequestDispatcher("/public/vehicle/catalog.jsp").forward(request, response);
     }
-     
+
     /**
      * @see HttpServlet#doPost(HttpServletRequest, HttpServletResponse)
      */
@@ -356,6 +390,9 @@ public class PublicVehicleServlet extends HttpServlet {
         criteria.setPageNumber(Integer.valueOf(page));
         criteria.setPageSize(Integer.valueOf(pageSize));
 
+        String sortValue = filters.get(VehicleConstants.PARAM_SORT);
+        applySort(criteria, sortValue);
+
         return criteria;
     }
 
@@ -435,5 +472,83 @@ public class PublicVehicleServlet extends HttpServlet {
 
     private String sanitize(String value) {
         return value != null ? value.trim() : null;
+    }
+
+    private void applySort(VehicleCriteria criteria, String sortValue) {
+        if (criteria == null) {
+            return;
+        }
+        String orderBy = "daily_price";
+        String orderDir = "ASC";
+        if (VehicleConstants.VALUE_SORT_PRICE_DESC.equals(sortValue)) {
+            orderDir = "DESC";
+        } else if (VehicleConstants.VALUE_SORT_YEAR_DESC.equals(sortValue)) {
+            orderBy = "manufacture_year";
+            orderDir = "DESC";
+        } else if (!VehicleConstants.VALUE_SORT_PRICE_ASC.equals(sortValue)) {
+            orderBy = "vehicle_id";
+            orderDir = "DESC";
+        }
+        criteria.setOrderBy(orderBy);
+        criteria.setOrderDir(orderDir);
+    }
+
+    private Map<Integer, String> buildStatusNames(List<VehicleStatusDTO> statuses) {
+        Map<Integer, String> names = new LinkedHashMap<Integer, String>();
+        if (statuses != null) {
+            for (int i = 0; i < statuses.size(); i++) {
+                VehicleStatusDTO status = statuses.get(i);
+                if (status != null && status.getVehicleStatusId() != null) {
+                    names.put(status.getVehicleStatusId(), status.getStatusName());
+                }
+            }
+        }
+        return names;
+    }
+
+    private Results<VehicleDTO> searchVehicles(VehicleCriteria criteria, List<String> errors) {
+        try {
+            Results<VehicleDTO> results = vehicleService.findByCriteria(criteria);
+            return normalizeResults(results, criteria);
+        } catch (RentexpresException ex) {
+            LOGGER.error("Error al recuperar el catálogo público de vehículos", ex);
+            if (errors != null) {
+                errors.add("No se pudo cargar el catálogo en este momento. Inténtalo de nuevo más tarde.");
+            }
+            return normalizeResults(null, criteria);
+        }
+    }
+
+    private Results<VehicleDTO> normalizeResults(Results<VehicleDTO> results, VehicleCriteria criteria) {
+        if (results == null) {
+            results = new Results<VehicleDTO>();
+        }
+        if (results.getResults() == null) {
+            results.setResults(new ArrayList<VehicleDTO>());
+        }
+        if (results.getItems() == null) {
+            results.setItems(results.getResults());
+        }
+        if (criteria != null) {
+            int safePage = criteria.getSafePage();
+            int safePageSize = criteria.getSafePageSize();
+            if (results.getPage() <= 0) {
+                results.setPage(safePage);
+            }
+            if (results.getPageNumber() == null) {
+                results.setPageNumber(Integer.valueOf(safePage));
+            }
+            if (results.getPageSize() <= 0) {
+                results.setPageSize(safePageSize);
+            }
+            if (results.getPageSizeObject() == null) {
+                results.setPageSize(Integer.valueOf(safePageSize));
+            }
+        }
+        if (results.getTotalRecords() == null) {
+            results.setTotalRecords(Integer.valueOf(results.getResults().size()));
+        }
+        results.normalize();
+        return results;
     }
 }
