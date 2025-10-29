@@ -46,4 +46,10 @@ public final class VehicleConstants {
     public static final String ATTR_SELECTED_VEHICLE = "selectedVehicle";
     public static final String ATTR_RELATED_VEHICLES = "relatedVehicles";
     public static final String ATTR_TOTAL_RESULTS = "totalVehicles";
+
+    public static final String ATTR_PARAM_HEADQUARTERS = "vehicleParamHeadquarters";
+    public static final String ATTR_PARAM_PICKUP_DATE = "vehicleParamPickupDate";
+    public static final String ATTR_PARAM_PICKUP_TIME = "vehicleParamPickupTime";
+    public static final String ATTR_PARAM_RETURN_DATE = "vehicleParamReturnDate";
+    public static final String ATTR_PARAM_RETURN_TIME = "vehicleParamReturnTime";
 }

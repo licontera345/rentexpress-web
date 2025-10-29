@@ -47,8 +47,13 @@ public class WelcomeServlet extends HttpServlet {
         RememberMeManager.applyRememberedUser(request);
         exposeFlashMessage(request);
 
-        request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Bienvenido");
+        request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "home.title");
         request.setAttribute(VehicleConstants.ATTR_HEADQUARTERS, loadHeadquarters());
+        request.setAttribute(VehicleConstants.ATTR_PARAM_HEADQUARTERS, VehicleConstants.PARAM_HEADQUARTERS);
+        request.setAttribute(VehicleConstants.ATTR_PARAM_PICKUP_DATE, VehicleConstants.PARAM_PICKUP_DATE);
+        request.setAttribute(VehicleConstants.ATTR_PARAM_PICKUP_TIME, VehicleConstants.PARAM_PICKUP_TIME);
+        request.setAttribute(VehicleConstants.ATTR_PARAM_RETURN_DATE, VehicleConstants.PARAM_RETURN_DATE);
+        request.setAttribute(VehicleConstants.ATTR_PARAM_RETURN_TIME, VehicleConstants.PARAM_RETURN_TIME);
 
         request.getRequestDispatcher(Views.PUBLIC_WELCOME).forward(request, response);
     }
