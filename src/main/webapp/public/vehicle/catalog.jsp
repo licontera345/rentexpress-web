@@ -254,7 +254,7 @@
                                                      value="${filters[VehicleConstants.PARAM_RETURN_DATE]}" />
                                         </c:if>
                                     </c:url>
-                                    <a class="btn btn-brand" href="${ctx}${detailUrl}">
+                                    <a class="btn btn-brand" href="${detailUrl}">
                                         Ver detalles
                                     </a>
                                 </div>
