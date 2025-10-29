@@ -78,8 +78,7 @@ public class VehicleServlet extends HttpServlet {
         int pageSize = parsePageSize(filters.get(VehicleConstants.PARAM_PAGE_SIZE), errors);
 
         VehicleCriteria criteria = buildCriteria(filters.get(VehicleConstants.PARAM_SEARCH), categoryId, statusId, page,
-                pageSize, filters.get(VehicleConstants.PARAM_SORT));
-        criteria.normalize();
+                pageSize);
 
         Results<VehicleDTO> results = searchVehicles(criteria, errors);
         List<VehicleDTO> vehicles = results.getResults();
@@ -99,8 +98,7 @@ public class VehicleServlet extends HttpServlet {
         request.setAttribute(VehicleConstants.ATTR_STATUS_NAMES, statusNames);
         request.setAttribute(VehicleConstants.ATTR_RESULTS, results);
         request.setAttribute(VehicleConstants.ATTR_VEHICLES, vehicles);
-        request.setAttribute(VehicleConstants.ATTR_TOTAL_RESULTS,
-                results.getTotalRecords() != null ? results.getTotalRecords() : Integer.valueOf(results.getTotal()));
+        request.setAttribute(VehicleConstants.ATTR_TOTAL_RESULTS, resolveTotalRecords(results));
         request.getRequestDispatcher("/private/vehicle/vehicle_list.jsp").forward(request, response);
     }
 
@@ -131,8 +129,7 @@ public class VehicleServlet extends HttpServlet {
         return filters;
     }
 
-    private VehicleCriteria buildCriteria(String search, Integer categoryId, Integer statusId, int page, int pageSize,
-            String sort) {
+    private VehicleCriteria buildCriteria(String search, Integer categoryId, Integer statusId, int page, int pageSize) {
         VehicleCriteria criteria = new VehicleCriteria();
         criteria.setCategoryId(categoryId);
         criteria.setVehicleStatusId(statusId);
@@ -146,8 +143,6 @@ public class VehicleServlet extends HttpServlet {
                 criteria.setModel(parts[1]);
             }
         }
-
-        applySort(criteria, sort);
 
         return criteria;
     }
@@ -275,25 +270,6 @@ public class VehicleServlet extends HttpServlet {
         return trimmed.isEmpty() ? null : trimmed;
     }
 
-    private void applySort(VehicleCriteria criteria, String sortValue) {
-        if (criteria == null) {
-            return;
-        }
-        String orderBy = "daily_price";
-        String orderDir = "ASC";
-        if (VehicleConstants.VALUE_SORT_PRICE_DESC.equals(sortValue)) {
-            orderDir = "DESC";
-        } else if (VehicleConstants.VALUE_SORT_YEAR_DESC.equals(sortValue)) {
-            orderBy = "manufacture_year";
-            orderDir = "DESC";
-        } else if (!VehicleConstants.VALUE_SORT_PRICE_ASC.equals(sortValue)) {
-            orderBy = "vehicle_id";
-            orderDir = "DESC";
-        }
-        criteria.setOrderBy(orderBy);
-        criteria.setOrderDir(orderDir);
-    }
-
     private Results<VehicleDTO> searchVehicles(VehicleCriteria criteria, List<String> errors) {
         try {
             Results<VehicleDTO> results = vehicleService.findByCriteria(criteria);
@@ -314,29 +290,56 @@ public class VehicleServlet extends HttpServlet {
         if (results.getResults() == null) {
             results.setResults(new ArrayList<VehicleDTO>());
         }
-        if (results.getItems() == null) {
-            results.setItems(results.getResults());
-        }
         if (criteria != null) {
-            int safePage = criteria.getSafePage();
-            int safePageSize = criteria.getSafePageSize();
-            if (results.getPage() <= 0) {
-                results.setPage(safePage);
-            }
-            if (results.getPageNumber() == null) {
+            int safePage = resolveSafePage(criteria);
+            int safePageSize = resolveSafePageSize(criteria);
+            Integer resultPageNumber = results.getPageNumber();
+            if (resultPageNumber == null || resultPageNumber.intValue() < 1) {
                 results.setPageNumber(Integer.valueOf(safePage));
             }
-            if (results.getPageSize() <= 0) {
-                results.setPageSize(safePageSize);
-            }
-            if (results.getPageSizeObject() == null) {
+            Integer resultPageSize = results.getPageSize();
+            if (resultPageSize == null || resultPageSize.intValue() < 1) {
                 results.setPageSize(Integer.valueOf(safePageSize));
             }
         }
         if (results.getTotalRecords() == null) {
             results.setTotalRecords(Integer.valueOf(results.getResults().size()));
         }
-        results.normalize();
         return results;
+    }
+
+    private int resolveSafePage(VehicleCriteria criteria) {
+        if (criteria == null || criteria.getPageNumber() == null) {
+            return 1;
+        }
+        int page = criteria.getPageNumber().intValue();
+        return page < 1 ? 1 : page;
+    }
+
+    private int resolveSafePageSize(VehicleCriteria criteria) {
+        if (criteria == null || criteria.getPageSize() == null) {
+            return 20;
+        }
+        int pageSize = criteria.getPageSize().intValue();
+        if (pageSize < 5) {
+            return 5;
+        }
+        if (pageSize > 100) {
+            return 100;
+        }
+        return pageSize;
+    }
+
+    private Integer resolveTotalRecords(Results<VehicleDTO> results) {
+        if (results == null) {
+            return Integer.valueOf(0);
+        }
+        Integer totalRecords = results.getTotalRecords();
+        if (totalRecords != null) {
+            return totalRecords;
+        }
+        List<VehicleDTO> list = results.getResults();
+        int count = list != null ? list.size() : 0;
+        return Integer.valueOf(count);
     }
 }
