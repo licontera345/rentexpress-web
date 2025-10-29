@@ -25,7 +25,27 @@
                             <fmt:message key="home.hero.ctaSecondary" />
                         </a>
                     </div>
-                    <div class="hero-search-card shadow-soft mt-4">
+                    <div class="hero-trust mt-4">
+                        <div class="trust-item">
+                            <i class="bi bi-shield-check"></i>
+                            <span><fmt:message key="home.hero.trust.security" /></span>
+                        </div>
+                        <div class="trust-item">
+                            <i class="bi bi-clock-history"></i>
+                            <span><fmt:message key="home.hero.trust.support" /></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="position-relative text-center text-lg-start">
+                        <img src="https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=900&q=80"
+                             alt="RentExpress hero" class="img-fluid rounded-4 shadow-soft">
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4 justify-content-center justify-content-lg-start">
+                <div class="col-12 col-lg-11 col-xl-9 col-xxl-8">
+                    <div class="hero-search-card shadow-soft">
                         <form class="row gy-3 align-items-end" method="get" action="${ctx}/public/vehicles">
                             <div class="col-12 col-lg-4">
                                 <label for="heroSearch" class="form-label fw-semibold text-secondary">¿Qué vehículo necesitas?</label>
@@ -98,16 +118,6 @@
                                 </button>
                             </div>
                         </form>
-                    </div>
-                    <div class="hero-trust mt-4">
-                        <div class="trust-item">
-                            <i class="bi bi-shield-check"></i>
-                            <span><fmt:message key="home.hero.trust.security" /></span>
-                        </div>
-                        <div class="trust-item">
-                            <i class="bi bi-clock-history"></i>
-                            <span><fmt:message key="home.hero.trust.support" /></span>
-                        </div>
                     </div>
                 </div>
                 <div class="col-lg-6">
