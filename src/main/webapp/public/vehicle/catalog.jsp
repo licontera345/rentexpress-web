@@ -14,6 +14,8 @@
 <c:set var="statuses" value="${vehicleStatuses}" />
 <c:set var="pageSizes" value="${vehiclePageSizes}" />
 <c:set var="results" value="${vehicleResults}" />
+<c:set var="resultsFromRow" value="${vehicleResultsFromRow}" />
+<c:set var="resultsToRow" value="${vehicleResultsToRow}" />
 
 <div class="row g-4">
     <div class="col-lg-3">
@@ -163,7 +165,7 @@
                 <p class="text-muted mb-0">
                     ${total} vehículos encontrados
                     <c:if test="${not empty results.totalRecords and results.totalRecords > 0}">
-                        · mostrando ${results.fromRow} - ${results.toRow}
+                        · mostrando ${resultsFromRow} - ${resultsToRow}
                     </c:if>
                 </p>
             </div>
