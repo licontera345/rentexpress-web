@@ -10,11 +10,13 @@ import com.pinguela.rentexpres.model.UserCriteria;
 import com.pinguela.rentexpres.model.UserDTO;
 import com.pinguela.rentexpres.service.AddressService;
 import com.pinguela.rentexpres.service.CityService;
+import com.pinguela.rentexpres.service.MailService;
 import com.pinguela.rentexpres.service.ProvinceService;
 import com.pinguela.rentexpres.service.RoleService;
 import com.pinguela.rentexpres.service.UserService;
 import com.pinguela.rentexpres.service.impl.AddressServiceImpl;
 import com.pinguela.rentexpres.service.impl.CityServiceImpl;
+import com.pinguela.rentexpres.service.impl.MailServiceImpl;
 import com.pinguela.rentexpres.service.impl.ProvinceServiceImpl;
 import com.pinguela.rentexpres.service.impl.RoleServiceImpl;
 import com.pinguela.rentexpres.service.impl.UserServiceImpl;
@@ -55,6 +57,7 @@ public class RegisterUserServlet extends HttpServlet {
     private final AddressService addressService = new AddressServiceImpl();
     private final ProvinceService provinceService = new ProvinceServiceImpl();
     private final CityService cityService = new CityServiceImpl();
+    private final MailService mailService = new MailServiceImpl();
 
     public RegisterUserServlet() {
         super();
@@ -429,30 +432,6 @@ public class RegisterUserServlet extends HttpServlet {
         if (provinces == null) {
             provinces = new ArrayList<ProvinceDTO>();
         }
-        return new NameParts(firstName, lastName1, lastName2);
-    }
-
-    private Integer parseInteger(String value) {
-        try {
-            return Integer.valueOf(Integer.parseInt(value));
-        } catch (NumberFormatException ex) {
-            return null;
-        }
-    }
-
-    private void prepareLocationData(HttpServletRequest request, List<String> errors) {
-        List<ProvinceDTO> provinces = null;
-        try {
-            provinces = provinceService.findAll();
-        } catch (RentexpresException ex) {
-            LOGGER.error("Error cargando provincias", ex);
-            if (errors != null) {
-                errors.add("No se pudo cargar la lista de provincias. Inténtalo de nuevo más tarde.");
-            }
-        }
-        if (provinces == null) {
-            provinces = new ArrayList<ProvinceDTO>();
-        }
         request.setAttribute(UserConstants.ATTR_PROVINCES, provinces);
 
         List<CityDTO> cities = null;
@@ -482,35 +461,4 @@ public class RegisterUserServlet extends HttpServlet {
         }
     }
 
-    private static final class NameParts {
-        private final String firstName;
-        private final String lastName1;
-        private final String lastName2;
-
-        List<CityDTO> cities = null;
-        try {
-            cities = cityService.findAll();
-        } catch (RentexpresException ex) {
-            LOGGER.error("Error cargando ciudades", ex);
-            if (errors != null) {
-                errors.add("No se pudo cargar la lista de ciudades. Inténtalo de nuevo más tarde.");
-            }
-        }
-        if (cities == null) {
-            cities = new ArrayList<CityDTO>();
-        }
-        request.setAttribute(UserConstants.ATTR_CITIES, cities);
-
-    }
-
-    private void cleanupAddress(AddressDTO address) {
-        if (address == null || address.getAddressId() == null) {
-            return;
-        }
-        try {
-            addressService.delete(address);
-        } catch (RentexpresException ex) {
-            LOGGER.error("No se pudo revertir la dirección {} tras un error de registro", address.getAddressId(), ex);
-        }
-    }
 }
