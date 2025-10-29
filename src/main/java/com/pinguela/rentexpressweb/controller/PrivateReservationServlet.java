@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -131,9 +130,12 @@ public class PrivateReservationServlet extends HttpServlet {
 		}
 
 		List<HeadquartersDTO> headquarters = loadHeadquarters();
-		Map<Integer, HeadquartersDTO> headquartersById = headquarters.stream()
-				.filter(hq -> hq.getHeadquartersId() != null)
-				.collect(Collectors.toMap(HeadquartersDTO::getHeadquartersId, hq -> hq));
+                Map<Integer, HeadquartersDTO> headquartersById = new HashMap<>();
+                for (HeadquartersDTO headquartersDTO : headquarters) {
+                        if (headquartersDTO != null && headquartersDTO.getHeadquartersId() != null) {
+                                headquartersById.put(headquartersDTO.getHeadquartersId(), headquartersDTO);
+                        }
+                }
 
 		String pickupParam = request.getParameter(ReservationConstants.PARAM_PICKUP_HEADQUARTERS);
 		String dropoffParam = request.getParameter(ReservationConstants.PARAM_RETURN_HEADQUARTERS);
@@ -230,18 +232,28 @@ public class PrivateReservationServlet extends HttpServlet {
 	}
 
 	private List<VehicleDTO> findRelatedVehicles(VehicleDTO vehicle) {
-		try {
-			return vehicleService.findAll().stream()
-					.filter(other -> other.getVehicleId() != null
-							&& !other.getVehicleId().equals(vehicle.getVehicleId()))
-					.filter(other -> vehicle.getCategoryId() != null
-							&& vehicle.getCategoryId().equals(other.getCategoryId()))
-					.limit(3).collect(Collectors.toList());
-		} catch (RentexpresException ex) {
-			LOGGER.warn("No se pudieron cargar vehículos relacionados", ex);
-			return new ArrayList<>();
-		}
-	}
+                try {
+                        List<VehicleDTO> related = new ArrayList<>();
+                        List<VehicleDTO> allVehicles = vehicleService.findAll();
+                        for (VehicleDTO other : allVehicles) {
+                                if (other == null || other.getVehicleId() == null
+                                                || other.getVehicleId().equals(vehicle.getVehicleId())) {
+                                        continue;
+                                }
+                                if (vehicle.getCategoryId() != null
+                                                && vehicle.getCategoryId().equals(other.getCategoryId())) {
+                                        related.add(other);
+                                        if (related.size() == 3) {
+                                                break;
+                                        }
+                                }
+                        }
+                        return related;
+                } catch (RentexpresException ex) {
+                        LOGGER.warn("No se pudieron cargar vehículos relacionados", ex);
+                        return new ArrayList<>();
+                }
+        }
 
 	private List<HeadquartersDTO> loadHeadquarters() {
 		Connection connection = null;

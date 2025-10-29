@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -131,12 +130,21 @@ public class PublicVehicleDetailServlet extends HttpServlet {
 
     private List<VehicleDTO> findRelatedVehicles(VehicleDTO vehicle) {
         try {
-            return vehicleService.findAll().stream()
-                    .filter(other -> other.getVehicleId() != null && !other.getVehicleId().equals(vehicle.getVehicleId()))
-                    .filter(other -> vehicle.getCategoryId() != null
-                            && vehicle.getCategoryId().equals(other.getCategoryId()))
-                    .limit(3)
-                    .collect(Collectors.toList());
+            List<VehicleDTO> related = new ArrayList<>();
+            List<VehicleDTO> allVehicles = vehicleService.findAll();
+            for (VehicleDTO other : allVehicles) {
+                if (other == null || other.getVehicleId() == null
+                        || other.getVehicleId().equals(vehicle.getVehicleId())) {
+                    continue;
+                }
+                if (vehicle.getCategoryId() != null && vehicle.getCategoryId().equals(other.getCategoryId())) {
+                    related.add(other);
+                    if (related.size() == 3) {
+                        break;
+                    }
+                }
+            }
+            return related;
         } catch (RentexpresException ex) {
             LOGGER.warn("No se pudieron cargar vehículos relacionados", ex);
             return new ArrayList<>();

@@ -18,6 +18,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,8 +29,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -55,10 +54,16 @@ public class PublicUserServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String action = Optional.ofNullable(request.getParameter(FilterConstants.PARAM_ACTION))
-                .map(String::trim)
-                .filter(value -> !value.isEmpty())
-                .orElse(FilterConstants.ACTION_LIST);
+        String action = request.getParameter(FilterConstants.PARAM_ACTION);
+        if (action != null) {
+            action = action.trim();
+            if (action.isEmpty()) {
+                action = null;
+            }
+        }
+        if (action == null) {
+            action = FilterConstants.ACTION_LIST;
+        }
 
         if (FilterConstants.ACTION_VIEW.equalsIgnoreCase(action)) {
             handleDetail(request, response);
@@ -87,12 +92,23 @@ public class PublicUserServlet extends HttpServlet {
         List<RoleDTO> roles = loadRoles();
         Map<Integer, String> roleNames = mapRoles(roles);
 
-        List<UserDTO> filteredUsers = users.stream()
-                .filter(user -> matchesRole(user, selectedRole))
-                .filter(user -> matchesActive(user, activeState))
-                .filter(user -> matchesSearch(user, filters.get(UserConstants.PARAM_SEARCH)))
-                .sorted(resolveComparator(filters.get(FilterConstants.PARAM_SORT), roleNames))
-                .collect(Collectors.toList());
+        List<UserDTO> filteredUsers = new ArrayList<>();
+        for (UserDTO user : users) {
+            if (user == null) {
+                continue;
+            }
+            if (!matchesRole(user, selectedRole)) {
+                continue;
+            }
+            if (!matchesActive(user, activeState)) {
+                continue;
+            }
+            if (!matchesSearch(user, filters.get(UserConstants.PARAM_SEARCH))) {
+                continue;
+            }
+            filteredUsers.add(user);
+        }
+        Collections.sort(filteredUsers, resolveComparator(filters.get(FilterConstants.PARAM_SORT), roleNames));
 
         Map<String, Object> pagination = buildPagination(filteredUsers, filters);
         @SuppressWarnings("unchecked")
@@ -281,17 +297,89 @@ public class PublicUserServlet extends HttpServlet {
     }
 
     private Comparator<UserDTO> resolveComparator(String sort, Map<Integer, String> roleNames) {
-        Comparator<UserDTO> comparator;
-        if (UserConstants.VALUE_SORT_NAME_ASC.equals(sort)) {
-            comparator = Comparator.comparing(this::resolveFullName, Comparator.nullsLast(String::compareToIgnoreCase));
-        } else if (UserConstants.VALUE_SORT_ROLE_ASC.equals(sort)) {
-            comparator = Comparator.comparing(user -> roleNames.getOrDefault(user.getRoleId(), "zzzz"),
-                    String.CASE_INSENSITIVE_ORDER);
-        } else {
-            comparator = Comparator.comparing(UserDTO::getCreatedAt,
-                    Comparator.nullsLast(Comparator.reverseOrder()));
+        final String effectiveSort = sort != null ? sort : UserConstants.VALUE_SORT_CREATED_DESC;
+        return new Comparator<UserDTO>() {
+            @Override
+            public int compare(UserDTO first, UserDTO second) {
+                if (first == second) {
+                    return 0;
+                }
+                if (first == null) {
+                    return 1;
+                }
+                if (second == null) {
+                    return -1;
+                }
+                int result;
+                if (UserConstants.VALUE_SORT_NAME_ASC.equals(effectiveSort)) {
+                    result = compareFullName(first, second);
+                } else if (UserConstants.VALUE_SORT_ROLE_ASC.equals(effectiveSort)) {
+                    result = compareRole(first, second, roleNames);
+                } else {
+                    result = compareCreatedDate(first.getCreatedAt(), second.getCreatedAt());
+                }
+                if (result == 0) {
+                    result = compareInteger(first.getUserId(), second.getUserId());
+                }
+                return result;
+            }
+        };
+    }
+
+    private int compareFullName(UserDTO first, UserDTO second) {
+        String firstName = resolveFullName(first);
+        String secondName = resolveFullName(second);
+        if (firstName == null && secondName == null) {
+            return 0;
         }
-        return comparator.thenComparing(UserDTO::getUserId, Comparator.nullsLast(Integer::compareTo));
+        if (firstName == null) {
+            return 1;
+        }
+        if (secondName == null) {
+            return -1;
+        }
+        return firstName.compareToIgnoreCase(secondName);
+    }
+
+    private int compareRole(UserDTO first, UserDTO second, Map<Integer, String> roleNames) {
+        String firstRole = roleNames.get(first.getRoleId());
+        String secondRole = roleNames.get(second.getRoleId());
+        if (firstRole == null && secondRole == null) {
+            return 0;
+        }
+        if (firstRole == null) {
+            return 1;
+        }
+        if (secondRole == null) {
+            return -1;
+        }
+        return firstRole.compareToIgnoreCase(secondRole);
+    }
+
+    private int compareCreatedDate(LocalDateTime first, LocalDateTime second) {
+        if (first == null && second == null) {
+            return 0;
+        }
+        if (first == null) {
+            return 1;
+        }
+        if (second == null) {
+            return -1;
+        }
+        return second.compareTo(first);
+    }
+
+    private int compareInteger(Integer first, Integer second) {
+        if (first == null && second == null) {
+            return 0;
+        }
+        if (first == null) {
+            return 1;
+        }
+        if (second == null) {
+            return -1;
+        }
+        return first.compareTo(second);
     }
 
     private String resolveFullName(UserDTO user) {
@@ -339,23 +427,31 @@ public class PublicUserServlet extends HttpServlet {
     }
 
     private Map<String, Object> buildSummary(List<UserDTO> users) {
-        long active = users.stream()
-                .filter(user -> Boolean.TRUE.equals(user.getActiveStatus()))
-                .count();
-        long inactive = users.stream()
-                .filter(user -> Boolean.FALSE.equals(user.getActiveStatus()))
-                .count();
+        long active = 0L;
+        long inactive = 0L;
+        LocalDateTime lastCreated = null;
+        for (UserDTO user : users) {
+            if (user == null) {
+                continue;
+            }
+            Boolean status = user.getActiveStatus();
+            if (Boolean.TRUE.equals(status)) {
+                active++;
+            } else if (Boolean.FALSE.equals(status)) {
+                inactive++;
+            }
+            if (user.getCreatedAt() != null) {
+                if (lastCreated == null || user.getCreatedAt().isAfter(lastCreated)) {
+                    lastCreated = user.getCreatedAt();
+                }
+            }
+        }
 
         Map<String, Object> summary = new LinkedHashMap<>();
         summary.put("total", Long.valueOf(users.size()));
         summary.put("active", Long.valueOf(active));
         summary.put("inactive", Long.valueOf(inactive));
-        summary.put("lastRegistration", users.stream()
-                .map(UserDTO::getCreatedAt)
-                .filter(Objects::nonNull)
-                .max(Comparator.naturalOrder())
-                .map(DATE_FORMATTER::format)
-                .orElse("-"));
+        summary.put("lastRegistration", lastCreated == null ? "-" : DATE_FORMATTER.format(lastCreated));
         return summary;
     }
 

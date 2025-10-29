@@ -29,13 +29,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -60,10 +60,16 @@ public class PublicEmployeeServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String action = Optional.ofNullable(request.getParameter(FilterConstants.PARAM_ACTION))
-                .map(String::trim)
-                .filter(value -> !value.isEmpty())
-                .orElse(FilterConstants.ACTION_LIST);
+        String action = request.getParameter(FilterConstants.PARAM_ACTION);
+        if (action != null) {
+            action = action.trim();
+            if (action.isEmpty()) {
+                action = null;
+            }
+        }
+        if (action == null) {
+            action = FilterConstants.ACTION_LIST;
+        }
 
         if (FilterConstants.ACTION_VIEW.equalsIgnoreCase(action)) {
             handleDetail(request, response);
@@ -97,13 +103,26 @@ public class PublicEmployeeServlet extends HttpServlet {
         Map<Integer, String> roleNames = mapRoles(roles);
         Map<Integer, String> headquartersNames = mapHeadquarters(headquarters);
 
-        List<EmployeeDTO> filtered = employees.stream()
-                .filter(employee -> matchesRole(employee, selectedRole))
-                .filter(employee -> matchesHeadquarters(employee, selectedHeadquarters))
-                .filter(employee -> matchesActive(employee, activeState))
-                .filter(employee -> matchesSearch(employee, filters.get(EmployeeConstants.PARAM_SEARCH)))
-                .sorted(resolveComparator(filters.get(FilterConstants.PARAM_SORT), roleNames, headquartersNames))
-                .collect(Collectors.toList());
+        List<EmployeeDTO> filtered = new ArrayList<>();
+        for (EmployeeDTO employee : employees) {
+            if (employee == null) {
+                continue;
+            }
+            if (!matchesRole(employee, selectedRole)) {
+                continue;
+            }
+            if (!matchesHeadquarters(employee, selectedHeadquarters)) {
+                continue;
+            }
+            if (!matchesActive(employee, activeState)) {
+                continue;
+            }
+            if (!matchesSearch(employee, filters.get(EmployeeConstants.PARAM_SEARCH))) {
+                continue;
+            }
+            filtered.add(employee);
+        }
+        Collections.sort(filtered, resolveComparator(filters.get(FilterConstants.PARAM_SORT), headquartersNames));
 
         Map<String, Object> pagination = buildPagination(filtered, filters);
         @SuppressWarnings("unchecked")
@@ -332,19 +351,90 @@ public class PublicEmployeeServlet extends HttpServlet {
         return value != null && value.toLowerCase(Locale.ROOT).contains(search);
     }
 
-    private Comparator<EmployeeDTO> resolveComparator(String sort, Map<Integer, String> roleNames,
-            Map<Integer, String> headquartersNames) {
-        Comparator<EmployeeDTO> comparator;
-        if (EmployeeConstants.VALUE_SORT_NAME_ASC.equals(sort)) {
-            comparator = Comparator.comparing(this::resolveFullName, Comparator.nullsLast(String::compareToIgnoreCase));
-        } else if (EmployeeConstants.VALUE_SORT_HEADQUARTERS_ASC.equals(sort)) {
-            comparator = Comparator.comparing(emp -> headquartersNames.getOrDefault(emp.getHeadquartersId(), "zzzz"),
-                    String.CASE_INSENSITIVE_ORDER);
-        } else {
-            comparator = Comparator.comparing(EmployeeDTO::getCreatedAt,
-                    Comparator.nullsLast(Comparator.reverseOrder()));
+    private Comparator<EmployeeDTO> resolveComparator(String sort, Map<Integer, String> headquartersNames) {
+        final String effectiveSort = sort != null ? sort : EmployeeConstants.VALUE_SORT_CREATED_DESC;
+        return new Comparator<EmployeeDTO>() {
+            @Override
+            public int compare(EmployeeDTO first, EmployeeDTO second) {
+                if (first == second) {
+                    return 0;
+                }
+                if (first == null) {
+                    return 1;
+                }
+                if (second == null) {
+                    return -1;
+                }
+                int result;
+                if (EmployeeConstants.VALUE_SORT_NAME_ASC.equals(effectiveSort)) {
+                    result = compareFullName(first, second);
+                } else if (EmployeeConstants.VALUE_SORT_HEADQUARTERS_ASC.equals(effectiveSort)) {
+                    result = compareHeadquarters(first, second, headquartersNames);
+                } else {
+                    result = compareCreatedDate(first.getCreatedAt(), second.getCreatedAt());
+                }
+                if (result == 0) {
+                    result = compareInteger(first.getEmployeeId(), second.getEmployeeId());
+                }
+                return result;
+            }
+        };
+    }
+
+    private int compareFullName(EmployeeDTO first, EmployeeDTO second) {
+        String firstName = resolveFullName(first);
+        String secondName = resolveFullName(second);
+        if (firstName == null && secondName == null) {
+            return 0;
         }
-        return comparator.thenComparing(EmployeeDTO::getEmployeeId, Comparator.nullsLast(Integer::compareTo));
+        if (firstName == null) {
+            return 1;
+        }
+        if (secondName == null) {
+            return -1;
+        }
+        return firstName.compareToIgnoreCase(secondName);
+    }
+
+    private int compareHeadquarters(EmployeeDTO first, EmployeeDTO second, Map<Integer, String> headquartersNames) {
+        String firstName = headquartersNames.get(first.getHeadquartersId());
+        String secondName = headquartersNames.get(second.getHeadquartersId());
+        if (firstName == null && secondName == null) {
+            return 0;
+        }
+        if (firstName == null) {
+            return 1;
+        }
+        if (secondName == null) {
+            return -1;
+        }
+        return firstName.compareToIgnoreCase(secondName);
+    }
+
+    private int compareCreatedDate(java.time.LocalDateTime first, java.time.LocalDateTime second) {
+        if (first == null && second == null) {
+            return 0;
+        }
+        if (first == null) {
+            return 1;
+        }
+        if (second == null) {
+            return -1;
+        }
+        return second.compareTo(first);
+    }
+
+    private int compareInteger(Integer first, Integer second) {
+        if (first == null && second == null) {
+            return 0;
+        }
+        if (first == null) {
+            return 1;
+        }
+        if (second == null) {
+            return -1;
+        }
+        return first.compareTo(second);
     }
 
     private String resolveFullName(EmployeeDTO employee) {
@@ -393,22 +483,29 @@ public class PublicEmployeeServlet extends HttpServlet {
     }
 
     private Map<String, Object> buildSummary(List<EmployeeDTO> employees) {
-        long active = employees.stream()
-                .filter(emp -> Boolean.TRUE.equals(emp.getActiveStatus()))
-                .count();
-        long inactive = employees.stream()
-                .filter(emp -> Boolean.FALSE.equals(emp.getActiveStatus()))
-                .count();
+        long active = 0L;
+        long inactive = 0L;
+        Set<Integer> headquartersIds = new HashSet<>();
+        for (EmployeeDTO employee : employees) {
+            if (employee == null) {
+                continue;
+            }
+            Boolean status = employee.getActiveStatus();
+            if (Boolean.TRUE.equals(status)) {
+                active++;
+            } else if (Boolean.FALSE.equals(status)) {
+                inactive++;
+            }
+            if (employee.getHeadquartersId() != null) {
+                headquartersIds.add(employee.getHeadquartersId());
+            }
+        }
 
         Map<String, Object> summary = new LinkedHashMap<>();
         summary.put("total", Long.valueOf(employees.size()));
         summary.put("active", Long.valueOf(active));
         summary.put("inactive", Long.valueOf(inactive));
-        summary.put("headquarters", employees.stream()
-                .map(EmployeeDTO::getHeadquartersId)
-                .filter(Objects::nonNull)
-                .distinct()
-                .count());
+        summary.put("headquarters", Long.valueOf(headquartersIds.size()));
         return summary;
     }
 
