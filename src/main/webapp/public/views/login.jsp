@@ -7,6 +7,12 @@
             <div class="card-body p-4">
                 <p class="text-muted">Introduce tus credenciales oficiales para acceder a la plataforma y gestionar tus
                     reservas.</p>
+                <c:if test="${alreadyAuthenticated}">
+                    <div class="alert alert-warning d-flex flex-column flex-md-row align-items-md-center gap-2 justify-content-between">
+                        <span>Ya tienes una sesión activa como <strong>${rememberedEmail}</strong>. Si quieres continuar con esa cuenta, regresa a la página principal.</span>
+                        <a class="btn btn-sm btn-outline-brand" href="${ctx}/app/welcome">Ir a la portada</a>
+                    </div>
+                </c:if>
                 <c:if test="${not empty flashSuccess}">
                     <div class="alert alert-success">${flashSuccess}</div>
                 </c:if>
