@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ include file="/common/header.jsp" %>
+<fmt:message key="register.user.phone.placeholder" var="registerUserPhonePlaceholder" />
 <div class="row justify-content-center">
     <div class="col-lg-7">
         <div class="card card-common mb-4">
@@ -40,7 +41,7 @@
                     </div>
                     <div class="col-md-6">
                         <label for="phone" class="form-label"><fmt:message key="register.user.phone" /></label>
-                        <input type="tel" class="form-control" id="phone" name="phone" maxlength="20" placeholder="Opcional"
+                        <input type="tel" class="form-control" id="phone" name="phone" maxlength="20" placeholder="${registerUserPhonePlaceholder}"
                                autocomplete="tel"
                                value="${not empty formData['phone'] ? formData['phone'] : ''}">
                         <div class="form-text"><fmt:message key="register.user.phone.help" /></div>
