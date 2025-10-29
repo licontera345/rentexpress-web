@@ -51,6 +51,8 @@ public final class VehicleConstants {
     public static final String ATTR_STATUS_NAMES = "vehicleStatusNames";
     public static final String ATTR_PARAM_NAMES = "vehicleParamNames";
     public static final String ATTR_SORT_VALUES = "vehicleSortValues";
+    public static final String ATTR_FEATURED_VEHICLES = "featuredVehicles";
+    public static final String ATTR_FEATURED_VEHICLE_IMAGES = "featuredVehicleImages";
 
     public static final String ATTR_PARAM_HEADQUARTERS = "vehicleParamHeadquarters";
     public static final String ATTR_PARAM_PICKUP_DATE = "vehicleParamPickupDate";
