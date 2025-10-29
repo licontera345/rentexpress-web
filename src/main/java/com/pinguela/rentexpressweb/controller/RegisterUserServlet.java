@@ -329,7 +329,7 @@ public class RegisterUserServlet extends HttpServlet {
         return new NameParts(firstName, lastName1, lastName2);
     }
 
-    private static final class RecentRegistration {
+    public static final class RecentRegistration {
         private final String fullName;
         private final String email;
         private final String phone;
