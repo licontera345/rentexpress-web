@@ -14,8 +14,10 @@
 <c:set var="statuses" value="${vehicleStatuses}" />
 <c:set var="pageSizes" value="${vehiclePageSizes}" />
 <c:set var="results" value="${vehicleResults}" />
-<c:set var="resultsFromRow" value="${vehicleResultsFromRow}" />
-<c:set var="resultsToRow" value="${vehicleResultsToRow}" />
+<c:set var="resultsFromRow" value="${empty vehicleResultsFromRow ? 0 : vehicleResultsFromRow}" />
+<c:set var="resultsToRow" value="${empty vehicleResultsToRow ? 0 : vehicleResultsToRow}" />
+<c:set var="selectedPageSize"
+        value="${results != null && results.pageSize != null ? results.pageSize : pageSizes[0]}" />
 
 <div class="row g-4">
     <div class="col-lg-3">
@@ -146,7 +148,7 @@
                         <label for="pageSize" class="form-label">Resultados por página</label>
                         <select class="form-select" id="pageSize" name="${params.pageSize}">
                             <c:forEach var="size" items="${pageSizes}">
-                                <option value="${size}" ${size == results.pageSize ? 'selected' : ''}>${size}</option>
+                                <option value="${size}" ${size == selectedPageSize ? 'selected' : ''}>${size}</option>
                             </c:forEach>
                         </select>
                     </div>
@@ -164,7 +166,7 @@
                 <h1 class="h3 fw-semibold mb-0">Catálogo disponible</h1>
                 <p class="text-muted mb-0">
                     ${total} vehículos encontrados
-                    <c:if test="${not empty results.totalRecords and results.totalRecords > 0}">
+                    <c:if test="${resultsFromRow > 0 and resultsToRow > 0}">
                         · mostrando ${resultsFromRow} - ${resultsToRow}
                     </c:if>
                 </p>
