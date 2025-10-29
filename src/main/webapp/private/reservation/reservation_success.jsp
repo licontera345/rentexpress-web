@@ -1,17 +1,17 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ include file="/common/header.jsp" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<fmt:setLocale value="es_ES" scope="request" />
 <c:set var="summary" value="${reservationSummary}" />
 
 <c:if test="${summary == null}">
-    <div class="alert alert-warning">No hay ninguna simulación de reserva disponible.</div>
+    <div class="alert alert-warning">No hay ninguna reserva disponible para mostrar.</div>
 </c:if>
 <c:if test="${summary != null}">
     <div class="card card-common mb-4">
-        <div class="card-header">Reserva simulada · ${reservationReference}</div>
+        <div class="card-header">Reserva confirmada · ${reservationReference}</div>
         <div class="card-body p-4">
             <p class="lead">¡Gracias por tu confianza, <strong>${summary.contactEmail}</strong>!</p>
-            <p>Hemos generado un resumen académico de la reserva para que puedas validar la lógica en tu futura integración con base de datos.</p>
+            <p>Hemos generado un resumen completo de la reserva para que compartas el detalle con el cliente o tu equipo de operaciones.</p>
             <div class="row g-4 mt-1">
                 <div class="col-md-6">
                     <div class="summary-box">

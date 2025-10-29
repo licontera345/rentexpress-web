@@ -1,7 +1,7 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="com.pinguela.rentexpressweb.constants.VehicleConstants" %>
 <%@ include file="/common/header.jsp" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<fmt:setLocale value="es_ES" scope="request" />
 <c:set var="filters" value="${vehicleFilters}" />
 <c:set var="categories" value="${vehicleCategories}" />
 <c:set var="categoryNames" value="${vehicleCategoryNames}" />
@@ -79,7 +79,7 @@
                 <p class="text-muted mb-0">${total} vehículos encontrados</p>
             </div>
             <a class="btn btn-outline-brand" href="${ctx}/app/auth/login">
-                <i class="bi bi-box-arrow-in-right me-2"></i>Accede para simular tu reserva
+                <i class="bi bi-box-arrow-in-right me-2"></i>Inicia sesión para gestionar tu reserva
             </a>
         </div>
 
@@ -96,7 +96,7 @@
         <c:choose>
             <c:when test="${empty vehicles}">
                 <div class="alert alert-info shadow-soft">
-                    No se han encontrado vehículos con los criterios seleccionados. Ajusta los filtros para ver más opciones.
+                    No se han encontrado vehículos disponibles con los criterios seleccionados. Ajusta los filtros o amplía tu búsqueda para ver más opciones.
                 </div>
             </c:when>
             <c:otherwise>
@@ -110,7 +110,17 @@
                                     <ul class="vehicle-features list-unstyled">
                                         <li><i class="bi bi-calendar3"></i>Año ${vehicle.manufactureYear}</li>
                                         <li><i class="bi bi-speedometer2"></i>Kilometraje: ${vehicle.currentMileage}</li>
-                                        <li><i class="bi bi-geo-alt"></i>Sede actual ID: ${vehicle.currentHeadquartersId}</li>
+                                        <li>
+                                            <i class="bi bi-geo-alt"></i>
+                                            <c:choose>
+                                                <c:when test="${vehicle.currentHeadquartersId != null}">
+                                                    Sede actual: #${vehicle.currentHeadquartersId}
+                                                </c:when>
+                                                <c:otherwise>
+                                                    Sede actual sin asignar
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </li>
                                     </ul>
                                 </div>
                                 <div class="vehicle-card-footer">

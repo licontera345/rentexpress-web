@@ -5,10 +5,13 @@
 <fmt:setBundle basename="i18n.Messages" />
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 <c:set var="htmlLang" value="es" />
+<c:if test="${empty sessionScope.appLocale and not empty cookie.appLocale.value}">
+    <c:set var="htmlLang" value="${cookie.appLocale.value}" />
+</c:if>
 <c:if test="${not empty sessionScope.appLocale}">
     <c:set var="htmlLang" value="${sessionScope.appLocale}" />
 </c:if>
-<c:if test="${empty sessionScope.appLocale and not empty pageContext.request.locale.language}">
+<c:if test="${empty sessionScope.appLocale and empty cookie.appLocale.value and not empty pageContext.request.locale.language}">
     <c:set var="htmlLang" value="${pageContext.request.locale.language}" />
 </c:if>
 <c:set var="resolvedTitle" value="${empty pageTitle ? 'RentExpress' : pageTitle}" />

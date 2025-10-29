@@ -1,3 +1,4 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ include file="/common/header.jsp" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <c:set var="user" value="${selectedUser}" />
@@ -55,17 +56,13 @@
         </div>
         <div class="col-lg-4">
             <div class="card card-common">
-                <div class="card-header">Sugerencias académicas</div>
+                <div class="card-header">Acciones recomendadas</div>
                 <div class="card-body">
-                    <p class="text-muted">Este detalle utiliza el servicio `UserService` del middleware. Puedes reutilizar
-                        la lógica para construir vistas privadas o generar reportes descargables.</p>
+                    <p class="text-muted">Supervisa la actividad del usuario y coordina con tu equipo de atención al cliente para garantizar una experiencia fluida.</p>
                     <ul class="list-unstyled small mb-0">
-                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Filtra en memoria para aplicar
-                            búsquedas combinadas.</li>
-                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Usa los DTO para poblar un formulario
-                            de edición en la zona privada.</li>
-                        <li><i class="bi bi-check-circle text-success"></i> Registra auditoría (createdAt/updatedAt) al
-                            persistir cambios.</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Revisa sus reservas activas antes de modificar datos personales.</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Valida el correo y el teléfono antes de habilitar nuevas autorizaciones.</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Documenta cualquier cambio relevante en el CRM corporativo.</li>
                     </ul>
                 </div>
             </div>

@@ -1,7 +1,7 @@
-<%@ page import="com.pinguela.rentexpressweb.constants.RentalConstants" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"
+    import="com.pinguela.rentexpressweb.constants.RentalConstants" %>
 <%@ include file="/common/header.jsp" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<fmt:setLocale value="es_ES" scope="request" />
 <c:set var="filters" value="${rentalFilters}" />
 <c:set var="errors" value="${rentalFilterErrors}" />
 <c:set var="statusOptions" value="${rentalStatusOptions}" />
