@@ -7,6 +7,7 @@ import com.pinguela.rentexpressweb.constants.UserConstants;
 import com.pinguela.rentexpressweb.security.CredentialStore;
 import com.pinguela.rentexpressweb.security.PasswordResetManager;
 import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.Views;
 
 import jakarta.servlet.ServletException;
@@ -16,9 +17,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -48,7 +49,8 @@ public class ForgotPasswordServlet extends HttpServlet {
                 && PasswordResetManager.hasPending(request)) {
             request.setAttribute(PasswordConstants.ATTR_FORGOT_EMAIL, PasswordResetManager.getPendingEmail(request));
         }
-        request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Recupera tu contraseña");
+        request.setAttribute(AppConstants.ATTR_PAGE_TITLE,
+                MessageResolver.getMessage(request, "page.forgotPassword.title"));
         request.getRequestDispatcher(Views.PUBLIC_FORGOT_PASSWORD).forward(request, response);
     }
 
@@ -59,24 +61,27 @@ public class ForgotPasswordServlet extends HttpServlet {
         String emailParam = request.getParameter(UserConstants.PARAM_EMAIL);
         String sanitizedEmail = emailParam != null ? emailParam.trim().toLowerCase(Locale.ROOT) : null;
 
-        List<String> errors = new ArrayList<>();
+        Map<String, String> errors = new LinkedHashMap<String, String>();
         if (sanitizedEmail == null || sanitizedEmail.isEmpty()) {
-            errors.add("El correo electrónico es obligatorio.");
+            errors.put(UserConstants.PARAM_EMAIL,
+                    MessageResolver.getMessage(request, "validation.forgot.email.required"));
         } else if (!CredentialStore.isKnownEmail(getServletContext(), sanitizedEmail)) {
-            errors.add("No hemos encontrado ninguna cuenta con ese correo.");
+            errors.put(UserConstants.PARAM_EMAIL,
+                    MessageResolver.getMessage(request, "validation.forgot.email.unknown"));
         }
 
         if (!errors.isEmpty()) {
             request.setAttribute(PasswordConstants.ATTR_FORGOT_ERRORS, errors);
             request.setAttribute(PasswordConstants.ATTR_FORGOT_EMAIL, emailParam != null ? emailParam.trim() : "");
-            request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Recupera tu contraseña");
+            request.setAttribute(AppConstants.ATTR_PAGE_TITLE,
+                    MessageResolver.getMessage(request, "page.forgotPassword.title"));
             request.getRequestDispatcher(Views.PUBLIC_FORGOT_PASSWORD).forward(request, response);
             return;
         }
 
         String code = PasswordResetManager.initiate(request, sanitizedEmail);
         SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_INFO,
-                buildInfoMessage(sanitizedEmail, code));
+                buildInfoMessage(request, sanitizedEmail, code));
         LOGGER.info("Generado código de restablecimiento {} para {}", code, sanitizedEmail);
 
         response.sendRedirect(request.getContextPath() + "/app/password/verify-reset");
@@ -102,11 +107,8 @@ public class ForgotPasswordServlet extends HttpServlet {
         }
     }
 
-    private String buildInfoMessage(String email, String code) {
-        return String.format(
-                "Hemos enviado un código temporal a %s. Por tratarse de un entorno académico, el código es %s y caduca en %d segundos.",
-                email,
-                code,
+    private String buildInfoMessage(HttpServletRequest request, String email, String code) {
+        return MessageResolver.getMessage(request, "info.forgot.code.sent", email, code,
                 Integer.valueOf(SecurityConstants.TWO_FA_CODE_VALIDITY_SECONDS));
     }
 }

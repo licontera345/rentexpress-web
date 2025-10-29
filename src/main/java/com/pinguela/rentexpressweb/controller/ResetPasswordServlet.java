@@ -6,6 +6,7 @@ import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.security.CredentialStore;
 import com.pinguela.rentexpressweb.security.PasswordResetManager;
 import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.Views;
 
 import jakarta.servlet.ServletException;
@@ -15,8 +16,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,13 +44,14 @@ public class ResetPasswordServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         if (!PasswordResetManager.canReset(request)) {
             SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
-                    "No hemos podido validar el código de restablecimiento. Inicia el proceso de nuevo.");
+                    MessageResolver.getMessage(request, "error.reset.invalidSession"));
             response.sendRedirect(request.getContextPath() + "/app/password/forgot");
             return;
         }
 
         copyFlashMessages(request);
-        request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Crea una contraseña nueva");
+        request.setAttribute(AppConstants.ATTR_PAGE_TITLE,
+                MessageResolver.getMessage(request, "page.resetPassword.title"));
         request.setAttribute(PasswordConstants.ATTR_PENDING_EMAIL, PasswordResetManager.getPendingEmail(request));
         request.getRequestDispatcher(Views.PUBLIC_RESET_PASSWORD).forward(request, response);
     }
@@ -60,7 +62,7 @@ public class ResetPasswordServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         if (!PasswordResetManager.canReset(request)) {
             SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
-                    "La sesión de restablecimiento ha caducado. Solicita un nuevo código.");
+                    MessageResolver.getMessage(request, "error.reset.sessionExpired"));
             response.sendRedirect(request.getContextPath() + "/app/password/forgot");
             return;
         }
@@ -70,23 +72,28 @@ public class ResetPasswordServlet extends HttpServlet {
         String sanitizedNewPassword = newPassword != null ? newPassword.trim() : null;
         String sanitizedConfirm = confirmPassword != null ? confirmPassword.trim() : null;
 
-        List<String> errors = new ArrayList<>();
+        Map<String, String> errors = new LinkedHashMap<String, String>();
         if (sanitizedNewPassword == null || sanitizedNewPassword.isEmpty()) {
-            errors.add("Debes indicar una nueva contraseña.");
+            errors.put(PasswordConstants.PARAM_NEW_PASSWORD,
+                    MessageResolver.getMessage(request, "validation.reset.newPassword.required"));
         } else if (sanitizedNewPassword.length() < 8) {
-            errors.add("La contraseña debe tener al menos 8 caracteres.");
+            errors.put(PasswordConstants.PARAM_NEW_PASSWORD,
+                    MessageResolver.getMessage(request, "validation.reset.newPassword.length"));
         }
 
         if (sanitizedConfirm == null || sanitizedConfirm.isEmpty()) {
-            errors.add("Confirma la contraseña para evitar errores.");
+            errors.put(PasswordConstants.PARAM_CONFIRM_PASSWORD,
+                    MessageResolver.getMessage(request, "validation.reset.confirm.required"));
         } else if (sanitizedNewPassword != null && !sanitizedConfirm.equals(sanitizedNewPassword)) {
-            errors.add("Las contraseñas no coinciden.");
+            errors.put(PasswordConstants.PARAM_CONFIRM_PASSWORD,
+                    MessageResolver.getMessage(request, "validation.reset.confirm.mismatch"));
         }
 
         if (!errors.isEmpty()) {
             request.setAttribute(PasswordConstants.ATTR_RESET_ERRORS, errors);
             request.setAttribute(PasswordConstants.ATTR_PENDING_EMAIL, PasswordResetManager.getPendingEmail(request));
-            request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Crea una contraseña nueva");
+            request.setAttribute(AppConstants.ATTR_PAGE_TITLE,
+                    MessageResolver.getMessage(request, "page.resetPassword.title"));
             request.getRequestDispatcher(Views.PUBLIC_RESET_PASSWORD).forward(request, response);
             return;
         }
@@ -95,7 +102,7 @@ public class ResetPasswordServlet extends HttpServlet {
         CredentialStore.updatePassword(getServletContext(), email, sanitizedNewPassword);
         PasswordResetManager.clear(request);
         SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
-                "Contraseña restablecida. Ya puedes iniciar sesión.");
+                MessageResolver.getMessage(request, "flash.reset.success"));
         LOGGER.info("Contraseña restablecida para {}", email);
         response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
     }

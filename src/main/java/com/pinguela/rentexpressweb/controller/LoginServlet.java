@@ -7,6 +7,7 @@ import com.pinguela.rentexpressweb.security.CredentialStore;
 import com.pinguela.rentexpressweb.security.RememberMeManager;
 import com.pinguela.rentexpressweb.security.SessionManager;
 import com.pinguela.rentexpressweb.security.TwoFactorManager;
+import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.PasswordEncoder;
 import com.pinguela.rentexpressweb.util.Views;
 import jakarta.servlet.ServletException;
@@ -126,7 +127,7 @@ public class LoginServlet extends HttpServlet {
 
         String verificationCode = TwoFactorManager.initiate(request, normalizedEmail, remember);
         SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_INFO,
-                buildVerificationInfoMessage(sanitizedEmail, verificationCode, false));
+                buildVerificationInfoMessage(request, sanitizedEmail, verificationCode, false));
         LOGGER.info("Generado código 2FA {} para {}", verificationCode, normalizedEmail);
 
         response.sendRedirect(request.getContextPath() + "/app/auth/verify-2fa");
@@ -169,11 +170,11 @@ public class LoginServlet extends HttpServlet {
         }
     }
 
-    private String buildVerificationInfoMessage(String email, String code, boolean resent) {
-        String intro = resent ? "Hemos reenviado un nuevo código" : "Hemos enviado un código";
-        return String.format(
-                "%s a %s. Por tratarse de un entorno académico, el código es %s y caduca en %d segundos.",
-                intro, email, code, SecurityConstants.TWO_FA_CODE_VALIDITY_SECONDS);
+    private String buildVerificationInfoMessage(HttpServletRequest request, String email, String code,
+                                                boolean resent) {
+        String key = resent ? "info.login.2fa.resent" : "info.login.2fa.sent";
+        return MessageResolver.getMessage(request, key, email, code,
+                Integer.valueOf(SecurityConstants.TWO_FA_CODE_VALIDITY_SECONDS));
     }
 
     private ResourceBundle resolveBundle(HttpServletRequest request) {
