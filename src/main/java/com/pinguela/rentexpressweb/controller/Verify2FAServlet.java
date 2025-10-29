@@ -1,5 +1,7 @@
 package com.pinguela.rentexpressweb.controller;
 
+import com.pinguela.rentexpres.service.MailService;
+import com.pinguela.rentexpres.service.impl.MailServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.security.EmployeeSessionResolver;
@@ -35,6 +37,11 @@ public class Verify2FAServlet extends HttpServlet {
     private static final String ERROR_KEY_CODE = SecurityConstants.PARAM_2FA_CODE;
     private static final String ERROR_KEY_GLOBAL = "global";
     private static final String VIEW_VERIFY_2FA = "/private/security/verify_2fa.jsp";
+    private static final String MESSAGE_KEY_EMAIL_FAILURE = "error.login.2fa.email";
+    private static final String MESSAGE_KEY_MAIL_SUBJECT = "mail.2fa.subject";
+    private static final String MESSAGE_KEY_MAIL_BODY = "mail.2fa.body";
+
+    private final MailService mailService = new MailServiceImpl();
 
     public Verify2FAServlet() {
         super();
@@ -55,9 +62,15 @@ public class Verify2FAServlet extends HttpServlet {
             String code = TwoFactorManager.regenerate(request);
             String email = TwoFactorManager.getPendingEmail(request);
             if (code != null && email != null) {
-                SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_INFO,
-                        buildVerificationInfoMessage(request, email, code, true));
-                LOGGER.info("Reenviado código 2FA {} para {}", code, email);
+                boolean emailSent = sendVerificationCodeByEmail(request, email, code);
+                if (emailSent) {
+                    SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_INFO,
+                            buildVerificationInfoMessage(request, email, true));
+                    LOGGER.info("Reenviado código 2FA para {}", email);
+                } else {
+                    SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
+                            MessageResolver.getMessage(request, MESSAGE_KEY_EMAIL_FAILURE));
+                }
             }
             response.sendRedirect(request.getContextPath() + "/app/auth/verify-2fa");
             return;
@@ -152,10 +165,28 @@ public class Verify2FAServlet extends HttpServlet {
         }
     }
 
-    private String buildVerificationInfoMessage(HttpServletRequest request, String email, String code,
-                                                boolean resent) {
+    private String buildVerificationInfoMessage(HttpServletRequest request, String email, boolean resent) {
         String key = resent ? "info.login.2fa.resent" : "info.login.2fa.sent";
-        return MessageResolver.getMessage(request, key, email, code,
+        return MessageResolver.getMessage(request, key, email,
                 Integer.valueOf(SecurityConstants.TWO_FA_CODE_VALIDITY_SECONDS));
+    }
+
+    private boolean sendVerificationCodeByEmail(HttpServletRequest request, String email, String code) {
+        if (email == null || code == null) {
+            return false;
+        }
+        String subject = MessageResolver.getMessage(request, MESSAGE_KEY_MAIL_SUBJECT);
+        String body = MessageResolver.getMessage(request, MESSAGE_KEY_MAIL_BODY, code,
+                Integer.valueOf(SecurityConstants.TWO_FA_CODE_VALIDITY_SECONDS));
+        try {
+            if (!mailService.send(email, subject, body)) {
+                LOGGER.error("No se pudo reenviar el correo 2FA a {}", email);
+                return false;
+            }
+            return true;
+        } catch (RuntimeException ex) {
+            LOGGER.error("Error inesperado reenviando el correo 2FA a {}", email, ex);
+            return false;
+        }
     }
 }
