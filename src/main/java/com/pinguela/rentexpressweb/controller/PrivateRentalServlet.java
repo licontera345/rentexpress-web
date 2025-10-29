@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -110,11 +109,7 @@ public class PrivateRentalServlet extends HttpServlet {
         List<RentalDTO> filtered = filterRentals(rentals, statusId, startFrom, startTo, minCost, maxCost);
         Map<Integer, Long> statusCounts = countByStatus(rentals, statusOptions);
         Map<String, Object> summary = buildSummary(filtered, rentals);
-        List<RentalDTO> latestRentals = filtered.stream()
-                .sorted(Comparator.comparing(RentalDTO::getStartDateEffective,
-                        Comparator.nullsLast(Comparator.naturalOrder())).reversed())
-                .limit(10)
-                .collect(Collectors.toList());
+        List<RentalDTO> latestRentals = buildLatestRentals(filtered, 10);
 
         request.setAttribute(RentalConstants.ATTR_RENTAL_FILTERS, filters);
         request.setAttribute(RentalConstants.ATTR_RENTAL_ERRORS, errors);
@@ -278,13 +273,24 @@ public class PrivateRentalServlet extends HttpServlet {
 
     private List<RentalDTO> filterRentals(List<RentalDTO> rentals, Integer statusId, LocalDate startFrom, LocalDate startTo,
             BigDecimal minCost, BigDecimal maxCost) {
-        return rentals.stream()
-                .filter(rental -> statusId == null || Objects.equals(rental.getRentalStatusId(), statusId))
-                .filter(rental -> matchesStartDate(rental, startFrom, startTo))
-                .filter(rental -> matchesCost(rental, minCost, maxCost))
-                .sorted(Comparator.comparing(RentalDTO::getStartDateEffective,
-                        Comparator.nullsLast(Comparator.naturalOrder())).reversed())
-                .collect(Collectors.toList());
+        List<RentalDTO> filtered = new ArrayList<>();
+        for (RentalDTO rental : rentals) {
+            if (rental == null) {
+                continue;
+            }
+            if (statusId != null && !Objects.equals(rental.getRentalStatusId(), statusId)) {
+                continue;
+            }
+            if (!matchesStartDate(rental, startFrom, startTo)) {
+                continue;
+            }
+            if (!matchesCost(rental, minCost, maxCost)) {
+                continue;
+            }
+            filtered.add(rental);
+        }
+        sortByStartDateDescending(filtered);
+        return filtered;
     }
 
     private boolean matchesStartDate(RentalDTO rental, LocalDate startFrom, LocalDate startTo) {
@@ -322,9 +328,13 @@ public class PrivateRentalServlet extends HttpServlet {
         Map<Integer, Long> counts = new LinkedHashMap<>();
         for (RentalStatusDTO status : statuses) {
             if (status != null && status.getRentalStatusId() != null) {
-                long count = rentals.stream()
-                        .filter(rental -> Objects.equals(rental.getRentalStatusId(), status.getRentalStatusId()))
-                        .count();
+                long count = 0L;
+                for (RentalDTO rental : rentals) {
+                    if (rental != null
+                            && Objects.equals(rental.getRentalStatusId(), status.getRentalStatusId())) {
+                        count++;
+                    }
+                }
                 counts.put(status.getRentalStatusId(), Long.valueOf(count));
             }
         }
@@ -336,27 +346,37 @@ public class PrivateRentalServlet extends HttpServlet {
         summary.put("filteredCount", Integer.valueOf(filtered.size()));
         summary.put("totalCount", Integer.valueOf(allRentals.size()));
 
-        BigDecimal filteredRevenue = filtered.stream()
-                .map(RentalDTO::getTotalCost)
-                .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal filteredRevenue = BigDecimal.ZERO;
+        for (RentalDTO rental : filtered) {
+            if (rental != null && rental.getTotalCost() != null) {
+                filteredRevenue = filteredRevenue.add(rental.getTotalCost());
+            }
+        }
         summary.put("filteredRevenue", filteredRevenue);
 
-        BigDecimal totalRevenue = allRentals.stream()
-                .map(RentalDTO::getTotalCost)
-                .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalRevenue = BigDecimal.ZERO;
+        for (RentalDTO rental : allRentals) {
+            if (rental != null && rental.getTotalCost() != null) {
+                totalRevenue = totalRevenue.add(rental.getTotalCost());
+            }
+        }
         summary.put("totalRevenue", totalRevenue);
 
-        long filteredDays = filtered.stream()
-                .mapToLong(rental -> calculateDays(rental.getStartDateEffective(), rental.getEndDateEffective()))
-                .sum();
+        long filteredDays = 0L;
+        for (RentalDTO rental : filtered) {
+            if (rental != null) {
+                filteredDays += calculateDays(rental.getStartDateEffective(), rental.getEndDateEffective());
+            }
+        }
         double averageFilteredDuration = filtered.isEmpty() ? 0d : (double) filteredDays / filtered.size();
         summary.put("averageFilteredDuration", Double.valueOf(averageFilteredDuration));
 
-        long activeRentals = allRentals.stream()
-                .filter(rental -> Objects.equals(rental.getRentalStatusId(), Integer.valueOf(1)))
-                .count();
+        long activeRentals = 0L;
+        for (RentalDTO rental : allRentals) {
+            if (rental != null && Objects.equals(rental.getRentalStatusId(), Integer.valueOf(1))) {
+                activeRentals++;
+            }
+        }
         summary.put("activeRentals", Long.valueOf(activeRentals));
 
         BigDecimal averageTicket = filtered.isEmpty() ? BigDecimal.ZERO
@@ -375,7 +395,11 @@ public class PrivateRentalServlet extends HttpServlet {
     }
 
     private List<Map<String, Object>> buildRentalViews(List<RentalDTO> rentals, Map<Integer, String> statusNames) {
-        return rentals.stream().map(rental -> {
+        List<Map<String, Object>> views = new ArrayList<>();
+        for (RentalDTO rental : rentals) {
+            if (rental == null) {
+                continue;
+            }
             Map<String, Object> view = new HashMap<>();
             view.put("id", rental.getRentalId());
             view.put("brand", rental.getBrand());
@@ -386,8 +410,38 @@ public class PrivateRentalServlet extends HttpServlet {
             view.put("start", formatDate(rental.getStartDateEffective()));
             view.put("end", formatDate(rental.getEndDateEffective()));
             view.put("totalCost", rental.getTotalCost());
-            return view;
-        }).collect(Collectors.toList());
+            views.add(view);
+        }
+        return views;
+    }
+
+    private void sortByStartDateDescending(List<RentalDTO> rentals) {
+        Collections.sort(rentals, new Comparator<RentalDTO>() {
+            @Override
+            public int compare(RentalDTO first, RentalDTO second) {
+                java.time.LocalDateTime firstDate = first != null ? first.getStartDateEffective() : null;
+                java.time.LocalDateTime secondDate = second != null ? second.getStartDateEffective() : null;
+                if (firstDate == null && secondDate == null) {
+                    return 0;
+                }
+                if (firstDate == null) {
+                    return 1;
+                }
+                if (secondDate == null) {
+                    return -1;
+                }
+                return secondDate.compareTo(firstDate);
+            }
+        });
+    }
+
+    private List<RentalDTO> buildLatestRentals(List<RentalDTO> rentals, int limit) {
+        List<RentalDTO> latest = new ArrayList<>(rentals);
+        sortByStartDateDescending(latest);
+        if (latest.size() > limit) {
+            return new ArrayList<>(latest.subList(0, limit));
+        }
+        return latest;
     }
 
     private String formatDate(java.time.LocalDateTime dateTime) {
