@@ -61,11 +61,41 @@ public class PublicVehicleServlet extends HttpServlet {
     private static final Set<String> AVAILABLE_STATUS_KEYWORDS = new HashSet<>();
     private static final List<Integer> PAGE_SIZE_OPTIONS = Collections
             .unmodifiableList(Arrays.asList(10, 20, 25, 50, 100));
+    private static final Map<String, String> PARAM_NAMES;
+    private static final Map<String, String> SORT_VALUES;
 
     static {
         AVAILABLE_STATUS_KEYWORDS.add("disponible");
         AVAILABLE_STATUS_KEYWORDS.add("available");
         AVAILABLE_STATUS_KEYWORDS.add("libre");
+
+        Map<String, String> paramNames = new LinkedHashMap<String, String>();
+        paramNames.put("search", VehicleConstants.PARAM_SEARCH);
+        paramNames.put("brand", VehicleConstants.PARAM_BRAND);
+        paramNames.put("model", VehicleConstants.PARAM_MODEL);
+        paramNames.put("category", VehicleConstants.PARAM_CATEGORY);
+        paramNames.put("minPrice", VehicleConstants.PARAM_MIN_PRICE);
+        paramNames.put("maxPrice", VehicleConstants.PARAM_MAX_PRICE);
+        paramNames.put("status", VehicleConstants.PARAM_STATUS);
+        paramNames.put("minYear", VehicleConstants.PARAM_MIN_YEAR);
+        paramNames.put("maxYear", VehicleConstants.PARAM_MAX_YEAR);
+        paramNames.put("sort", VehicleConstants.PARAM_SORT);
+        paramNames.put("onlyAvailable", VehicleConstants.PARAM_ONLY_AVAILABLE);
+        paramNames.put("page", VehicleConstants.PARAM_PAGE);
+        paramNames.put("pageSize", VehicleConstants.PARAM_PAGE_SIZE);
+        paramNames.put("headquarters", VehicleConstants.PARAM_HEADQUARTERS);
+        paramNames.put("pickupDate", VehicleConstants.PARAM_PICKUP_DATE);
+        paramNames.put("pickupTime", VehicleConstants.PARAM_PICKUP_TIME);
+        paramNames.put("returnDate", VehicleConstants.PARAM_RETURN_DATE);
+        paramNames.put("returnTime", VehicleConstants.PARAM_RETURN_TIME);
+        paramNames.put("vehicleId", VehicleConstants.PARAM_VEHICLE_ID);
+        PARAM_NAMES = Collections.unmodifiableMap(paramNames);
+
+        Map<String, String> sortValues = new LinkedHashMap<String, String>();
+        sortValues.put("priceAsc", VehicleConstants.VALUE_SORT_PRICE_ASC);
+        sortValues.put("priceDesc", VehicleConstants.VALUE_SORT_PRICE_DESC);
+        sortValues.put("yearDesc", VehicleConstants.VALUE_SORT_YEAR_DESC);
+        SORT_VALUES = Collections.unmodifiableMap(sortValues);
     }
 
     public PublicVehicleServlet() {
@@ -81,6 +111,9 @@ public class PublicVehicleServlet extends HttpServlet {
         Map<String, String> filters = buildFilters(request);
         List<String> filterErrors = new ArrayList<>();
         Locale locale = request.getLocale();
+
+        request.setAttribute(VehicleConstants.ATTR_PARAM_NAMES, PARAM_NAMES);
+        request.setAttribute(VehicleConstants.ATTR_SORT_VALUES, SORT_VALUES);
 
         BigDecimal minPrice = parsePrice(filters.get(VehicleConstants.PARAM_MIN_PRICE), filterErrors,
                 "El precio mínimo debe tener un formato numérico válido.");
