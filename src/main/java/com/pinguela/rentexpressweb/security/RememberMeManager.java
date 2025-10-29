@@ -36,12 +36,14 @@ public final class RememberMeManager {
     public static void applyRememberedUser(HttpServletRequest request) {
         Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
         if (currentUser != null) {
+            EmployeeSessionResolver.refresh(request);
             return;
         }
         String remembered = resolveRememberedUser(request);
         if (remembered != null) {
             SessionManager.setAttribute(request, AppConstants.ATTR_CURRENT_USER, remembered);
             request.setAttribute(AppConstants.ATTR_REMEMBERED_EMAIL, remembered);
+            EmployeeSessionResolver.resolveFromEmail(request, remembered);
         }
     }
 

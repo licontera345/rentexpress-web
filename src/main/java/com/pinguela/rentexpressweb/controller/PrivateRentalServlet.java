@@ -69,6 +69,13 @@ public class PrivateRentalServlet extends HttpServlet {
             return;
         }
 
+        if (SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE) == null) {
+            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
+                    "No tienes permisos para acceder al panel de alquileres.");
+            response.sendRedirect(request.getContextPath() + SecurityConstants.HOME_ENDPOINT);
+            return;
+        }
+
         exposeFlashMessages(request);
         request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Panel de alquileres");
 
@@ -130,6 +137,13 @@ public class PrivateRentalServlet extends HttpServlet {
             SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
                     "Inicia sesión para gestionar los alquileres.");
             response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
+            return;
+        }
+
+        if (SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE) == null) {
+            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
+                    "No tienes permisos para acceder al panel de alquileres.");
+            response.sendRedirect(request.getContextPath() + SecurityConstants.HOME_ENDPOINT);
             return;
         }
 

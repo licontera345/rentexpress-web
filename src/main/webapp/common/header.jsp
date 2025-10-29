@@ -4,6 +4,7 @@
 <fmt:setLocale value="${not empty sessionScope.appLocale ? sessionScope.appLocale : pageContext.request.locale}" scope="session" />
 <fmt:setBundle basename="i18n.Messages" />
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
+<c:set var="currentEmployee" value="${sessionScope.currentEmployee}" />
 <c:set var="htmlLang" value="es" />
 <c:if test="${empty sessionScope.appLocale and not empty cookie.appLocale.value}">
     <c:set var="htmlLang" value="${cookie.appLocale.value}" />
@@ -44,7 +45,9 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item"><a class="nav-link" href="${ctx}/app/welcome"><fmt:message key="nav.home" /></a></li>
                 <li class="nav-item"><a class="nav-link" href="${ctx}/public/vehicles"><fmt:message key="nav.catalog" /></a></li>
-                <li class="nav-item"><a class="nav-link" href="${ctx}/public/rentals"><fmt:message key="nav.rentals" /></a></li>
+                <c:if test="${not empty currentEmployee}">
+                    <li class="nav-item"><a class="nav-link" href="${ctx}/app/rentals/private"><fmt:message key="nav.rentals" /></a></li>
+                </c:if>
             </ul>
             <div class="d-flex flex-wrap align-items-center gap-3">
                 <c:set var="currentFlag" value="fi-es" />

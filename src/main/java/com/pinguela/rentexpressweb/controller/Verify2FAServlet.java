@@ -2,6 +2,7 @@ package com.pinguela.rentexpressweb.controller;
 
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
+import com.pinguela.rentexpressweb.security.EmployeeSessionResolver;
 import com.pinguela.rentexpressweb.security.RememberMeManager;
 import com.pinguela.rentexpressweb.security.SessionManager;
 import com.pinguela.rentexpressweb.security.TwoFactorManager;
@@ -103,6 +104,7 @@ public class Verify2FAServlet extends HttpServlet {
 
         String email = TwoFactorManager.getPendingEmail(request);
         SessionManager.setAttribute(request, AppConstants.ATTR_CURRENT_USER, email);
+        EmployeeSessionResolver.resolveFromEmail(request, email);
         if (TwoFactorManager.shouldRemember(request)) {
             RememberMeManager.rememberUser(response, email);
         } else {

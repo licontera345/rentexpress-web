@@ -16,6 +16,7 @@ public final class AppConstants {
     public static final String ATTR_FLASH_SUCCESS = "flashSuccess";
     public static final String ATTR_FLASH_ERROR = "flashError";
     public static final String ATTR_FLASH_INFO = "flashInfo";
+    public static final String ATTR_CURRENT_EMPLOYEE = "currentEmployee";
     public static final String ATTR_RECENT_REGISTRATIONS = "registeredUsers";
     public static final String ATTR_REMEMBERED_EMAIL = "rememberedEmail";
     public static final String ATTR_LOCALE = "appLocale";
