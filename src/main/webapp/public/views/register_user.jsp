@@ -76,36 +76,5 @@
             </div>
         </div>
     </div>
-    <div class="col-lg-5">
-        <div class="card card-common">
-            <div class="card-header">Últimos clientes registrados</div>
-            <div class="card-body">
-                <c:choose>
-                    <c:when test="${empty registeredUsers}">
-                        <p class="text-muted mb-0">Todavía no hay clientes registrados. Completa el formulario para dar de alta el primero.</p>
-                    </c:when>
-                    <c:otherwise>
-                        <ul class="list-group list-group-flush">
-                            <c:forEach var="user" items="${registeredUsers}">
-                                <li class="list-group-item">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <span class="fw-semibold d-block">${user.fullName}</span>
-                                            <span class="text-muted small">${user.email}
-                                                <c:if test="${not empty user.phone}">
-                                                    · ${user.phone}
-                                                </c:if>
-                                            </span>
-                                        </div>
-                                        <span class="badge text-bg-light">${user.registeredAt}</span>
-                                    </div>
-                                </li>
-                            </c:forEach>
-                        </ul>
-                    </c:otherwise>
-                </c:choose>
-            </div>
-        </div>
-    </div>
 </div>
 <%@ include file="/common/footer.jsp" %>
