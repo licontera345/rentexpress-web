@@ -10,7 +10,7 @@
 <section id="hero" class="py-5">
     <div class="container">
         <div class="hero-section shadow-soft">
-            <div class="row align-items-center g-4">
+            <div class="row align-items-start g-5">
                 <div class="col-lg-6">
                     <span class="hero-badge"><i class="bi bi-geo-alt-fill"></i> <fmt:message key="home.hero.badge" /></span>
                     <h1 class="display-5 fw-bold mt-3"><fmt:message key="home.hero.title" /></h1>
@@ -41,13 +41,22 @@
                         <img src="https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=900&q=80"
                              alt="RentExpress hero" class="img-fluid rounded-4 shadow-soft">
                     </div>
+                    <div class="hero-floating-card shadow-soft p-4 w-100 mt-4 mx-auto mx-lg-0" style="max-width: 420px;">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="feature-icon m-0"><i class="bi bi-speedometer2"></i></div>
+                            <div>
+                                <p class="mb-1 fw-semibold text-uppercase small text-muted"><fmt:message key="home.hero.float.label" /></p>
+                                <p class="mb-0 fw-semibold"><fmt:message key="home.hero.float.value" /></p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="row mt-4 justify-content-center justify-content-lg-start">
-                <div class="col-12 col-lg-11 col-xl-9 col-xxl-8">
+            <div class="row mt-4 justify-content-center">
+                <div class="col-12 col-xl-11 col-xxl-10">
                     <div class="hero-search-card shadow-soft">
-                        <form class="row gy-3 align-items-end" method="get" action="${ctx}/public/vehicles">
-                            <div class="col-12 col-lg-4">
+                        <form class="row gy-3" method="get" action="${ctx}/public/vehicles">
+                            <div class="col-12 col-lg-8">
                                 <label for="heroSearch" class="form-label fw-semibold text-secondary">¿Qué vehículo necesitas?</label>
                                 <div class="input-group input-group-lg">
                                     <span class="input-group-text"><i class="bi bi-search"></i></span>
@@ -57,7 +66,7 @@
                                            value="${param.search}" />
                                 </div>
                             </div>
-                            <div class="col-12 col-lg-3">
+                            <div class="col-12 col-lg-4">
                                 <label for="heroHeadquarters" class="form-label fw-semibold text-secondary">Sede</label>
                                 <select id="heroHeadquarters" class="form-select form-select-lg"
                                         name="${VehicleConstants.PARAM_HEADQUARTERS}">
@@ -80,59 +89,46 @@
                                     </c:forEach>
                                 </select>
                             </div>
-                            <div class="col-6 col-lg-2">
+                            <div class="col-6 col-md-3">
                                 <label for="heroPickupDate" class="form-label fw-semibold text-secondary">Fecha de recogida</label>
                                 <input type="date" class="form-control form-control-lg" id="heroPickupDate"
                                        name="pickupDate" value="${param.pickupDate}" />
                             </div>
-                            <div class="col-6 col-lg-1">
+                            <div class="col-6 col-md-3">
                                 <label for="heroPickupTime" class="form-label fw-semibold text-secondary">Hora</label>
                                 <input type="time" class="form-control form-control-lg" id="heroPickupTime"
                                        name="pickupTime"
                                        value="${empty param.pickupTime ? '10:00' : param.pickupTime}" />
                             </div>
-                            <div class="col-6 col-lg-2">
+                            <div class="col-6 col-md-3">
                                 <label for="heroDropoffDate" class="form-label fw-semibold text-secondary">Fecha de devolución</label>
                                 <input type="date" class="form-control form-control-lg" id="heroDropoffDate"
                                        name="returnDate" value="${param.returnDate}" />
                             </div>
-                            <div class="col-6 col-lg-1">
+                            <div class="col-6 col-md-3">
                                 <label for="heroDropoffTime" class="form-label fw-semibold text-secondary">Hora</label>
                                 <input type="time" class="form-control form-control-lg" id="heroDropoffTime"
                                        name="returnTime"
                                        value="${empty param.returnTime ? '10:00' : param.returnTime}" />
                             </div>
-                            <div class="col-12 col-lg-4 d-lg-flex align-items-center justify-content-between">
-                                <div class="form-check form-switch mb-3 mb-lg-0">
+                            <div class="col-12 col-lg-6">
+                                <div class="form-check form-switch mb-0 d-flex align-items-center gap-3">
                                     <input class="form-check-input" type="checkbox" role="switch"
                                            id="heroOnlyAvailable"
                                            name="${VehicleConstants.PARAM_ONLY_AVAILABLE}"
                                            value="true"
                                            ${param.onlyAvailable == 'true' || param.onlyAvailable == 'on' ? 'checked' : ''} />
-                                    <label class="form-check-label fw-semibold text-secondary" for="heroOnlyAvailable">
+                                    <label class="form-check-label fw-semibold text-secondary mb-0" for="heroOnlyAvailable">
                                         Solo mostrar disponibles
                                     </label>
                                 </div>
-                                <button type="submit" class="btn btn-brand btn-lg px-5">
+                            </div>
+                            <div class="col-12 col-lg-6 text-lg-end">
+                                <button type="submit" class="btn btn-brand btn-lg px-5 w-100 w-lg-auto">
                                     <i class="bi bi-search me-2"></i>Buscar
                                 </button>
                             </div>
                         </form>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="position-relative text-center text-lg-start">
-                        <img src="https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=900&q=80"
-                             alt="RentExpress hero" class="img-fluid rounded-4 shadow-soft">
-                    </div>
-                    <div class="hero-floating-card shadow-soft p-4 w-100 mt-4 mx-auto mx-lg-0" style="max-width: 420px;">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="feature-icon m-0"><i class="bi bi-speedometer2"></i></div>
-                            <div>
-                                <p class="mb-1 fw-semibold text-uppercase small text-muted"><fmt:message key="home.hero.float.label" /></p>
-                                <p class="mb-0 fw-semibold"><fmt:message key="home.hero.float.value" /></p>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
