@@ -186,8 +186,15 @@ public class RegisterUserServlet extends HttpServlet {
             errors.add("Las contraseñas no coinciden.");
         }
 
-        if (phone != null && phone.length() > 20) {
-            errors.add("El teléfono no puede superar los 20 caracteres.");
+        if (phone == null) {
+            errors.add("El teléfono es obligatorio.");
+        } else {
+            if (phone.length() > 20) {
+                errors.add("El teléfono no puede superar los 20 caracteres.");
+            }
+            if (!isAllowedPhone(phone)) {
+                errors.add("El teléfono solo puede contener números, espacios, '+' o '-'.");
+            }
         }
 
         if (!acceptTerms) {
@@ -457,6 +464,25 @@ public class RegisterUserServlet extends HttpServlet {
         } catch (NumberFormatException ex) {
             return null;
         }
+    }
+
+    private boolean isAllowedPhone(String value) {
+        if (value == null) {
+            return false;
+        }
+        boolean hasDigit = false;
+        for (int i = 0; i < value.length(); i++) {
+            char current = value.charAt(i);
+            if (Character.isDigit(current)) {
+                hasDigit = true;
+                continue;
+            }
+            if (current == ' ' || current == '+' || current == '-') {
+                continue;
+            }
+            return false;
+        }
+        return hasDigit;
     }
 
     private void prepareLocationData(HttpServletRequest request, List<String> errors) {
