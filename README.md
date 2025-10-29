@@ -43,7 +43,131 @@ Aplicación web para la reserva y alquiler de coches desarrollada con Java Servl
   - [19.8 Control de caché en respuestas](#198-control-de-caché-en-respuestas)
   - [19.9 Uso del header `Accept-Language`](#199-uso-del-header-accept-language)
   - [19.10 CRUD de ejemplo con fotos](#1910-crud-de-ejemplo-con-fotos)
-prohibido:usar lambda ...muy prohibido 
+
+🚫 COSAS PROHIBIDAS EN TU APP JSP/SERVLETS (según los temas del profesor)
+🔹 Arquitectura y estructura
+
+No usar lambdas, streams ni APIs modernas de Java 8+ (el profesor trabaja estilo clásico con bucles y for-each).
+
+No poner lógica de negocio en las JSP.
+JSP solo muestra datos con JSTL/EL; nada de scriptlets <% %> ni SQL ni llamadas DAO.
+
+No acceder a la BD desde JSP.
+Todo acceso va por Servlets → DAO → BD.
+
+No usar frameworks externos (ni Spring, ni Hibernate, ni JSF salvo los ejemplos del tema 2).
+Tu profesor usa JDBC puro con DataSource o pool de Tomcat.
+
+No usar anotaciones ni dependencias que el profesor no haya mostrado.
+Ejemplo: no usar @Autowired, @Controller, @RestController ni nada de Spring.
+
+No crear conexiones con DriverManager.
+Siempre usa DataSource configurado en context.xml.
+
+🔹 Código Java (DAO, Service, Servlet)
+
+No usar try-with-resources.
+El profesor usa try { ... } finally { JDBCUtils.close(); }.
+
+No usar expresiones lambda ni Optional.
+Usa estructuras clásicas: if, for, while.
+
+No usar clases utilitarias externas (Apache Commons, Gson, etc.) salvo las del temario.
+
+No dejar recursos sin cerrar.
+Siempre cerrar ResultSet, PreparedStatement, Connection en finally.
+
+No escribir Strings “mágicos” dentro del código.
+Todos los nombres de parámetros o atributos van como private static final String.
+
+No usar System.out.println ni printStackTrace.
+Usa logging (LogManager.getLogger() y logger.error()).
+
+No hacer queries concatenando Strings.
+Usa PreparedStatement con parámetros ? para evitar inyecciones SQL.
+
+No borrar registros físicamente.
+Usa flags active_status=0 para “desactivar”.
+
+No modificar estados directamente sin control de fechas.
+Ejemplo: Reserva → Alquiler → Disponible sigue un flujo obligatorio.
+
+🔹 JSP y presentación
+
+No mezclar HTML con código Java.
+Nada de <% int x = 3; %>. Usa <c:forEach> y EL ${}.
+
+No usar out.println() ni response.getWriter() en JSP.
+
+No usar session.getAttribute() dentro de scriptlets.
+Usa ${sessionScope.variable}.
+
+No usar JavaScript para tareas del servidor.
+Validaciones de negocio van en Servlets; el JS solo para pequeñas comprobaciones del cliente.
+
+No olvides cerrar correctamente etiquetas JSTL.
+
+No mostrar errores con alert() ni prints.
+Muestra los errores con <c:if test="${not empty error}">.
+
+🔹 Seguridad y sesión
+
+No guardar contraseñas en texto plano.
+Usa jBCrypt o at.favre.lib.bcrypt como en el Tema 3.
+
+No usar HttpSession para todo.
+Guarda solo datos mínimos: usuario, rol, idioma.
+
+No acceder a zonas privadas sin filtro.
+Usa AuthFilter para controlar acceso según rol.
+
+No confiar en parámetros del cliente.
+Todo debe validarse en servidor (request.getParameter → validación → error map).
+
+No redirigir manualmente con rutas absolutas.
+Usa response.sendRedirect(request.getContextPath() + "/pagina.jsp").
+
+No usar cookies sin setHttpOnly ni setSecure.
+
+No mezclar roles ni URLs públicas con privadas sin control del filtro.
+
+🔹 Internacionalización
+
+No fijar idioma con variables de sesión sin cookie.
+Usa el LanguageServlet que prioriza cookie → cabecera → por defecto.
+
+No meter textos fijos en JSP.
+Usa <fmt:message key="clave" /> o mapas por idioma.
+
+🔹 Organización del proyecto
+
+No guardar imágenes en la BD.
+Se almacenan en /webapp/img/... y se guarda solo la ruta.
+
+No cachear páginas privadas.
+Usa cabeceras response.setHeader("Cache-Control", "no-store");
+
+No usar nombres de paquetes o clases en español.
+Todo en inglés (UserDAO, EmployeeServiceImpl, etc.).
+
+No olvides paginación y búsqueda estructurada.
+Son parte del temario obligatorio.
+
+🔹 Extras peligrosos
+
+No usar Lombok (@Getter, @Setter) ni Builders.
+
+No usar JSON, AJAX ni APIs REST.
+El profesor no trabaja con eso en los temas.
+
+No usar CSS externo de frameworks distintos de Bootstrap.
+
+No confiar en variables globales en JSP.
+
+No manipular directamente cabeceras HTTP salvo para control de caché o cookies.
+
+
+
 importante:uso java 1.8 siempre
 recuerda:no crearas nuevas cosas del middleware lo tuyo es hacer que lo que tengo en el middleware usarlo en el appweb si no esta no inventes
 
