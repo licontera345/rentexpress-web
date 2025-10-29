@@ -456,6 +456,7 @@ El diagrama entidad-relación compartido se resume a continuación para que cual
 - `Logs y depuración`: mantén el logging activo y revisa la consola o el manager del contenedor durante las pruebas.
 - `Contenedores vs. servidores completos`: Tomcat cubre JSP/Servlets; si necesitas todo Jakarta EE (JTA, EJB, etc.) evalúa WildFly o GlassFish.
 - Evita literales (`"magic strings"`): usa constantes `private static final String` para parámetros de petición y atributos de sesión.
+- Expone los nombres de parámetros a las JSP como atributos (`request.setAttribute(...)`) y consúmelos con `${paramName}` en los formularios; así evitas `import` en la vista y mantienes el acoplamiento bajo.
 - Maneja los encabezados HTTP para controlar caché e idioma.
 
 ## 18. Checklist de "lo mínimo decente"

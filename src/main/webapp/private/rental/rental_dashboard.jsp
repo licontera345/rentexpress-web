@@ -1,5 +1,4 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"
-    import="com.pinguela.rentexpressweb.constants.RentalConstants" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <fmt:message key="rental.dashboard.pageTitle" var="rentalDashboardTitle" />
@@ -15,13 +14,19 @@
 <c:set var="summary" value="${rentalSummary}" />
 <c:set var="rentals" value="${rentals}" />
 <c:set var="latestRentals" value="${latestRentals}" />
+<c:set var="paramAction" value="${rentalParamAction}" />
+<c:set var="paramStatus" value="${rentalParamStatus}" />
+<c:set var="paramStartFrom" value="${rentalParamStartFrom}" />
+<c:set var="paramStartTo" value="${rentalParamStartTo}" />
+<c:set var="paramMinCost" value="${rentalParamMinCost}" />
+<c:set var="paramMaxCost" value="${rentalParamMaxCost}" />
 <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
     <div>
         <h1 class="h3 fw-semibold mb-1"><fmt:message key="rental.dashboard.title" /></h1>
         <p class="text-muted mb-0"><fmt:message key="rental.dashboard.subtitle" /></p>
     </div>
     <form method="post" action="${ctx}/app/rentals/private" class="d-flex gap-2 align-items-center">
-        <input type="hidden" name="${RentalConstants.PARAM_ACTION}" value="autoconvert" />
+        <input type="hidden" name="${paramAction}" value="autoconvert" />
         <button type="submit" class="btn btn-brand">
             <i class="bi bi-lightning-charge me-2"></i><fmt:message key="rental.dashboard.autoconvert" />
         </button>
@@ -45,11 +50,11 @@
                 <form method="get" action="${ctx}/app/rentals/private" class="analytics-form">
                     <div class="mb-3">
                         <label for="status" class="form-label"><fmt:message key="rental.dashboard.filters.status" /></label>
-                        <select class="form-select" id="status" name="${RentalConstants.PARAM_STATUS}">
+                        <select class="form-select" id="status" name="${paramStatus}">
                             <option value=""><fmt:message key="rental.dashboard.filters.status.all" /></option>
                             <c:forEach var="status" items="${statusOptions}">
                                 <option value="${status.rentalStatusId}"
-                                        ${status.rentalStatusId eq filters[RentalConstants.PARAM_STATUS] ? 'selected' : ''}>
+                                        ${status.rentalStatusId eq filters[paramStatus] ? 'selected' : ''}>
                                     ${status.statusName}
                                 </option>
                             </c:forEach>
@@ -59,28 +64,28 @@
                         <div class="col">
                             <label for="startFrom" class="form-label"><fmt:message key="rental.dashboard.filters.startFrom" /></label>
                             <input type="date" class="form-control" id="startFrom"
-                                   name="${RentalConstants.PARAM_START_FROM}"
-                                   value="${filters[RentalConstants.PARAM_START_FROM]}">
+                                   name="${paramStartFrom}"
+                                   value="${filters[paramStartFrom]}">
                         </div>
                         <div class="col">
                             <label for="startTo" class="form-label"><fmt:message key="rental.dashboard.filters.startTo" /></label>
                             <input type="date" class="form-control" id="startTo"
-                                   name="${RentalConstants.PARAM_START_TO}"
-                                   value="${filters[RentalConstants.PARAM_START_TO]}">
+                                   name="${paramStartTo}"
+                                   value="${filters[paramStartTo]}">
                         </div>
                     </div>
                     <div class="row g-2 mb-4">
                         <div class="col">
                             <label for="minCost" class="form-label"><fmt:message key="rental.dashboard.filters.minCost" /></label>
                             <input type="number" step="0.01" min="0" class="form-control" id="minCost"
-                                   name="${RentalConstants.PARAM_MIN_COST}"
-                                   value="${filters[RentalConstants.PARAM_MIN_COST]}">
+                                   name="${paramMinCost}"
+                                   value="${filters[paramMinCost]}">
                         </div>
                         <div class="col">
                             <label for="maxCost" class="form-label"><fmt:message key="rental.dashboard.filters.maxCost" /></label>
                             <input type="number" step="0.01" min="0" class="form-control" id="maxCost"
-                                   name="${RentalConstants.PARAM_MAX_COST}"
-                                   value="${filters[RentalConstants.PARAM_MAX_COST]}">
+                                   name="${paramMaxCost}"
+                                   value="${filters[paramMaxCost]}">
                         </div>
                     </div>
                     <div class="d-grid gap-2">

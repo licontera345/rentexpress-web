@@ -116,7 +116,7 @@ public class PrivateRentalServlet extends HttpServlet {
         request.setAttribute(RentalConstants.ATTR_RENTALS, buildRentalViews(filtered, statusNames));
         request.setAttribute(RentalConstants.ATTR_LATEST_RENTALS, buildRentalViews(latestRentals, statusNames));
         request.setAttribute(RentalConstants.ATTR_RENTAL_SUMMARY, summary);
-
+        exposeParameterNames(request);
         request.getRequestDispatcher("/private/rental/rental_dashboard.jsp").forward(request, response);
     }
 
@@ -182,6 +182,15 @@ public class PrivateRentalServlet extends HttpServlet {
             SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
                     "No se pudo ejecutar la conversión automática. Consulta los logs.");
         }
+    }
+
+    private void exposeParameterNames(HttpServletRequest request) {
+        request.setAttribute(RentalConstants.ATTR_PARAM_ACTION, RentalConstants.PARAM_ACTION);
+        request.setAttribute(RentalConstants.ATTR_PARAM_STATUS, RentalConstants.PARAM_STATUS);
+        request.setAttribute(RentalConstants.ATTR_PARAM_START_FROM, RentalConstants.PARAM_START_FROM);
+        request.setAttribute(RentalConstants.ATTR_PARAM_START_TO, RentalConstants.PARAM_START_TO);
+        request.setAttribute(RentalConstants.ATTR_PARAM_MIN_COST, RentalConstants.PARAM_MIN_COST);
+        request.setAttribute(RentalConstants.ATTR_PARAM_MAX_COST, RentalConstants.PARAM_MAX_COST);
     }
 
     private Map<String, String> buildFilters(HttpServletRequest request) {

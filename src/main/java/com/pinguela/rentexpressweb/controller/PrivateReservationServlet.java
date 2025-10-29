@@ -152,17 +152,18 @@ public class PrivateReservationServlet extends HttpServlet {
 			errors.add("Selecciona una sede de devolución válida.");
 		}
 
-		if (!errors.isEmpty()) {
-			request.setAttribute(ReservationConstants.ATTR_RESERVATION_ERRORS, errors);
-			request.setAttribute(ReservationConstants.ATTR_RESERVATION_FORM, formData);
-			request.setAttribute(ReservationConstants.ATTR_HEADQUARTERS, headquarters);
-			request.setAttribute(VehicleConstants.ATTR_SELECTED_VEHICLE, vehicle);
-			request.setAttribute(VehicleConstants.ATTR_SELECTED_CATEGORY_NAME,
-					resolveCategoryName(vehicle.getCategoryId(), locale));
-			request.setAttribute(VehicleConstants.ATTR_RELATED_VEHICLES, findRelatedVehicles(vehicle));
-			request.getRequestDispatcher("/public/vehicle/vehicle_detail.jsp").forward(request, response);
-			return;
-		}
+                if (!errors.isEmpty()) {
+                        request.setAttribute(ReservationConstants.ATTR_RESERVATION_ERRORS, errors);
+                        request.setAttribute(ReservationConstants.ATTR_RESERVATION_FORM, formData);
+                        request.setAttribute(ReservationConstants.ATTR_HEADQUARTERS, headquarters);
+                        request.setAttribute(VehicleConstants.ATTR_SELECTED_VEHICLE, vehicle);
+                        request.setAttribute(VehicleConstants.ATTR_SELECTED_CATEGORY_NAME,
+                                        resolveCategoryName(vehicle.getCategoryId(), locale));
+                        request.setAttribute(VehicleConstants.ATTR_RELATED_VEHICLES, findRelatedVehicles(vehicle));
+                        exposeReservationParameterNames(request);
+                        request.getRequestDispatcher("/public/vehicle/vehicle_detail.jsp").forward(request, response);
+                        return;
+                }
 
                 int rentalDays = LegacyDateUtils.daysBetween(startDate, endDate);
 		BigDecimal dailyPrice = vehicle.getDailyPrice() == null ? BigDecimal.ZERO : vehicle.getDailyPrice();
@@ -202,22 +203,32 @@ public class PrivateReservationServlet extends HttpServlet {
 		}
 	}
 
-	private VehicleDTO loadVehicle(Integer vehicleId) {
-		if (vehicleId == null) {
-			return null;
-		}
-		try {
+        private VehicleDTO loadVehicle(Integer vehicleId) {
+                if (vehicleId == null) {
+                        return null;
+                }
+                try {
 			return vehicleService.findById(vehicleId);
 		} catch (RentexpresException ex) {
 			LOGGER.error("No se pudo cargar el vehículo {}", vehicleId, ex);
 			return null;
-		}
-	}
+                }
+        }
 
-	private String resolveCategoryName(Integer categoryId, Locale locale) {
-		if (categoryId == null) {
-			return null;
-		}
+        private void exposeReservationParameterNames(HttpServletRequest request) {
+                request.setAttribute(ReservationConstants.ATTR_PARAM_VEHICLE_ID, ReservationConstants.PARAM_VEHICLE_ID);
+                request.setAttribute(ReservationConstants.ATTR_PARAM_START_DATE, ReservationConstants.PARAM_START_DATE);
+                request.setAttribute(ReservationConstants.ATTR_PARAM_END_DATE, ReservationConstants.PARAM_END_DATE);
+                request.setAttribute(ReservationConstants.ATTR_PARAM_PICKUP_HEADQUARTERS,
+                                ReservationConstants.PARAM_PICKUP_HEADQUARTERS);
+                request.setAttribute(ReservationConstants.ATTR_PARAM_RETURN_HEADQUARTERS,
+                                ReservationConstants.PARAM_RETURN_HEADQUARTERS);
+        }
+
+        private String resolveCategoryName(Integer categoryId, Locale locale) {
+                if (categoryId == null) {
+                        return null;
+                }
 		try {
 			String language = locale != null ? locale.getLanguage() : Locale.getDefault().getLanguage();
 			VehicleCategoryDTO dto = categoryService.findById(categoryId, language);

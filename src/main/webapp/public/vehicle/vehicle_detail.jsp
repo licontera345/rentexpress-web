@@ -1,5 +1,4 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"
-    import="com.pinguela.rentexpressweb.constants.VehicleConstants,com.pinguela.rentexpressweb.constants.ReservationConstants" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ include file="/common/header.jsp" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <c:set var="vehicle" value="${selectedVehicle}" />
@@ -7,6 +6,11 @@
 <c:set var="reservationForm" value="${reservationForm}" />
 <c:set var="reservationErrors" value="${reservationErrors}" />
 <c:set var="headquarters" value="${headquarters}" />
+<c:set var="paramVehicleId" value="${reservationParamVehicleId}" />
+<c:set var="paramStartDate" value="${reservationParamStartDate}" />
+<c:set var="paramEndDate" value="${reservationParamEndDate}" />
+<c:set var="paramPickupHeadquarters" value="${reservationParamPickupHeadquarters}" />
+<c:set var="paramReturnHeadquarters" value="${reservationParamReturnHeadquarters}" />
 
 <c:if test="${vehicle == null}">
     <div class="alert alert-danger">No se encontró el vehículo solicitado.</div>
@@ -60,26 +64,26 @@
                         </div>
                     </c:if>
                     <form method="post" action="${ctx}/app/reservations/private" class="row g-3">
-                        <input type="hidden" name="${ReservationConstants.PARAM_VEHICLE_ID}" value="${vehicle.vehicleId}">
+                        <input type="hidden" name="${paramVehicleId}" value="${vehicle.vehicleId}">
                         <div class="col-md-6">
                             <label for="startDate" class="form-label">Fecha de recogida</label>
                             <input type="date" class="form-control" id="startDate"
-                                   name="${ReservationConstants.PARAM_START_DATE}"
-                                   value="${reservationForm[ReservationConstants.PARAM_START_DATE]}">
+                                   name="${paramStartDate}"
+                                   value="${reservationForm[paramStartDate]}">
                         </div>
                         <div class="col-md-6">
                             <label for="endDate" class="form-label">Fecha de devolución</label>
                             <input type="date" class="form-control" id="endDate"
-                                   name="${ReservationConstants.PARAM_END_DATE}"
-                                   value="${reservationForm[ReservationConstants.PARAM_END_DATE]}">
+                                   name="${paramEndDate}"
+                                   value="${reservationForm[paramEndDate]}">
                         </div>
                         <div class="col-md-6">
                             <label for="pickup" class="form-label">Sede de recogida</label>
-                            <select class="form-select" id="pickup" name="${ReservationConstants.PARAM_PICKUP_HEADQUARTERS}">
+                            <select class="form-select" id="pickup" name="${paramPickupHeadquarters}">
                                 <option value="">Selecciona una sede</option>
                                 <c:forEach var="hq" items="${headquarters}">
                                     <option value="${hq.id}"
-                                            ${hq.id eq reservationForm[ReservationConstants.PARAM_PICKUP_HEADQUARTERS] ? 'selected' : ''}>
+                                            ${hq.id eq reservationForm[paramPickupHeadquarters] ? 'selected' : ''}>
                                         ${hq.name} (${hq.city.cityName})
                                     </option>
                                 </c:forEach>
@@ -87,11 +91,11 @@
                         </div>
                         <div class="col-md-6">
                             <label for="return" class="form-label">Sede de devolución</label>
-                            <select class="form-select" id="return" name="${ReservationConstants.PARAM_RETURN_HEADQUARTERS}">
+                            <select class="form-select" id="return" name="${paramReturnHeadquarters}">
                                 <option value="">Selecciona una sede</option>
                                 <c:forEach var="hq" items="${headquarters}">
                                     <option value="${hq.id}"
-                                            ${hq.id eq reservationForm[ReservationConstants.PARAM_RETURN_HEADQUARTERS] ? 'selected' : ''}>
+                                            ${hq.id eq reservationForm[paramReturnHeadquarters] ? 'selected' : ''}>
                                         ${hq.name} (${hq.city.cityName})
                                     </option>
                                 </c:forEach>
