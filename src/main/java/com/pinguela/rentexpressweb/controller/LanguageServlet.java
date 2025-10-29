@@ -3,6 +3,7 @@ package com.pinguela.rentexpressweb.controller;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.MessageResolver;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.Cookie;
@@ -37,7 +38,8 @@ public class LanguageServlet extends HttpServlet {
             if (SUPPORTED_LANGUAGES.contains(normalized)) {
                 SessionManager.setAttribute(request, AppConstants.ATTR_LOCALE, normalized);
                 SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
-                        "Idioma actualizado a " + normalized.toUpperCase(Locale.ROOT) + ".");
+                        MessageResolver.getMessage(request, "flash.language.updated",
+                                normalized.toUpperCase(Locale.ROOT)));
                 Cookie localeCookie = new Cookie(AppConstants.ATTR_LOCALE, normalized);
                 localeCookie.setPath(request.getContextPath().isEmpty() ? "/" : request.getContextPath());
                 localeCookie.setMaxAge(60 * 60 * 24 * 365);
@@ -46,7 +48,7 @@ public class LanguageServlet extends HttpServlet {
                 response.addCookie(localeCookie);
             } else {
                 SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
-                        "Idioma no soportado. Se mantienen las traducciones actuales.");
+                        MessageResolver.getMessage(request, "flash.language.unsupported"));
             }
         }
 

@@ -20,11 +20,9 @@
                 </c:if>
                 <c:if test="${not empty errors}">
                     <div class="alert alert-danger">
-                        <ul class="mb-0">
-                            <c:forEach var="error" items="${errors}">
-                                <li>${error}</li>
-                            </c:forEach>
-                        </ul>
+                        <c:forEach var="entry" items="${errors.entrySet()}">
+                            <div class="mb-1">${entry.value}</div>
+                        </c:forEach>
                     </div>
                 </c:if>
                 <form method="post" action="${ctx}/app/password/reset" class="needs-validation" novalidate>

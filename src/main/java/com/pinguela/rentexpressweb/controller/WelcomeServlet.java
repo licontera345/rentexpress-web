@@ -9,6 +9,7 @@ import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.VehicleConstants;
 import com.pinguela.rentexpressweb.security.RememberMeManager;
 import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.Views;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -47,7 +48,8 @@ public class WelcomeServlet extends HttpServlet {
         RememberMeManager.applyRememberedUser(request);
         exposeFlashMessage(request);
 
-        request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Bienvenido");
+        request.setAttribute(AppConstants.ATTR_PAGE_TITLE,
+                MessageResolver.getMessage(request, "page.welcome.title"));
         request.setAttribute(VehicleConstants.ATTR_HEADQUARTERS, loadHeadquarters());
 
         request.getRequestDispatcher(Views.PUBLIC_WELCOME).forward(request, response);

@@ -7,6 +7,7 @@ import com.pinguela.rentexpressweb.security.CredentialStore;
 import com.pinguela.rentexpressweb.security.RememberMeManager;
 import com.pinguela.rentexpressweb.security.SessionManager;
 import com.pinguela.rentexpressweb.security.TwoFactorManager;
+import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.PasswordEncoder;
 import com.pinguela.rentexpressweb.util.Views;
 import jakarta.servlet.ServletException;
@@ -35,10 +36,6 @@ public class LoginServlet extends HttpServlet {
     private static final String ERROR_KEY_EMAIL = UserConstants.PARAM_EMAIL;
     private static final String ERROR_KEY_PASSWORD = UserConstants.PARAM_PASSWORD;
     private static final String ERROR_KEY_GLOBAL = "global";
-    private static final String MESSAGE_EMAIL_REQUIRED = "El correo electrónico es obligatorio.";
-    private static final String MESSAGE_PASSWORD_REQUIRED = "La contraseña es obligatoria.";
-    private static final String MESSAGE_INVALID_CREDENTIALS =
-            "Credenciales no válidas. Revisa tu correo y contraseña.";
 
     /**
      * @see HttpServlet#HttpServlet()
@@ -74,7 +71,8 @@ public class LoginServlet extends HttpServlet {
                 request.setAttribute(AppConstants.ATTR_REMEMBERED_EMAIL, currentUser.toString());
             }
         }
-        request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Inicia sesión");
+        request.setAttribute(AppConstants.ATTR_PAGE_TITLE,
+                MessageResolver.getMessage(request, "page.login.title"));
 
         String rememberedEmail = RememberMeManager.resolveRememberedUser(request);
         if (rememberedEmail != null) {
@@ -95,19 +93,23 @@ public class LoginServlet extends HttpServlet {
         Map<String, String> errors = new LinkedHashMap<String, String>();
         String sanitizedEmail = email != null ? email.trim() : null;
         if (sanitizedEmail == null || sanitizedEmail.isEmpty()) {
-            errors.put(ERROR_KEY_EMAIL, MESSAGE_EMAIL_REQUIRED);
+            errors.put(ERROR_KEY_EMAIL,
+                    MessageResolver.getMessage(request, "validation.login.email.required"));
         }
         if (password == null || password.trim().isEmpty()) {
-            errors.put(ERROR_KEY_PASSWORD, MESSAGE_PASSWORD_REQUIRED);
+            errors.put(ERROR_KEY_PASSWORD,
+                    MessageResolver.getMessage(request, "validation.login.password.required"));
         }
 
         if (errors.isEmpty() && !authenticate(sanitizedEmail, password)) {
-            errors.put(ERROR_KEY_GLOBAL, MESSAGE_INVALID_CREDENTIALS);
+            errors.put(ERROR_KEY_GLOBAL,
+                    MessageResolver.getMessage(request, "validation.login.credentials.invalid"));
         }
 
         if (!errors.isEmpty()) {
             request.setAttribute(AppConstants.ATTR_FORM_ERRORS, errors);
-            request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Inicia sesión");
+            request.setAttribute(AppConstants.ATTR_PAGE_TITLE,
+                    MessageResolver.getMessage(request, "page.login.title"));
             request.setAttribute(AppConstants.ATTR_REMEMBERED_EMAIL, sanitizedEmail);
             request.getRequestDispatcher(Views.PUBLIC_LOGIN).forward(request, response);
             return;
@@ -121,7 +123,7 @@ public class LoginServlet extends HttpServlet {
 
         String verificationCode = TwoFactorManager.initiate(request, normalizedEmail, remember);
         SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_INFO,
-                buildVerificationInfoMessage(sanitizedEmail, verificationCode, false));
+                buildVerificationInfoMessage(request, sanitizedEmail, verificationCode, false));
         LOGGER.info("Generado código 2FA {} para {}", verificationCode, normalizedEmail);
 
         response.sendRedirect(request.getContextPath() + "/app/auth/verify-2fa");
@@ -164,10 +166,10 @@ public class LoginServlet extends HttpServlet {
         }
     }
 
-    private String buildVerificationInfoMessage(String email, String code, boolean resent) {
-        String intro = resent ? "Hemos reenviado un nuevo código" : "Hemos enviado un código";
-        return String.format(
-                "%s a %s. Por tratarse de un entorno académico, el código es %s y caduca en %d segundos.",
-                intro, email, code, SecurityConstants.TWO_FA_CODE_VALIDITY_SECONDS);
+    private String buildVerificationInfoMessage(HttpServletRequest request, String email, String code,
+                                                boolean resent) {
+        String key = resent ? "info.login.2fa.resent" : "info.login.2fa.sent";
+        return MessageResolver.getMessage(request, key, email, code,
+                Integer.valueOf(SecurityConstants.TWO_FA_CODE_VALIDITY_SECONDS));
     }
 }
