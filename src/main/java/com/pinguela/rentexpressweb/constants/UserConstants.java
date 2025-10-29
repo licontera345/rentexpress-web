@@ -39,4 +39,8 @@ public final class UserConstants {
     public static final String ATTR_SUMMARY = "userSummary";
     public static final String ATTR_SELECTED_USER = "selectedUser";
     public static final String ATTR_SELECTED_ROLE_NAME = "selectedUserRole";
+
+    public static final String ATTR_PROFILE_DATA = "userProfileData";
+    public static final String ATTR_PROFILE_FORM = "userProfileForm";
+    public static final String ATTR_PROFILE_ERRORS = "userProfileErrors";
 }
