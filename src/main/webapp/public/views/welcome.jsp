@@ -68,8 +68,8 @@
                                         name="${requestScope.vehicleParamHeadquarters}">
                                     <option value=""><fmt:message key="home.hero.form.headquarters.all" /></option>
                                     <c:forEach var="hq" items="${requestScope.vehicleHeadquarters}">
-                                        <option value="${hq.headquartersId}"
-                                                ${param.headquarters == hq.headquartersId ? 'selected' : ''}>
+                                        <option value="${hq.id}"
+                                                ${param.headquarters == hq.id ? 'selected' : ''}>
                                             <c:out value="${hq.name}" />
                                             <c:if test="${hq.city != null || hq.province != null}">
                                                 &nbsp;·&nbsp;
