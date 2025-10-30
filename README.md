@@ -253,6 +253,7 @@ El archivo `rentexpress-middleware.zip` contiene las siguientes clases dentro de
 - `com.pinguela.rentexpres.service.CityService`
 - `com.pinguela.rentexpres.service.EmployeeService`
 - `com.pinguela.rentexpres.service.FileService`
+- `com.pinguela.rentexpres.service.HeadquartersService`
 - `com.pinguela.rentexpres.service.MailService`
 - `com.pinguela.rentexpres.service.ProvinceService`
 - `com.pinguela.rentexpres.service.RentalService`
@@ -268,6 +269,7 @@ El archivo `rentexpress-middleware.zip` contiene las siguientes clases dentro de
 - `com.pinguela.rentexpres.service.impl.CityServiceImpl`
 - `com.pinguela.rentexpres.service.impl.EmployeeServiceImpl`
 - `com.pinguela.rentexpres.service.impl.FileServiceImpl`
+- `com.pinguela.rentexpres.service.impl.HeadquartersServiceImpl`
 - `com.pinguela.rentexpres.service.impl.MailServiceImpl`
 - `com.pinguela.rentexpres.service.impl.ProvinceServiceImpl`
 - `com.pinguela.rentexpres.service.impl.RentalServiceImpl`
