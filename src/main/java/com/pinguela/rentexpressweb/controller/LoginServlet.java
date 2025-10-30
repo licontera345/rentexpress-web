@@ -14,7 +14,6 @@ import com.pinguela.rentexpressweb.security.RememberMeManager;
 import com.pinguela.rentexpressweb.security.SessionManager;
 import com.pinguela.rentexpressweb.security.TwoFactorManager;
 import com.pinguela.rentexpressweb.util.MessageResolver;
-import com.pinguela.rentexpressweb.util.PasswordEncoder;
 import com.pinguela.rentexpressweb.util.Views;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -24,7 +23,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -137,6 +135,11 @@ public class LoginServlet extends HttpServlet {
         }
 
         String loginEmail = resolveLoginEmail(authenticatedUser, sanitizedEmail);
+        if (loginEmail != null) {
+            CredentialStore.updatePassword(getServletContext(), loginEmail, password);
+        } else if (sanitizedEmail != null) {
+            CredentialStore.updatePassword(getServletContext(), sanitizedEmail, password);
+        }
         String normalizedEmail = loginEmail != null ? loginEmail.toLowerCase(Locale.ROOT) : null;
 
         RememberMeManager.forgetUser(request, response);
@@ -162,23 +165,19 @@ public class LoginServlet extends HttpServlet {
         if (identifier == null || password == null) {
             return null;
         }
-        String normalizedIdentifier = identifier.trim().toLowerCase(Locale.ROOT);
-        if (normalizedIdentifier.isEmpty()) {
+        String trimmedIdentifier = identifier.trim();
+        if (trimmedIdentifier.isEmpty()) {
             return null;
         }
+        String normalizedIdentifier = trimmedIdentifier.toLowerCase(Locale.ROOT);
         try {
-            UserDTO user = findUserByIdentifier(normalizedIdentifier);
+            UserDTO user = userService.authenticate(trimmedIdentifier, password);
             if (user == null) {
                 LOGGER.warn("Intento de acceso fallido para {}", normalizedIdentifier);
                 return null;
             }
             if (Boolean.FALSE.equals(user.getActiveStatus())) {
                 LOGGER.warn("Intento de acceso para usuario inactivo {}", normalizedIdentifier);
-                return null;
-            }
-            String storedHash = user.getPassword();
-            if (storedHash == null || !PasswordEncoder.matches(password, storedHash)) {
-                LOGGER.warn("Intento de acceso fallido para {}", normalizedIdentifier);
                 return null;
             }
             rememberResolvedIdentifiers(user, normalizedIdentifier);
@@ -199,36 +198,6 @@ public class LoginServlet extends HttpServlet {
         if (user != null && user.getUsername() != null) {
             CredentialStore.rememberEmail(getServletContext(), user.getUsername());
         }
-    }
-
-    private UserDTO findUserByIdentifier(String identifier) throws RentexpresException {
-        if (identifier == null) {
-            return null;
-        }
-        List<UserDTO> users = userService.findAll();
-        if (users == null || users.isEmpty()) {
-            return null;
-        }
-        for (UserDTO user : users) {
-            if (user == null) {
-                continue;
-            }
-            if (matchesIdentifier(user.getEmail(), identifier)) {
-                return user;
-            }
-            if (matchesIdentifier(user.getUsername(), identifier)) {
-                return user;
-            }
-        }
-        return null;
-    }
-
-    private boolean matchesIdentifier(String candidate, String identifier) {
-        if (candidate == null || identifier == null) {
-            return false;
-        }
-        String normalizedCandidate = candidate.trim().toLowerCase(Locale.ROOT);
-        return normalizedCandidate.equals(identifier);
     }
 
     private String resolveLoginEmail(UserDTO user, String providedIdentifier) {
