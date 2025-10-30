@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.pinguela.rentexpres.exception.DataException;
+import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.HeadquartersDTO;
 import com.pinguela.rentexpres.model.VehicleCategoryDTO;
 import com.pinguela.rentexpres.model.VehicleDTO;
@@ -204,8 +205,8 @@ public class PrivateReservationServlet extends HttpServlet {
                         return null;
                 }
                 try {
-			return vehicleService.findById(vehicleId);
-                } catch (DataException ex) {
+                        return vehicleService.findById(vehicleId);
+                } catch (RentexpresException ex) {
                         LOGGER.error("No se pudo cargar el vehículo {}", vehicleId, ex);
                         return null;
                 }
@@ -225,11 +226,11 @@ public class PrivateReservationServlet extends HttpServlet {
                 if (categoryId == null) {
                         return null;
                 }
-		try {
-			String language = locale != null ? locale.getLanguage() : Locale.getDefault().getLanguage();
-			VehicleCategoryDTO dto = categoryService.findById(categoryId, language);
-			return dto != null ? dto.getCategoryName() : null;
-                } catch (DataException ex) {
+                try {
+                        String language = locale != null ? locale.getLanguage() : Locale.getDefault().getLanguage();
+                        VehicleCategoryDTO dto = categoryService.findById(categoryId, language);
+                        return dto != null ? dto.getCategoryName() : null;
+                } catch (RentexpresException ex) {
                         LOGGER.warn("No se pudo recuperar la categoría {}", categoryId, ex);
                         return null;
                 }
@@ -253,7 +254,7 @@ public class PrivateReservationServlet extends HttpServlet {
                                 }
                         }
                         return related;
-                } catch (DataException ex) {
+                } catch (RentexpresException ex) {
                         LOGGER.warn("No se pudieron cargar vehículos relacionados", ex);
                         return new ArrayList<>();
                 }

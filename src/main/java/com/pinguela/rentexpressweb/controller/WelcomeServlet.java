@@ -1,6 +1,7 @@
 package com.pinguela.rentexpressweb.controller;
 
 import com.pinguela.rentexpres.exception.DataException;
+import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.HeadquartersDTO;
 import com.pinguela.rentexpres.model.VehicleDTO;
 import com.pinguela.rentexpres.model.VehicleStatusDTO;
@@ -135,7 +136,7 @@ public class WelcomeServlet extends HttpServlet {
                     }
                 }
             }
-        } catch (DataException ex) {
+        } catch (RentexpresException ex) {
             LOGGER.error("No se pudieron cargar los vehículos destacados", ex);
         }
         return featured;
@@ -189,7 +190,7 @@ public class WelcomeServlet extends HttpServlet {
             if (loaded != null) {
                 statuses.addAll(loaded);
             }
-        } catch (DataException ex) {
+        } catch (RentexpresException ex) {
             LOGGER.warn("No se pudieron recuperar los estados de los vehículos", ex);
         }
         return statuses;
