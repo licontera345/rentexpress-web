@@ -25,6 +25,7 @@ import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.constants.UserConstants;
 import com.pinguela.rentexpressweb.security.CredentialStore;
 import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.PasswordEncoder;
 import com.pinguela.rentexpressweb.util.Views;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -323,7 +324,8 @@ public class RegisterUserServlet extends HttpServlet {
         user.setLastName2(lastName2);
         user.setBirthDate(birthDate);
         user.setPhone(phone);
-        user.setPassword(sanitizedPassword);
+        String hashedPassword = PasswordEncoder.hash(sanitizedPassword);
+        user.setPassword(hashedPassword);
         user.setRoleId(customerRoleId);
         user.setActiveStatus(Boolean.TRUE);
         if (createdAddress != null) {
