@@ -2,8 +2,6 @@ package com.pinguela.rentexpressweb.controller;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -15,18 +13,17 @@ import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.pinguela.rentexpres.dao.HeadquartersDAO;
-import com.pinguela.rentexpres.dao.impl.HeadquartersDAOImpl;
 import com.pinguela.rentexpres.exception.DataException;
 import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.HeadquartersDTO;
 import com.pinguela.rentexpres.model.VehicleCategoryDTO;
 import com.pinguela.rentexpres.model.VehicleDTO;
+import com.pinguela.rentexpres.service.HeadquartersService;
 import com.pinguela.rentexpres.service.VehicleCategoryService;
 import com.pinguela.rentexpres.service.VehicleService;
+import com.pinguela.rentexpres.service.impl.HeadquartersServiceImpl;
 import com.pinguela.rentexpres.service.impl.VehicleCategoryServiceImpl;
 import com.pinguela.rentexpres.service.impl.VehicleServiceImpl;
-import com.pinguela.rentexpres.util.JDBCUtils;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.ReservationConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
@@ -53,7 +50,7 @@ public class PrivateReservationServlet extends HttpServlet {
 
 	private final VehicleService vehicleService = new VehicleServiceImpl();
 	private final VehicleCategoryService categoryService = new VehicleCategoryServiceImpl();
-	private final HeadquartersDAO headquartersDAO = new HeadquartersDAOImpl();
+        private final HeadquartersService headquartersService = new HeadquartersServiceImpl();
 
 	public PrivateReservationServlet() {
 		super();
@@ -126,7 +123,7 @@ public class PrivateReservationServlet extends HttpServlet {
                         errors.add("La devolución debe ser posterior a la recogida.");
                 }
 
-		List<HeadquartersDTO> headquarters = loadHeadquarters();
+                List<HeadquartersDTO> headquarters = loadHeadquarters();
                 Map<Integer, HeadquartersDTO> headquartersById = new HashMap<>();
                 for (HeadquartersDTO headquartersDTO : headquarters) {
                         if (headquartersDTO != null && headquartersDTO.getId() != null) {
@@ -263,22 +260,18 @@ public class PrivateReservationServlet extends HttpServlet {
                 }
         }
 
-	private List<HeadquartersDTO> loadHeadquarters() {
-		Connection connection = null;
-		try {
-			connection = JDBCUtils.getConnection();
-			JDBCUtils.beginTransaction(connection);
-			List<HeadquartersDTO> list = headquartersDAO.findAll(connection);
-			JDBCUtils.commitTransaction(connection);
-			return list;
-		} catch (SQLException | DataException ex) {
-			JDBCUtils.rollbackTransaction(connection);
-			LOGGER.error("Error al obtener el listado de sedes", ex);
-			return new ArrayList<>();
-		} finally {
-			JDBCUtils.close(connection);
-		}
-	}
+        private List<HeadquartersDTO> loadHeadquarters() {
+                try {
+                        List<HeadquartersDTO> list = headquartersService.findAll();
+                        if (list == null) {
+                                return new ArrayList<>();
+                        }
+                        return list;
+                } catch (DataException ex) {
+                        LOGGER.error("Error al obtener el listado de sedes", ex);
+                        return new ArrayList<>();
+                }
+        }
 
         private Date parseDate(String rawValue, String errorMessage, List<String> errors) {
                 if (rawValue == null || rawValue.trim().isEmpty()) {

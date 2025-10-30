@@ -1,7 +1,5 @@
 package com.pinguela.rentexpressweb.controller;
 
-import com.pinguela.rentexpres.dao.HeadquartersDAO;
-import com.pinguela.rentexpres.dao.impl.HeadquartersDAOImpl;
 import com.pinguela.rentexpres.exception.DataException;
 import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.HeadquartersDTO;
@@ -10,15 +8,16 @@ import com.pinguela.rentexpres.model.Results;
 import com.pinguela.rentexpres.model.VehicleCriteria;
 import com.pinguela.rentexpres.model.VehicleDTO;
 import com.pinguela.rentexpres.model.VehicleStatusDTO;
+import com.pinguela.rentexpres.service.HeadquartersService;
 import com.pinguela.rentexpres.service.VehicleCategoryService;
 import com.pinguela.rentexpres.service.VehicleService;
 import com.pinguela.rentexpres.service.VehicleStatusService;
+import com.pinguela.rentexpres.service.impl.HeadquartersServiceImpl;
 import com.pinguela.rentexpres.service.impl.VehicleCategoryServiceImpl;
 import com.pinguela.rentexpres.service.impl.VehicleServiceImpl;
 import com.pinguela.rentexpres.service.impl.VehicleStatusServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.VehicleConstants;
-import com.pinguela.rentexpres.util.JDBCUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -37,8 +36,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.sql.Connection;
-import java.sql.SQLException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -55,7 +52,7 @@ public class PublicVehicleServlet extends HttpServlet {
     private final VehicleService vehicleService = new VehicleServiceImpl();
     private final VehicleCategoryService categoryService = new VehicleCategoryServiceImpl();
     private final VehicleStatusService statusService = new VehicleStatusServiceImpl();
-    private final HeadquartersDAO headquartersDAO = new HeadquartersDAOImpl();
+    private final HeadquartersService headquartersService = new HeadquartersServiceImpl();
 
     private static final int DEFAULT_AVAILABLE_STATUS_ID = 1;
     private static final Set<String> AVAILABLE_STATUS_KEYWORDS = new HashSet<>();
@@ -263,19 +260,15 @@ public class PublicVehicleServlet extends HttpServlet {
     }
 
     private List<HeadquartersDTO> loadHeadquarters() {
-        Connection connection = null;
         try {
-            connection = JDBCUtils.getConnection();
-            JDBCUtils.beginTransaction(connection);
-            List<HeadquartersDTO> list = headquartersDAO.findAll(connection);
-            JDBCUtils.commitTransaction(connection);
+            List<HeadquartersDTO> list = headquartersService.findAll();
+            if (list == null) {
+                return new ArrayList<>();
+            }
             return list;
-        } catch (SQLException | DataException ex) {
-            JDBCUtils.rollbackTransaction(connection);
+        } catch (DataException ex) {
             LOGGER.error("Error al recuperar las sedes", ex);
             return new ArrayList<>();
-        } finally {
-            JDBCUtils.close(connection);
         }
     }
 

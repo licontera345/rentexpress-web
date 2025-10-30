@@ -1,17 +1,16 @@
 package com.pinguela.rentexpressweb.controller;
 
-import com.pinguela.rentexpres.dao.HeadquartersDAO;
-import com.pinguela.rentexpres.dao.impl.HeadquartersDAOImpl;
 import com.pinguela.rentexpres.exception.DataException;
 import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.HeadquartersDTO;
 import com.pinguela.rentexpres.model.VehicleCategoryDTO;
 import com.pinguela.rentexpres.model.VehicleDTO;
+import com.pinguela.rentexpres.service.HeadquartersService;
 import com.pinguela.rentexpres.service.VehicleCategoryService;
 import com.pinguela.rentexpres.service.VehicleService;
+import com.pinguela.rentexpres.service.impl.HeadquartersServiceImpl;
 import com.pinguela.rentexpres.service.impl.VehicleCategoryServiceImpl;
 import com.pinguela.rentexpres.service.impl.VehicleServiceImpl;
-import com.pinguela.rentexpres.util.JDBCUtils;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.ReservationConstants;
 import com.pinguela.rentexpressweb.constants.VehicleConstants;
@@ -22,8 +21,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +41,7 @@ public class PublicVehicleDetailServlet extends HttpServlet {
 
     private final VehicleService vehicleService = new VehicleServiceImpl();
     private final VehicleCategoryService categoryService = new VehicleCategoryServiceImpl();
-    private final HeadquartersDAO headquartersDAO = new HeadquartersDAOImpl();
+    private final HeadquartersService headquartersService = new HeadquartersServiceImpl();
 
     public PublicVehicleDetailServlet() {
         super();
@@ -154,19 +151,15 @@ public class PublicVehicleDetailServlet extends HttpServlet {
     }
 
     private List<HeadquartersDTO> loadHeadquarters() {
-        Connection connection = null;
         try {
-            connection = JDBCUtils.getConnection();
-            JDBCUtils.beginTransaction(connection);
-            List<HeadquartersDTO> list = headquartersDAO.findAll(connection);
-            JDBCUtils.commitTransaction(connection);
+            List<HeadquartersDTO> list = headquartersService.findAll();
+            if (list == null) {
+                return new ArrayList<>();
+            }
             return list;
-        } catch (SQLException | DataException ex) {
-            JDBCUtils.rollbackTransaction(connection);
+        } catch (DataException ex) {
             LOGGER.error("Error al recuperar las sedes", ex);
             return new ArrayList<>();
-        } finally {
-            JDBCUtils.close(connection);
         }
     }
 

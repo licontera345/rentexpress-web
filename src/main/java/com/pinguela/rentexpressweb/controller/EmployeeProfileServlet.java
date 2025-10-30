@@ -1,7 +1,5 @@
 package com.pinguela.rentexpressweb.controller;
 
-import com.pinguela.rentexpres.dao.HeadquartersDAO;
-import com.pinguela.rentexpres.dao.impl.HeadquartersDAOImpl;
 import com.pinguela.rentexpres.exception.DataException;
 import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.CityDTO;
@@ -9,9 +7,10 @@ import com.pinguela.rentexpres.model.EmployeeDTO;
 import com.pinguela.rentexpres.model.HeadquartersDTO;
 import com.pinguela.rentexpres.model.ProvinceDTO;
 import com.pinguela.rentexpres.model.RoleDTO;
+import com.pinguela.rentexpres.service.HeadquartersService;
 import com.pinguela.rentexpres.service.RoleService;
+import com.pinguela.rentexpres.service.impl.HeadquartersServiceImpl;
 import com.pinguela.rentexpres.service.impl.RoleServiceImpl;
-import com.pinguela.rentexpres.util.JDBCUtils;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.EmployeeConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
@@ -27,8 +26,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -70,7 +67,7 @@ public class EmployeeProfileServlet extends HttpServlet {
     private static final String PROFILE_KEY_UPDATED_AT = "updatedAt";
 
     private final RoleService roleService = new RoleServiceImpl();
-    private final HeadquartersDAO headquartersDAO = new HeadquartersDAOImpl();
+    private final HeadquartersService headquartersService = new HeadquartersServiceImpl();
 
     /**
      * @see HttpServlet#HttpServlet()
@@ -261,19 +258,11 @@ public class EmployeeProfileServlet extends HttpServlet {
         if (headquartersId == null) {
             return null;
         }
-        Connection connection = null;
         try {
-            connection = JDBCUtils.getConnection();
-            JDBCUtils.beginTransaction(connection);
-            HeadquartersDTO dto = headquartersDAO.findById(connection, headquartersId);
-            JDBCUtils.commitTransaction(connection);
-            return dto;
-        } catch (SQLException | DataException ex) {
-            JDBCUtils.rollbackTransaction(connection);
+            return headquartersService.findById(headquartersId);
+        } catch (DataException ex) {
             LOGGER.warn("No se pudo recuperar la sede {}", headquartersId, ex);
             return null;
-        } finally {
-            JDBCUtils.close(connection);
         }
     }
 

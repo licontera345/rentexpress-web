@@ -1,17 +1,16 @@
 package com.pinguela.rentexpressweb.controller;
 
-import com.pinguela.rentexpres.dao.HeadquartersDAO;
-import com.pinguela.rentexpres.dao.impl.HeadquartersDAOImpl;
 import com.pinguela.rentexpres.exception.DataException;
 import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.EmployeeDTO;
 import com.pinguela.rentexpres.model.HeadquartersDTO;
 import com.pinguela.rentexpres.model.RoleDTO;
 import com.pinguela.rentexpres.service.EmployeeService;
+import com.pinguela.rentexpres.service.HeadquartersService;
 import com.pinguela.rentexpres.service.RoleService;
 import com.pinguela.rentexpres.service.impl.EmployeeServiceImpl;
+import com.pinguela.rentexpres.service.impl.HeadquartersServiceImpl;
 import com.pinguela.rentexpres.service.impl.RoleServiceImpl;
-import com.pinguela.rentexpres.util.JDBCUtils;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.EmployeeConstants;
 import com.pinguela.rentexpressweb.constants.FilterConstants;
@@ -23,8 +22,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Collections;
@@ -55,7 +52,7 @@ public class PublicEmployeeServlet extends HttpServlet {
 
     private final EmployeeService employeeService = new EmployeeServiceImpl();
     private final RoleService roleService = new RoleServiceImpl();
-    private final HeadquartersDAO headquartersDAO = new HeadquartersDAOImpl();
+    private final HeadquartersService headquartersService = new HeadquartersServiceImpl();
 
     public PublicEmployeeServlet() {
         super();
@@ -277,19 +274,12 @@ public class PublicEmployeeServlet extends HttpServlet {
     }
 
     private List<HeadquartersDTO> loadHeadquarters() {
-        Connection connection = null;
         try {
-            connection = JDBCUtils.getConnection();
-            JDBCUtils.beginTransaction(connection);
-            List<HeadquartersDTO> list = headquartersDAO.findAll(connection);
-            JDBCUtils.commitTransaction(connection);
+            List<HeadquartersDTO> list = headquartersService.findAll();
             return list != null ? list : Collections.emptyList();
-        } catch (SQLException | DataException ex) {
-            JDBCUtils.rollbackTransaction(connection);
+        } catch (DataException ex) {
             LOGGER.warn("No se pudieron recuperar las sedes", ex);
             return Collections.emptyList();
-        } finally {
-            JDBCUtils.close(connection);
         }
     }
 
@@ -572,19 +562,12 @@ public class PublicEmployeeServlet extends HttpServlet {
         if (headquartersId == null) {
             return null;
         }
-        Connection connection = null;
         try {
-            connection = JDBCUtils.getConnection();
-            JDBCUtils.beginTransaction(connection);
-            HeadquartersDTO dto = headquartersDAO.findById(connection, headquartersId);
-            JDBCUtils.commitTransaction(connection);
+            HeadquartersDTO dto = headquartersService.findById(headquartersId);
             return dto != null ? dto.getName() : null;
-        } catch (SQLException | DataException ex) {
-            JDBCUtils.rollbackTransaction(connection);
+        } catch (DataException ex) {
             LOGGER.warn("No se pudo recuperar el nombre de la sede {}", headquartersId, ex);
             return null;
-        } finally {
-            JDBCUtils.close(connection);
         }
     }
 
