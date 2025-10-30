@@ -7,7 +7,7 @@
 <c:set var="currentEmployee" value="${sessionScope.currentEmployee}" />
 <c:set var="currentUserEmail" value="${sessionScope.currentUser}" />
 <c:set var="profileData" value="${sessionScope.userProfileData}" />
-<c:set var="homePath" value="${empty currentUserEmail ? '/app/welcome' : '/app/home'}" />
+<c:set var="homePath" value="/app/welcome" />
 <c:set var="rawDisplayName" value="${not empty profileData.fullName ? profileData.fullName : currentUserEmail}" />
 <c:set var="displayName" value="${empty rawDisplayName ? currentUserEmail : rawDisplayName}" />
 <c:set var="htmlLang" value="es" />
