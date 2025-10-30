@@ -1,6 +1,6 @@
 package com.pinguela.rentexpressweb.controller;
 
-import com.pinguela.rentexpres.exception.RentexpresException;
+import com.pinguela.rentexpres.exception.DataException;
 import com.pinguela.rentexpres.model.EmployeeDTO;
 import com.pinguela.rentexpres.model.HeadquartersDTO;
 import com.pinguela.rentexpres.model.RoleDTO;
@@ -123,7 +123,7 @@ public class PrivateEmployeeServlet extends HttpServlet {
                 return Collections.emptyList();
             }
             return list;
-        } catch (RentexpresException ex) {
+        } catch (DataException ex) {
             LOGGER.error("No se pudieron recuperar los empleados", ex);
             return Collections.emptyList();
         }
@@ -136,7 +136,7 @@ public class PrivateEmployeeServlet extends HttpServlet {
                 return Collections.emptyList();
             }
             return roles;
-        } catch (RentexpresException ex) {
+        } catch (DataException ex) {
             LOGGER.warn("No se pudieron recuperar los roles disponibles", ex);
             return Collections.emptyList();
         }
@@ -150,7 +150,7 @@ public class PrivateEmployeeServlet extends HttpServlet {
                 return Collections.emptyList();
             }
             return headquarters;
-        } catch (RentexpresException ex) {
+        } catch (DataException ex) {
             LOGGER.warn("No se pudieron recuperar las sedes", ex);
             return Collections.emptyList();
         }

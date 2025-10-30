@@ -13,7 +13,7 @@ import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.pinguela.rentexpres.exception.RentexpresException;
+import com.pinguela.rentexpres.exception.DataException;
 import com.pinguela.rentexpres.model.HeadquartersDTO;
 import com.pinguela.rentexpres.model.VehicleCategoryDTO;
 import com.pinguela.rentexpres.model.VehicleDTO;
@@ -205,7 +205,7 @@ public class PrivateReservationServlet extends HttpServlet {
                 }
                 try {
                         return vehicleService.findById(vehicleId);
-                } catch (RentexpresException ex) {
+                } catch (DataException ex) {
                         LOGGER.error("No se pudo cargar el vehículo {}", vehicleId, ex);
                         return null;
                 }
@@ -229,7 +229,7 @@ public class PrivateReservationServlet extends HttpServlet {
                         String language = locale != null ? locale.getLanguage() : Locale.getDefault().getLanguage();
                         VehicleCategoryDTO dto = categoryService.findById(categoryId, language);
                         return dto != null ? dto.getCategoryName() : null;
-                } catch (RentexpresException ex) {
+                } catch (DataException ex) {
                         LOGGER.warn("No se pudo recuperar la categoría {}", categoryId, ex);
                         return null;
                 }
@@ -253,7 +253,7 @@ public class PrivateReservationServlet extends HttpServlet {
                                 }
                         }
                         return related;
-                } catch (RentexpresException ex) {
+                } catch (DataException ex) {
                         LOGGER.warn("No se pudieron cargar vehículos relacionados", ex);
                         return new ArrayList<>();
                 }
@@ -267,7 +267,7 @@ public class PrivateReservationServlet extends HttpServlet {
                                 return new ArrayList<HeadquartersDTO>();
                         }
                         return headquarters;
-                } catch (RentexpresException ex) {
+                } catch (DataException ex) {
                         LOGGER.error("Error al obtener el listado de sedes", ex);
                         return new ArrayList<HeadquartersDTO>();
                 }
