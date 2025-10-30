@@ -2,8 +2,6 @@ package com.pinguela.rentexpressweb.controller;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -15,9 +13,6 @@ import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.pinguela.rentexpres.dao.HeadquartersDAO;
-import com.pinguela.rentexpres.dao.impl.HeadquartersDAOImpl;
-import com.pinguela.rentexpres.exception.DataException;
 import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.HeadquartersDTO;
 import com.pinguela.rentexpres.model.VehicleCategoryDTO;
@@ -26,12 +21,13 @@ import com.pinguela.rentexpres.service.VehicleCategoryService;
 import com.pinguela.rentexpres.service.VehicleService;
 import com.pinguela.rentexpres.service.impl.VehicleCategoryServiceImpl;
 import com.pinguela.rentexpres.service.impl.VehicleServiceImpl;
-import com.pinguela.rentexpres.util.JDBCUtils;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.ReservationConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.constants.VehicleConstants;
 import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpres.service.HeadquartersService;
+import com.pinguela.rentexpres.service.impl.HeadquartersServiceImpl;
 import com.pinguela.rentexpressweb.util.LegacyDateUtils;
 
 import jakarta.servlet.ServletException;
@@ -51,9 +47,9 @@ public class PrivateReservationServlet extends HttpServlet {
 
 	private static final Logger LOGGER = LogManager.getLogger(PrivateReservationServlet.class);
 
-	private final VehicleService vehicleService = new VehicleServiceImpl();
-	private final VehicleCategoryService categoryService = new VehicleCategoryServiceImpl();
-	private final HeadquartersDAO headquartersDAO = new HeadquartersDAOImpl();
+        private final VehicleService vehicleService = new VehicleServiceImpl();
+        private final VehicleCategoryService categoryService = new VehicleCategoryServiceImpl();
+        private final HeadquartersService headquartersService = new HeadquartersServiceImpl();
 
 	public PrivateReservationServlet() {
 		super();
@@ -263,22 +259,19 @@ public class PrivateReservationServlet extends HttpServlet {
                 }
         }
 
-	private List<HeadquartersDTO> loadHeadquarters() {
-		Connection connection = null;
-		try {
-			connection = JDBCUtils.getConnection();
-			JDBCUtils.beginTransaction(connection);
-			List<HeadquartersDTO> list = headquartersDAO.findAll(connection);
-			JDBCUtils.commitTransaction(connection);
-			return list;
-		} catch (SQLException | DataException ex) {
-			JDBCUtils.rollbackTransaction(connection);
-			LOGGER.error("Error al obtener el listado de sedes", ex);
-			return new ArrayList<>();
-		} finally {
-			JDBCUtils.close(connection);
-		}
-	}
+        private List<HeadquartersDTO> loadHeadquarters() {
+                try {
+                        List<HeadquartersDTO> headquarters = headquartersService.findAll();
+                        if (headquarters == null) {
+                                LOGGER.error("Error al obtener el listado de sedes");
+                                return new ArrayList<HeadquartersDTO>();
+                        }
+                        return headquarters;
+                } catch (RentexpresException ex) {
+                        LOGGER.error("Error al obtener el listado de sedes", ex);
+                        return new ArrayList<HeadquartersDTO>();
+                }
+        }
 
         private Date parseDate(String rawValue, String errorMessage, List<String> errors) {
                 if (rawValue == null || rawValue.trim().isEmpty()) {
