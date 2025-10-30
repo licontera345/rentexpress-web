@@ -1,6 +1,5 @@
 package com.pinguela.rentexpressweb.controller;
 
-import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.EmployeeDTO;
 import com.pinguela.rentexpres.model.HeadquartersDTO;
 import com.pinguela.rentexpres.model.RoleDTO;
@@ -256,7 +255,7 @@ public class PublicEmployeeServlet extends HttpServlet {
         try {
             List<EmployeeDTO> list = employeeService.findAll();
             return list != null ? list : Collections.emptyList();
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.error("No se pudieron recuperar los empleados", ex);
             return Collections.emptyList();
         }
@@ -266,7 +265,7 @@ public class PublicEmployeeServlet extends HttpServlet {
         try {
             List<RoleDTO> roles = roleService.findAll();
             return roles != null ? roles : Collections.emptyList();
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.warn("No se pudieron recuperar los roles de empleado", ex);
             return Collections.emptyList();
         }
@@ -280,7 +279,7 @@ public class PublicEmployeeServlet extends HttpServlet {
                 return Collections.emptyList();
             }
             return headquarters;
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.warn("No se pudieron recuperar las sedes", ex);
             return Collections.emptyList();
         }
@@ -542,7 +541,7 @@ public class PublicEmployeeServlet extends HttpServlet {
     private EmployeeDTO findEmployee(Integer employeeId) {
         try {
             return employeeService.findById(employeeId);
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.error("No se pudo recuperar el empleado {}", employeeId, ex);
             return null;
         }
@@ -555,7 +554,7 @@ public class PublicEmployeeServlet extends HttpServlet {
         try {
             RoleDTO dto = roleService.findById(roleId);
             return dto != null ? dto.getRoleName() : null;
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.warn("No se pudo recuperar el rol {}", roleId, ex);
             return null;
         }
@@ -572,7 +571,7 @@ public class PublicEmployeeServlet extends HttpServlet {
                 return null;
             }
             return headquarters.getName();
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.warn("Error al recuperar la sede {}", headquartersId, ex);
             return null;
         }

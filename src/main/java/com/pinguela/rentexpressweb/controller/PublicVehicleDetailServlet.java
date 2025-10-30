@@ -1,6 +1,5 @@
 package com.pinguela.rentexpressweb.controller;
 
-import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.HeadquartersDTO;
 import com.pinguela.rentexpres.model.VehicleCategoryDTO;
 import com.pinguela.rentexpres.model.VehicleDTO;
@@ -106,7 +105,7 @@ public class PublicVehicleDetailServlet extends HttpServlet {
     private VehicleDTO loadVehicle(Integer vehicleId) {
         try {
             return vehicleService.findById(vehicleId);
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.error("Error al recuperar el vehículo {}", vehicleId, ex);
             return null;
         }
@@ -120,7 +119,7 @@ public class PublicVehicleDetailServlet extends HttpServlet {
             String language = locale != null ? locale.getLanguage() : Locale.getDefault().getLanguage();
             VehicleCategoryDTO dto = categoryService.findById(categoryId, language);
             return dto != null ? dto.getCategoryName() : null;
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.warn("No se pudo obtener el nombre de la categoría {}", categoryId, ex);
             return null;
         }
@@ -143,7 +142,7 @@ public class PublicVehicleDetailServlet extends HttpServlet {
                 }
             }
             return related;
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.warn("No se pudieron cargar vehículos relacionados", ex);
             return new ArrayList<>();
         }
@@ -157,7 +156,7 @@ public class PublicVehicleDetailServlet extends HttpServlet {
                 return new ArrayList<HeadquartersDTO>();
             }
             return headquarters;
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.error("Error al recuperar las sedes", ex);
             return new ArrayList<HeadquartersDTO>();
         }

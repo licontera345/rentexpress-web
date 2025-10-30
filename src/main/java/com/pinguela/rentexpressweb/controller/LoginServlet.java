@@ -1,6 +1,5 @@
 package com.pinguela.rentexpressweb.controller;
 
-import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.UserDTO;
 import com.pinguela.rentexpres.service.MailService;
 import com.pinguela.rentexpres.service.UserService;
@@ -182,7 +181,7 @@ public class LoginServlet extends HttpServlet {
             }
             rememberResolvedIdentifiers(user, normalizedIdentifier);
             return user;
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.error("Error autenticando al usuario {}", normalizedIdentifier, ex);
             return null;
         }

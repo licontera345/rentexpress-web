@@ -1,6 +1,5 @@
 package com.pinguela.rentexpressweb.controller;
 
-import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.RoleDTO;
 import com.pinguela.rentexpres.model.UserDTO;
 import com.pinguela.rentexpres.service.RoleService;
@@ -236,7 +235,7 @@ public class PublicUserServlet extends HttpServlet {
         try {
             List<UserDTO> users = userService.findAll();
             return users != null ? users : Collections.emptyList();
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.error("No se pudieron recuperar los usuarios", ex);
             return Collections.emptyList();
         }
@@ -246,7 +245,7 @@ public class PublicUserServlet extends HttpServlet {
         try {
             List<RoleDTO> roles = roleService.findAll();
             return roles != null ? roles : Collections.emptyList();
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.warn("No se pudieron recuperar los roles de usuario", ex);
             return Collections.emptyList();
         }
@@ -494,7 +493,7 @@ public class PublicUserServlet extends HttpServlet {
     private UserDTO findUser(Integer userId) {
         try {
             return userService.findById(userId);
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.error("No se pudo recuperar el usuario {}", userId, ex);
             return null;
         }
@@ -507,7 +506,7 @@ public class PublicUserServlet extends HttpServlet {
         try {
             RoleDTO dto = roleService.findById(roleId);
             return dto != null ? dto.getRoleName() : null;
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.warn("No se pudo recuperar el rol {}", roleId, ex);
             return null;
         }
