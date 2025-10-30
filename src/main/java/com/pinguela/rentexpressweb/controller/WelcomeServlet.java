@@ -1,8 +1,5 @@
 package com.pinguela.rentexpressweb.controller;
 
-import com.pinguela.rentexpres.dao.HeadquartersDAO;
-import com.pinguela.rentexpres.dao.impl.HeadquartersDAOImpl;
-import com.pinguela.rentexpres.exception.DataException;
 import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.HeadquartersDTO;
 import com.pinguela.rentexpres.model.VehicleDTO;
@@ -11,12 +8,13 @@ import com.pinguela.rentexpres.service.VehicleService;
 import com.pinguela.rentexpres.service.VehicleStatusService;
 import com.pinguela.rentexpres.service.impl.VehicleServiceImpl;
 import com.pinguela.rentexpres.service.impl.VehicleStatusServiceImpl;
-import com.pinguela.rentexpres.util.JDBCUtils;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.MediaConstants;
 import com.pinguela.rentexpressweb.constants.VehicleConstants;
 import com.pinguela.rentexpressweb.security.RememberMeManager;
 import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpres.service.HeadquartersService;
+import com.pinguela.rentexpres.service.impl.HeadquartersServiceImpl;
 import com.pinguela.rentexpressweb.util.ImageStorage;
 import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.Views;
@@ -28,8 +26,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,7 +47,7 @@ public class WelcomeServlet extends HttpServlet {
     private static final int DEFAULT_AVAILABLE_STATUS_ID = 1;
     private static final String[] AVAILABLE_STATUS_KEYWORDS = new String[] { "disponible", "available", "libre" };
 
-    private final HeadquartersDAO headquartersDAO = new HeadquartersDAOImpl();
+    private final HeadquartersService headquartersService = new HeadquartersServiceImpl();
     private final VehicleService vehicleService = new VehicleServiceImpl();
     private final VehicleStatusService vehicleStatusService = new VehicleStatusServiceImpl();
 
@@ -105,19 +101,16 @@ public class WelcomeServlet extends HttpServlet {
     }
 
     private List<HeadquartersDTO> loadHeadquarters() {
-        Connection connection = null;
         try {
-            connection = JDBCUtils.getConnection();
-            JDBCUtils.beginTransaction(connection);
-            List<HeadquartersDTO> list = headquartersDAO.findAll(connection);
-            JDBCUtils.commitTransaction(connection);
-            return list;
-        } catch (SQLException | DataException ex) {
-            JDBCUtils.rollbackTransaction(connection);
+            List<HeadquartersDTO> headquarters = headquartersService.findAll();
+            if (headquarters == null) {
+                LOGGER.error("Error al recuperar las sedes para la portada");
+                return new ArrayList<HeadquartersDTO>();
+            }
+            return headquarters;
+        } catch (RentexpresException ex) {
             LOGGER.error("Error al recuperar las sedes para la portada", ex);
-            return new ArrayList<>();
-        } finally {
-            JDBCUtils.close(connection);
+            return new ArrayList<HeadquartersDTO>();
         }
     }
 
