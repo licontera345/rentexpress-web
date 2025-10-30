@@ -1,6 +1,5 @@
 package com.pinguela.rentexpressweb.controller;
 
-import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.RentalDTO;
 import com.pinguela.rentexpres.model.RentalStatusDTO;
 import com.pinguela.rentexpres.service.RentalService;
@@ -180,7 +179,7 @@ public class PublicRentalServlet extends HttpServlet {
     private List<RentalDTO> loadRentals() {
         try {
             return rentalService.findAll();
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.error("No se pudieron recuperar los alquileres", ex);
             return Collections.emptyList();
         }
@@ -190,7 +189,7 @@ public class PublicRentalServlet extends HttpServlet {
         try {
             String language = locale != null ? locale.getLanguage() : Locale.getDefault().getLanguage();
             return rentalStatusService.findAll(language);
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.warn("No se pudieron recuperar los estados de alquiler", ex);
             return Collections.emptyList();
         }

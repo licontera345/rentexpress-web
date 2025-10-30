@@ -1,6 +1,5 @@
 package com.pinguela.rentexpressweb.controller;
 
-import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.AddressDTO;
 import com.pinguela.rentexpres.model.CityDTO;
 import com.pinguela.rentexpres.model.ProvinceDTO;
@@ -240,7 +239,7 @@ public class RegisterUserServlet extends HttpServlet {
                 if (selectedProvince == null) {
                     errors.add("La provincia seleccionada no existe.");
                 }
-            } catch (RentexpresException ex) {
+            } catch (Exception ex) {
                 LOGGER.error("Error comprobando la provincia {}", provinceId, ex);
                 errors.add("No se pudo validar la provincia seleccionada. Inténtalo de nuevo más tarde.");
             }
@@ -256,7 +255,7 @@ public class RegisterUserServlet extends HttpServlet {
                         && !selectedCity.getProvinceId().equals(provinceId)) {
                     errors.add("La ciudad seleccionada no pertenece a la provincia elegida.");
                 }
-            } catch (RentexpresException ex) {
+            } catch (Exception ex) {
                 LOGGER.error("Error comprobando la ciudad {}", cityId, ex);
                 errors.add("No se pudo validar la ciudad seleccionada. Inténtalo de nuevo más tarde.");
             }
@@ -269,7 +268,7 @@ public class RegisterUserServlet extends HttpServlet {
                 if (isEmailAlreadyRegistered(sanitizedEmail)) {
                     errors.add("Ya existe una cuenta registrada con ese correo electrónico.");
                 }
-            } catch (RentexpresException ex) {
+            } catch (Exception ex) {
                 LOGGER.error("No se pudo comprobar la disponibilidad del correo {}", sanitizedEmail, ex);
                 errors.add("No se pudo validar la disponibilidad del correo. Inténtalo de nuevo en unos minutos.");
             }
@@ -279,7 +278,7 @@ public class RegisterUserServlet extends HttpServlet {
         if (errors.isEmpty()) {
             try {
                 customerRoleId = resolveCustomerRoleId();
-            } catch (RentexpresException ex) {
+            } catch (Exception ex) {
                 LOGGER.error("Error obteniendo el rol de cliente", ex);
                 errors.add("No se pudo preparar el registro de usuario. Inténtalo más tarde.");
             }
@@ -300,7 +299,7 @@ public class RegisterUserServlet extends HttpServlet {
                 } else {
                     errors.add("No se pudo guardar la dirección proporcionada.");
                 }
-            } catch (RentexpresException ex) {
+            } catch (Exception ex) {
                 LOGGER.error("Error creando la dirección para el registro de {}", sanitizedEmail, ex);
                 errors.add("Ha ocurrido un error al guardar la dirección. Inténtalo de nuevo más tarde.");
             }
@@ -343,7 +342,7 @@ public class RegisterUserServlet extends HttpServlet {
             }
             errors.add("No se pudo completar el registro. Inténtalo de nuevo.");
             cleanupAddress(createdAddress);
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.error("Error creando el usuario {}", sanitizedEmail, ex);
             errors.add("Ha ocurrido un error al crear tu cuenta. Inténtalo de nuevo en unos minutos.");
             cleanupAddress(createdAddress);
@@ -375,7 +374,7 @@ public class RegisterUserServlet extends HttpServlet {
         }
     }
 
-    private boolean isEmailAlreadyRegistered(String email) throws RentexpresException {
+    private boolean isEmailAlreadyRegistered(String email) throws Exception {
         UserCriteria criteria = new UserCriteria();
         criteria.setEmail(email);
         criteria.setPageNumber(Integer.valueOf(1));
@@ -384,7 +383,7 @@ public class RegisterUserServlet extends HttpServlet {
         return results != null && results.getResults() != null && !results.getResults().isEmpty();
     }
 
-    private Integer resolveCustomerRoleId() throws RentexpresException {
+    private Integer resolveCustomerRoleId() throws Exception {
         Integer fallbackRoleId = Integer.valueOf(UserConstants.ROLE_ID_CUSTOMER_FALLBACK);
         List<RoleDTO> roles = roleService.findAll();
         if (roles == null || roles.isEmpty()) {
@@ -489,7 +488,7 @@ public class RegisterUserServlet extends HttpServlet {
         List<ProvinceDTO> provinces = null;
         try {
             provinces = provinceService.findAll();
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.error("Error cargando provincias", ex);
             if (errors != null) {
                 errors.add("No se pudo cargar la lista de provincias. Inténtalo de nuevo más tarde.");
@@ -503,7 +502,7 @@ public class RegisterUserServlet extends HttpServlet {
         List<CityDTO> cities = null;
         try {
             cities = cityService.findAll();
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.error("Error cargando ciudades", ex);
             if (errors != null) {
                 errors.add("No se pudo cargar la lista de ciudades. Inténtalo de nuevo más tarde.");
@@ -522,7 +521,7 @@ public class RegisterUserServlet extends HttpServlet {
         }
         try {
             addressService.delete(address);
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.error("No se pudo revertir la dirección {} tras un error de registro", address.getId(), ex);
         }
     }

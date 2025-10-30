@@ -13,7 +13,6 @@ import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.pinguela.rentexpres.exception.DataException;
 import com.pinguela.rentexpres.model.HeadquartersDTO;
 import com.pinguela.rentexpres.model.VehicleCategoryDTO;
 import com.pinguela.rentexpres.model.VehicleDTO;
@@ -205,10 +204,10 @@ public class PrivateReservationServlet extends HttpServlet {
                 }
                 try {
                         return vehicleService.findById(vehicleId);
-                } catch (DataException ex) {
-                        LOGGER.error("No se pudo cargar el vehículo {}", vehicleId, ex);
-                        return null;
-                }
+        } catch (Exception ex) {
+            LOGGER.error("No se pudo cargar el vehículo {}", vehicleId, ex);
+            return null;
+        }
         }
 
         private void exposeReservationParameterNames(HttpServletRequest request) {
@@ -229,10 +228,10 @@ public class PrivateReservationServlet extends HttpServlet {
                         String language = locale != null ? locale.getLanguage() : Locale.getDefault().getLanguage();
                         VehicleCategoryDTO dto = categoryService.findById(categoryId, language);
                         return dto != null ? dto.getCategoryName() : null;
-                } catch (DataException ex) {
-                        LOGGER.warn("No se pudo recuperar la categoría {}", categoryId, ex);
-                        return null;
-                }
+        } catch (Exception ex) {
+            LOGGER.warn("No se pudo recuperar la categoría {}", categoryId, ex);
+            return null;
+        }
 	}
 
 	private List<VehicleDTO> findRelatedVehicles(VehicleDTO vehicle) {
@@ -253,10 +252,10 @@ public class PrivateReservationServlet extends HttpServlet {
                                 }
                         }
                         return related;
-                } catch (DataException ex) {
-                        LOGGER.warn("No se pudieron cargar vehículos relacionados", ex);
-                        return new ArrayList<>();
-                }
+        } catch (Exception ex) {
+            LOGGER.warn("No se pudieron cargar vehículos relacionados", ex);
+            return new ArrayList<>();
+        }
         }
 
         private List<HeadquartersDTO> loadHeadquarters() {
@@ -267,11 +266,11 @@ public class PrivateReservationServlet extends HttpServlet {
                                 return new ArrayList<HeadquartersDTO>();
                         }
                         return headquarters;
-                } catch (DataException ex) {
-                        LOGGER.error("Error al obtener el listado de sedes", ex);
-                        return new ArrayList<HeadquartersDTO>();
-                }
+        } catch (Exception ex) {
+            LOGGER.error("Error al obtener el listado de sedes", ex);
+            return new ArrayList<HeadquartersDTO>();
         }
+    }
 
         private Date parseDate(String rawValue, String errorMessage, List<String> errors) {
                 if (rawValue == null || rawValue.trim().isEmpty()) {

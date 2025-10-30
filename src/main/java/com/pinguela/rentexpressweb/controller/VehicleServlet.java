@@ -1,6 +1,5 @@
 package com.pinguela.rentexpressweb.controller;
 
-import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.Results;
 import com.pinguela.rentexpres.model.VehicleCategoryDTO;
 import com.pinguela.rentexpres.model.VehicleCriteria;
@@ -157,7 +156,7 @@ public class VehicleServlet extends HttpServlet {
                 return new ArrayList<VehicleCategoryDTO>();
             }
             return list;
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.error("No se pudieron obtener las categorías", ex);
             return new ArrayList<VehicleCategoryDTO>();
         }
@@ -171,7 +170,7 @@ public class VehicleServlet extends HttpServlet {
                 return new ArrayList<VehicleStatusDTO>();
             }
             return list;
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.error("No se pudieron obtener los estados de vehículo", ex);
             return new ArrayList<VehicleStatusDTO>();
         }
@@ -274,7 +273,7 @@ public class VehicleServlet extends HttpServlet {
         try {
             Results<VehicleDTO> results = vehicleService.findByCriteria(criteria);
             return normalizeResults(results, criteria);
-        } catch (RentexpresException ex) {
+        } catch (Exception ex) {
             LOGGER.error("Error al recuperar el catálogo interno de vehículos", ex);
             if (errors != null) {
                 errors.add("No se pudo cargar el catálogo interno. Inténtalo de nuevo más tarde.");
