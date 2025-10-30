@@ -1,6 +1,6 @@
 package com.pinguela.rentexpressweb.controller;
 
-import com.pinguela.rentexpres.exception.DataException;
+import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.HeadquartersDTO;
 import com.pinguela.rentexpres.model.VehicleCategoryDTO;
 import com.pinguela.rentexpres.model.Results;
@@ -240,7 +240,7 @@ public class PublicVehicleServlet extends HttpServlet {
         try {
             String language = locale != null ? locale.getLanguage() : Locale.getDefault().getLanguage();
             return categoryService.findAll(language);
-        } catch (DataException ex) {
+        } catch (RentexpresException ex) {
             LOGGER.error("Error al recuperar las categorías de vehículos", ex);
             return new ArrayList<>();
         }
@@ -266,7 +266,7 @@ public class PublicVehicleServlet extends HttpServlet {
                 return new ArrayList<HeadquartersDTO>();
             }
             return headquarters;
-        } catch (DataException ex) {
+        } catch (RentexpresException ex) {
             LOGGER.error("Error al recuperar las sedes", ex);
             return new ArrayList<HeadquartersDTO>();
         }
@@ -313,7 +313,7 @@ public class PublicVehicleServlet extends HttpServlet {
         try {
             String language = locale != null ? locale.getLanguage() : Locale.getDefault().getLanguage();
             return statusService.findAll(language);
-        } catch (DataException ex) {
+        } catch (RentexpresException ex) {
             LOGGER.error("Error al recuperar los estados de los vehículos", ex);
             return new ArrayList<>();
         }
@@ -481,7 +481,7 @@ public class PublicVehicleServlet extends HttpServlet {
         try {
             Results<VehicleDTO> results = vehicleService.findByCriteria(criteria);
             return normalizeResults(results, criteria);
-        } catch (DataException ex) {
+        } catch (RentexpresException ex) {
             LOGGER.error("Error al recuperar el catálogo público de vehículos", ex);
             if (errors != null) {
                 errors.add("No se pudo cargar el catálogo en este momento. Inténtalo de nuevo más tarde.");
