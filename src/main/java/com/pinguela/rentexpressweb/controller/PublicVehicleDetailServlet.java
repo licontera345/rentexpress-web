@@ -1,6 +1,5 @@
 package com.pinguela.rentexpressweb.controller;
 
-import com.pinguela.rentexpres.exception.DataException;
 import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.HeadquartersDTO;
 import com.pinguela.rentexpres.model.VehicleCategoryDTO;
@@ -158,7 +157,7 @@ public class PublicVehicleDetailServlet extends HttpServlet {
                 return new ArrayList<HeadquartersDTO>();
             }
             return headquarters;
-        } catch (DataException ex) {
+        } catch (RentexpresException ex) {
             LOGGER.error("Error al recuperar las sedes", ex);
             return new ArrayList<HeadquartersDTO>();
         }

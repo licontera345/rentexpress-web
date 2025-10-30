@@ -13,7 +13,6 @@ import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.pinguela.rentexpres.exception.DataException;
 import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.HeadquartersDTO;
 import com.pinguela.rentexpres.model.VehicleCategoryDTO;
@@ -268,7 +267,7 @@ public class PrivateReservationServlet extends HttpServlet {
                                 return new ArrayList<HeadquartersDTO>();
                         }
                         return headquarters;
-                } catch (DataException ex) {
+                } catch (RentexpresException ex) {
                         LOGGER.error("Error al obtener el listado de sedes", ex);
                         return new ArrayList<HeadquartersDTO>();
                 }
