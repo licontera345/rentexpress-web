@@ -3,6 +3,7 @@
 </main>
 <jsp:useBean id="now" class="java.util.Date" />
 <fmt:formatDate value="${now}" pattern="yyyy" var="currentYear" />
+<fmt:message key="nav.brand" var="brandName" />
 <footer class="mt-auto py-4">
     <div class="container">
         <div class="bg-white rounded-4 shadow-soft p-4 d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
@@ -11,7 +12,12 @@
                 <small class="text-muted"><fmt:message key="footer.tagline" /></small>
             </div>
             <div class="d-flex flex-wrap align-items-center gap-3">
-                <span class="text-muted small mb-0">&copy; ${currentYear} RentExpress</span>
+                <span class="text-muted small mb-0">
+                    <fmt:message key="footer.copyright">
+                        <fmt:param value="${currentYear}" />
+                        <fmt:param value="${brandName}" />
+                    </fmt:message>
+                </span>
                 <div class="d-flex flex-wrap gap-2">
                     <a class="text-decoration-none text-muted" href="#"><fmt:message key="footer.cookies" /></a>
                     <span class="text-muted">·</span>

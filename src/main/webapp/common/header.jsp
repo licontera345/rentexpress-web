@@ -3,6 +3,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <fmt:setLocale value="${not empty sessionScope.appLocale ? sessionScope.appLocale : pageContext.request.locale}" scope="session" />
 <fmt:setBundle basename="i18n.Messages" />
+<fmt:message key="nav.brand" var="brandName" />
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 <c:set var="currentEmployee" value="${sessionScope.currentEmployee}" />
 <c:set var="currentUserEmail" value="${sessionScope.currentUser}" />
@@ -20,13 +21,13 @@
 <c:if test="${empty sessionScope.appLocale and empty cookie.appLocale.value and not empty pageContext.request.locale.language}">
     <c:set var="htmlLang" value="${pageContext.request.locale.language}" />
 </c:if>
-<c:set var="resolvedTitle" value="${empty pageTitle ? 'RentExpress' : pageTitle}" />
+<c:set var="resolvedTitle" value="${empty pageTitle ? brandName : pageTitle}" />
 <!DOCTYPE html>
 <html lang="${htmlLang}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${resolvedTitle} · RentExpress</title>
+    <title>${resolvedTitle} · ${brandName}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
