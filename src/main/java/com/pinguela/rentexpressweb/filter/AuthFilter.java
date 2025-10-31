@@ -2,6 +2,8 @@ package com.pinguela.rentexpressweb.filter;
 
 import java.io.IOException;
 
+import com.pinguela.rentexpressweb.constants.SecurityConstants;
+
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -47,6 +49,12 @@ public class AuthFilter implements Filter {
     }
 
     private boolean requiresAuthentication(String path) {
+        if (path == null) {
+            return false;
+        }
+        if (SecurityConstants.PUBLIC_REGISTER_USER_ENDPOINT.equals(path)) {
+            return false;
+        }
         return path.startsWith("/private/") || path.startsWith("/app/");
     }
 
