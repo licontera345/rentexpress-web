@@ -55,8 +55,8 @@ public class PublicUserListServlet extends HttpServlet {
         int page = parsePositive(request.getParameter("page"), 1);
         int size = normalizeSize(parsePositive(request.getParameter("size"), 10));
 
-        List<UserDTO> users = loadUsers(errors);
-        List<RoleDTO> roles = loadRoles(errors);
+        List<UserDTO> users = loadUsers();
+        List<RoleDTO> roles = loadRoles();
         Map<Integer, String> roleNames = new HashMap<Integer, String>();
         for (RoleDTO role : roles) { if (role != null && role.getRoleId() != null) { roleNames.put(role.getRoleId(), role.getRoleName()); } }
 
@@ -168,25 +168,23 @@ public class PublicUserListServlet extends HttpServlet {
         if (builder.length() > 0) { builder.append(' '); }
         builder.append(trimmed);
     }
-    private List<UserDTO> loadUsers(Map<String, String> errors) {
+    private List<UserDTO> loadUsers() {
         try {
             List<UserDTO> users = userService.findAll();
             if (users == null) { return new ArrayList<UserDTO>(); }
             return users;
         } catch (Exception ex) {
             LOGGER.error("No se pudieron recuperar los usuarios", ex);
-            errors.put("users", "No se pudieron recuperar los usuarios.");
             return new ArrayList<UserDTO>();
         }
     }
-    private List<RoleDTO> loadRoles(Map<String, String> errors) {
+    private List<RoleDTO> loadRoles() {
         try {
             List<RoleDTO> roles = roleService.findAll();
             if (roles == null) { return new ArrayList<RoleDTO>(); }
             return roles;
         } catch (Exception ex) {
             LOGGER.warn("No se pudieron recuperar los roles", ex);
-            errors.put("roles", "No se pudieron recuperar los roles disponibles.");
             return new ArrayList<RoleDTO>();
         }
     }

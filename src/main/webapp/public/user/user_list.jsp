@@ -81,7 +81,7 @@
             <c:if test="${not empty error}">
                 <div class="alert alert-warning shadow-soft">
                     <ul class="mb-0">
-                        <c:forEach var="entry" items="${error.entrySet()}">
+                        <c:forEach var="entry" items="${error}">
                             <li>${entry.value}</li>
                         </c:forEach>
                     </ul>
