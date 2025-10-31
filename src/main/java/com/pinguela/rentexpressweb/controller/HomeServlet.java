@@ -9,10 +9,10 @@ import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.security.SessionManager;
 import com.pinguela.rentexpressweb.service.user.UserProfileService;
-import com.pinguela.rentexpressweb.util.MessageResolver;
+import com.pinguela.rentexpressweb.util.ActivityEntry;
 import com.pinguela.rentexpressweb.util.ControllerUtils;
+import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.UserActivityTracker;
-import com.pinguela.rentexpressweb.util.UserActivityTracker.ActivityEntry;
 import com.pinguela.rentexpressweb.util.Views;
 
 import jakarta.servlet.ServletException;
