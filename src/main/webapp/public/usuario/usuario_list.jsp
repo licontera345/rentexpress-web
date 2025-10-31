@@ -23,7 +23,7 @@
 			<td><c:out value="${u.nombreUsuario}" /></td>
 			<td><c:out value="${u.email}" /></td>
                         <td><a
-                                href="${ctx}/public/users?action=view&amp;userId=${u.id}">
+                                href="${ctx}/public/users/detail?id=${u.id}">
                                         <fmt:message key="action.view" />
                         </a> | <a
                                 href="${ctx}/public/users?action=edit&amp;userId=${u.id}">
