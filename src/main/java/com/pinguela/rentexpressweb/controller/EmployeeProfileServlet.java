@@ -11,7 +11,7 @@ import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.EmployeeConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.security.EmployeeSessionResolver;
-import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.SessionUtils;
 import com.pinguela.rentexpres.service.HeadquartersService;
 import com.pinguela.rentexpres.service.impl.HeadquartersServiceImpl;
 import com.pinguela.rentexpressweb.util.LegacyDateUtils;
@@ -78,18 +78,18 @@ public class EmployeeProfileServlet extends HttpServlet {
      * @see HttpServlet#doGet(HttpServletRequest, HttpServletResponse)
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
+        Object currentUser = SessionUtils.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
         if (currentUser == null) {
-            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
+            SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
                     "Inicia sesión para consultar tu perfil de empleado.");
             response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
             return;
         }
 
         EmployeeSessionResolver.refresh(request);
-        Object employeeAttr = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
+        Object employeeAttr = SessionUtils.getAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
         if (!(employeeAttr instanceof EmployeeDTO)) {
-            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
+            SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
                     "Tu cuenta no está vinculada a un perfil de empleado.");
             response.sendRedirect(request.getContextPath() + SecurityConstants.HOME_ENDPOINT);
             return;
@@ -114,22 +114,22 @@ public class EmployeeProfileServlet extends HttpServlet {
     }
 
     private void exposeFlashMessages(HttpServletRequest request) {
-        Object success = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
+        Object success = SessionUtils.getAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
         if (success != null) {
             request.setAttribute(AppConstants.ATTR_FLASH_SUCCESS, success);
-            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
+            SessionUtils.removeAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
         }
 
-        Object error = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_ERROR);
+        Object error = SessionUtils.getAttribute(request, AppConstants.ATTR_FLASH_ERROR);
         if (error != null) {
             request.setAttribute(AppConstants.ATTR_FLASH_ERROR, error);
-            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_ERROR);
+            SessionUtils.removeAttribute(request, AppConstants.ATTR_FLASH_ERROR);
         }
 
-        Object info = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_INFO);
+        Object info = SessionUtils.getAttribute(request, AppConstants.ATTR_FLASH_INFO);
         if (info != null) {
             request.setAttribute(AppConstants.ATTR_FLASH_INFO, info);
-            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_INFO);
+            SessionUtils.removeAttribute(request, AppConstants.ATTR_FLASH_INFO);
         }
     }
 

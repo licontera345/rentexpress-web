@@ -6,7 +6,7 @@ import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.constants.UserConstants;
 import com.pinguela.rentexpressweb.security.CredentialStore;
 import com.pinguela.rentexpressweb.security.PasswordResetManager;
-import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.SessionUtils;
 import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.Views;
 import jakarta.servlet.ServletException;
@@ -107,7 +107,7 @@ public class PasswordRecoveryServlet extends HttpServlet {
         }
 
         String code = PasswordResetManager.initiate(request, sanitizedEmail);
-        SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_INFO,
+        SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_INFO,
                 buildInfoMessage(request, sanitizedEmail, code, false));
         LOGGER.info("Generado código de restablecimiento {} para {}", code, sanitizedEmail);
 
@@ -117,7 +117,7 @@ public class PasswordRecoveryServlet extends HttpServlet {
     private void handleVerifyGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         if (!PasswordResetManager.hasPending(request)) {
-            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
+            SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
                     MessageResolver.getMessage(request, "error.verifyReset.none"));
             response.sendRedirect(request.getContextPath() + FORGOT_PATH);
             return;
@@ -127,7 +127,7 @@ public class PasswordRecoveryServlet extends HttpServlet {
             String code = PasswordResetManager.regenerate(request);
             String email = PasswordResetManager.getPendingEmail(request);
             if (code != null && email != null) {
-                SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_INFO,
+                SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_INFO,
                         buildInfoMessage(request, email, code, true));
                 LOGGER.info("Reenviado código de restablecimiento {} para {}", code, email);
             }
@@ -145,7 +145,7 @@ public class PasswordRecoveryServlet extends HttpServlet {
     private void handleVerifyPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         if (!PasswordResetManager.hasPending(request)) {
-            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
+            SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
                     MessageResolver.getMessage(request, "error.reset.sessionExpired"));
             response.sendRedirect(request.getContextPath() + FORGOT_PATH);
             return;
@@ -185,7 +185,7 @@ public class PasswordRecoveryServlet extends HttpServlet {
         }
 
         PasswordResetManager.markVerified(request);
-        SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
+        SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
                 MessageResolver.getMessage(request, "flash.verifyReset.success"));
         LOGGER.info("Verificación de restablecimiento completada para {}",
                 PasswordResetManager.getPendingEmail(request));
@@ -195,7 +195,7 @@ public class PasswordRecoveryServlet extends HttpServlet {
     private void handleResetGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         if (!PasswordResetManager.canReset(request)) {
-            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
+            SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
                     MessageResolver.getMessage(request, "error.reset.invalidSession"));
             response.sendRedirect(request.getContextPath() + FORGOT_PATH);
             return;
@@ -211,7 +211,7 @@ public class PasswordRecoveryServlet extends HttpServlet {
     private void handleResetPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         if (!PasswordResetManager.canReset(request)) {
-            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
+            SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
                     MessageResolver.getMessage(request, "error.reset.sessionExpired"));
             response.sendRedirect(request.getContextPath() + FORGOT_PATH);
             return;
@@ -251,29 +251,29 @@ public class PasswordRecoveryServlet extends HttpServlet {
         String email = PasswordResetManager.getPendingEmail(request);
         CredentialStore.updatePassword(getServletContext(), email, sanitizedNewPassword);
         PasswordResetManager.clear(request);
-        SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
+        SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
                 MessageResolver.getMessage(request, "flash.reset.success"));
         LOGGER.info("Contraseña restablecida para {}", email);
         response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
     }
 
     private void copyFlashMessages(HttpServletRequest request) {
-        Object success = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
+        Object success = SessionUtils.getAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
         if (success != null) {
             request.setAttribute(AppConstants.ATTR_FLASH_SUCCESS, success);
-            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
+            SessionUtils.removeAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
         }
 
-        Object error = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_ERROR);
+        Object error = SessionUtils.getAttribute(request, AppConstants.ATTR_FLASH_ERROR);
         if (error != null) {
             request.setAttribute(AppConstants.ATTR_FLASH_ERROR, error);
-            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_ERROR);
+            SessionUtils.removeAttribute(request, AppConstants.ATTR_FLASH_ERROR);
         }
 
-        Object info = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_INFO);
+        Object info = SessionUtils.getAttribute(request, AppConstants.ATTR_FLASH_INFO);
         if (info != null) {
             request.setAttribute(AppConstants.ATTR_FLASH_INFO, info);
-            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_INFO);
+            SessionUtils.removeAttribute(request, AppConstants.ATTR_FLASH_INFO);
         }
     }
 

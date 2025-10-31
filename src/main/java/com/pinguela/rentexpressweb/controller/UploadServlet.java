@@ -3,7 +3,7 @@ package com.pinguela.rentexpressweb.controller;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.MediaConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
-import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.SessionUtils;
 import com.pinguela.rentexpressweb.util.ImageStorage;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -97,8 +97,8 @@ public class UploadServlet extends HttpServlet {
 
         try {
             String stored = ImageStorage.store(getServletContext(), filePart, entity, entityId);
-            SessionManager.setAttribute(request, MediaConstants.ATTR_IMAGE_PATH, stored);
-            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
+            SessionUtils.setAttribute(request, MediaConstants.ATTR_IMAGE_PATH, stored);
+            SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
                     "Imagen almacenada correctamente.");
         } catch (IOException ex) {
             LOGGER.error("Error almacenando imagen para {}:{}", entity, entityId, ex);
@@ -164,8 +164,8 @@ public class UploadServlet extends HttpServlet {
             }
             builder.append(entry.getValue());
         }
-        SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR, builder.toString());
-        SessionManager.setAttribute(request, MediaConstants.ATTR_IMAGE_ERRORS, errors);
+        SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_ERROR, builder.toString());
+        SessionUtils.setAttribute(request, MediaConstants.ATTR_IMAGE_ERRORS, errors);
     }
 
     private String resolveRedirect(HttpServletRequest request) {

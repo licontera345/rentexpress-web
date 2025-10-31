@@ -7,7 +7,7 @@ import java.util.List;
 
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
-import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.SessionUtils;
 import com.pinguela.rentexpressweb.util.LegacyDateUtils;
 
 import jakarta.servlet.RequestDispatcher;
@@ -67,12 +67,12 @@ public abstract class BaseServlet extends HttpServlet {
 
     private boolean requireAttribute(HttpServletRequest request, HttpServletResponse response, String attributeName,
             String errorMessage, String redirectPath) throws IOException {
-        Object attribute = SessionManager.getAttribute(request, attributeName);
+        Object attribute = SessionUtils.getAttribute(request, attributeName);
         if (attribute != null) {
             return true;
         }
         if (errorMessage != null && !errorMessage.isEmpty()) {
-            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR, errorMessage);
+            SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_ERROR, errorMessage);
         }
         redirect(request, response, redirectPath);
         return false;
@@ -85,10 +85,10 @@ public abstract class BaseServlet extends HttpServlet {
     }
 
     private void transferFlashAttribute(HttpServletRequest request, String attributeName) {
-        Object value = SessionManager.getAttribute(request, attributeName);
+        Object value = SessionUtils.getAttribute(request, attributeName);
         if (value != null) {
             request.setAttribute(attributeName, value);
-            SessionManager.removeAttribute(request, attributeName);
+            SessionUtils.removeAttribute(request, attributeName);
         }
     }
 

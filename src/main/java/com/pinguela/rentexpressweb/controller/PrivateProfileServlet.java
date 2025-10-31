@@ -14,7 +14,7 @@ import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.MediaConstants;
 import com.pinguela.rentexpressweb.constants.UserConstants;
 import com.pinguela.rentexpressweb.security.CredentialStore;
-import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.SessionUtils;
 import com.pinguela.rentexpressweb.util.ImageStorage;
 import com.pinguela.rentexpressweb.util.UserActivityTracker;
 import com.pinguela.rentexpressweb.util.Views;
@@ -56,7 +56,7 @@ public class PrivateProfileServlet extends BaseServlet {
 		disableCaching(response);
 		exposeFlashMessages(request);
 
-		Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
+		Object currentUser = SessionUtils.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
 		Map<String, String> profile = getOrCreateProfile(request, currentUser.toString());
 		Map<String, String> errors = getErrorsFromRequest(request);
 
@@ -77,7 +77,7 @@ public class PrivateProfileServlet extends BaseServlet {
 			return;
 		}
 
-		Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
+		Object currentUser = SessionUtils.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
 		Map<String, String> profile = getOrCreateProfile(request, currentUser.toString());
 		Map<String, String> formValues = new HashMap<String, String>();
 		formValues.put(KEY_ID, profile.get(KEY_ID));
@@ -162,8 +162,8 @@ public class PrivateProfileServlet extends BaseServlet {
 			}
 		}
 
-		SessionManager.setAttribute(request, UserConstants.ATTR_PROFILE_DATA, profile);
-		SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS, "Perfil actualizado correctamente.");
+		SessionUtils.setAttribute(request, UserConstants.ATTR_PROFILE_DATA, profile);
+		SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS, "Perfil actualizado correctamente.");
 		UserActivityTracker.record(request, "home.dashboard.activity.profileUpdated", "bi bi-person-check-fill");
 
 		redirect(request, response, "/app/users/private");
@@ -171,7 +171,7 @@ public class PrivateProfileServlet extends BaseServlet {
 
 	private Map<String, String> getOrCreateProfile(HttpServletRequest request, String email) {
 		@SuppressWarnings("unchecked")
-		Map<String, String> profile = (Map<String, String>) SessionManager.getAttribute(request,
+		Map<String, String> profile = (Map<String, String>) SessionUtils.getAttribute(request,
 				UserConstants.ATTR_PROFILE_DATA);
 		if (profile == null) {
 			profile = new HashMap<String, String>();
@@ -180,7 +180,7 @@ public class PrivateProfileServlet extends BaseServlet {
 			profile.put(KEY_PHONE, "+34 600 000 000");
 			profile.put(KEY_EMAIL, email);
 			profile.put(KEY_ROLE, "CLIENT");
-			SessionManager.setAttribute(request, UserConstants.ATTR_PROFILE_DATA, profile);
+			SessionUtils.setAttribute(request, UserConstants.ATTR_PROFILE_DATA, profile);
 		}
 		return profile;
 	}

@@ -8,7 +8,7 @@ import org.apache.logging.log4j.Logger;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.security.RememberMeCookies;
-import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.SessionUtils;
 import com.pinguela.rentexpressweb.util.MessageResolver;
 
 import jakarta.servlet.Filter;
@@ -80,7 +80,7 @@ public class AuthFilter implements Filter {
 				return;
 			}
 			if (!isEmployee(httpRequest)) {
-				Object user = SessionManager.getAttribute(httpRequest, AppConstants.ATTR_CURRENT_USER);
+				Object user = SessionUtils.getAttribute(httpRequest, AppConstants.ATTR_CURRENT_USER);
 				LOGGER.warn("Acceso denegado a {} para {}", path, user);
 				denyAccess(httpRequest, httpResponse);
 				return;
@@ -157,24 +157,24 @@ public class AuthFilter implements Filter {
 	}
 
 	private boolean isAuthenticated(HttpServletRequest request) {
-		Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
+		Object currentUser = SessionUtils.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
 		return currentUser != null;
 	}
 
 	private boolean isEmployee(HttpServletRequest request) {
-		Object currentEmployee = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
+		Object currentEmployee = SessionUtils.getAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
 		return currentEmployee != null;
 	}
 
 	private void redirectToLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String message = MessageResolver.getMessage(request, MESSAGE_KEY_LOGIN_REQUIRED);
-		SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR, message);
+		SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_ERROR, message);
 		response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
 	}
 
 	private void denyAccess(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String message = MessageResolver.getMessage(request, MESSAGE_KEY_FORBIDDEN);
-		SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR, message);
+		SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_ERROR, message);
 		response.sendRedirect(request.getContextPath() + SecurityConstants.HOME_ENDPOINT);
 	}
 }

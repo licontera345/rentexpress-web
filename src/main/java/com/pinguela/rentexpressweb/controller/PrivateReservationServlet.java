@@ -25,7 +25,7 @@ import com.pinguela.rentexpres.service.impl.VehicleServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.ReservationConstants;
 import com.pinguela.rentexpressweb.constants.VehicleConstants;
-import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.SessionUtils;
 import com.pinguela.rentexpressweb.util.LegacyDateUtils;
 import com.pinguela.rentexpressweb.util.ValidatorUtils;
 
@@ -62,15 +62,15 @@ public class PrivateReservationServlet extends BaseServlet {
 
 		disableCaching(response);
 
-		Object summary = SessionManager.getAttribute(request, ReservationConstants.ATTR_RESERVATION_SUMMARY);
-		Object reference = SessionManager.getAttribute(request, ReservationConstants.ATTR_RESERVATION_REFERENCE);
+		Object summary = SessionUtils.getAttribute(request, ReservationConstants.ATTR_RESERVATION_SUMMARY);
+		Object reference = SessionUtils.getAttribute(request, ReservationConstants.ATTR_RESERVATION_REFERENCE);
 		String refParam = request.getParameter("ref");
 
 		if (summary instanceof Map<?, ?> && reference != null && reference.equals(refParam)) {
 			@SuppressWarnings("unchecked")
 			Map<String, Object> reservationSummary = (Map<String, Object>) summary;
-			SessionManager.removeAttribute(request, ReservationConstants.ATTR_RESERVATION_SUMMARY);
-			SessionManager.removeAttribute(request, ReservationConstants.ATTR_RESERVATION_REFERENCE);
+			SessionUtils.removeAttribute(request, ReservationConstants.ATTR_RESERVATION_SUMMARY);
+			SessionUtils.removeAttribute(request, ReservationConstants.ATTR_RESERVATION_REFERENCE);
 
 			request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Reserva simulada");
 			request.setAttribute(ReservationConstants.ATTR_RESERVATION_SUMMARY, reservationSummary);
@@ -100,7 +100,7 @@ public class PrivateReservationServlet extends BaseServlet {
 		VehicleDTO vehicle = loadVehicle(vehicleId);
 
 		if (vehicle == null) {
-			SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
+			SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
 					"El vehículo indicado no está disponible. Selecciona un coche del catálogo.");
 			redirect(request, response, "/public/vehicles?notfound=1");
 			return;
@@ -162,7 +162,7 @@ public class PrivateReservationServlet extends BaseServlet {
 		BigDecimal vehicleSubtotal = dailyPrice.multiply(BigDecimal.valueOf(rentalDays));
 		BigDecimal total = vehicleSubtotal;
 
-		Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
+		Object currentUser = SessionUtils.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
 		String reference = generateReference();
 		Map<String, Object> summary = new HashMap<>();
 		summary.put("vehicle", vehicle);
@@ -179,8 +179,8 @@ public class PrivateReservationServlet extends BaseServlet {
 		summary.put("contactEmail", currentUser != null ? currentUser.toString() : null);
 		summary.put("reference", reference);
 
-		SessionManager.setAttribute(request, ReservationConstants.ATTR_RESERVATION_SUMMARY, summary);
-		SessionManager.setAttribute(request, ReservationConstants.ATTR_RESERVATION_REFERENCE, reference);
+		SessionUtils.setAttribute(request, ReservationConstants.ATTR_RESERVATION_SUMMARY, summary);
+		SessionUtils.setAttribute(request, ReservationConstants.ATTR_RESERVATION_REFERENCE, reference);
 
 		redirect(request, response, "/app/reservations/private?ref=" + reference);
 	}

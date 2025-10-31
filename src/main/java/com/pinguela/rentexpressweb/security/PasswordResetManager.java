@@ -3,6 +3,7 @@ package com.pinguela.rentexpressweb.security;
 import java.security.SecureRandom;
 
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
+import com.pinguela.rentexpressweb.util.SessionUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -24,16 +25,16 @@ public final class PasswordResetManager {
         String code = generateCode();
         long expiration = System.currentTimeMillis()
                 + (SecurityConstants.TWO_FA_CODE_VALIDITY_SECONDS * 1000L);
-        SessionManager.setAttribute(request, ATTR_RESET_EMAIL, email);
-        SessionManager.setAttribute(request, ATTR_RESET_CODE, code);
-        SessionManager.setAttribute(request, ATTR_RESET_EXPIRATION, expiration);
-        SessionManager.setAttribute(request, ATTR_RESET_VERIFIED, Boolean.FALSE);
+        SessionUtils.setAttribute(request, ATTR_RESET_EMAIL, email);
+        SessionUtils.setAttribute(request, ATTR_RESET_CODE, code);
+        SessionUtils.setAttribute(request, ATTR_RESET_EXPIRATION, expiration);
+        SessionUtils.setAttribute(request, ATTR_RESET_VERIFIED, Boolean.FALSE);
         return code;
     }
 
     public static boolean hasPending(HttpServletRequest request) {
-        return SessionManager.getAttribute(request, ATTR_RESET_EMAIL) != null
-                && SessionManager.getAttribute(request, ATTR_RESET_CODE) != null;
+        return SessionUtils.getAttribute(request, ATTR_RESET_EMAIL) != null
+                && SessionUtils.getAttribute(request, ATTR_RESET_CODE) != null;
     }
 
     public static String regenerate(HttpServletRequest request) {
@@ -44,7 +45,7 @@ public final class PasswordResetManager {
     }
 
     public static String getPendingEmail(HttpServletRequest request) {
-        Object value = SessionManager.getAttribute(request, ATTR_RESET_EMAIL);
+        Object value = SessionUtils.getAttribute(request, ATTR_RESET_EMAIL);
         return value != null ? value.toString() : null;
     }
 
@@ -69,28 +70,28 @@ public final class PasswordResetManager {
     }
 
     public static boolean matchesCode(HttpServletRequest request, String providedCode) {
-        Object expected = SessionManager.getAttribute(request, ATTR_RESET_CODE);
+        Object expected = SessionUtils.getAttribute(request, ATTR_RESET_CODE);
         return expected != null && expected.toString().equals(providedCode);
     }
 
     public static void markVerified(HttpServletRequest request) {
-        SessionManager.setAttribute(request, ATTR_RESET_VERIFIED, Boolean.TRUE);
+        SessionUtils.setAttribute(request, ATTR_RESET_VERIFIED, Boolean.TRUE);
     }
 
     public static boolean canReset(HttpServletRequest request) {
-        Object verified = SessionManager.getAttribute(request, ATTR_RESET_VERIFIED);
+        Object verified = SessionUtils.getAttribute(request, ATTR_RESET_VERIFIED);
         return Boolean.TRUE.equals(verified) && getPendingEmail(request) != null;
     }
 
     public static void clear(HttpServletRequest request) {
-        SessionManager.removeAttribute(request, ATTR_RESET_EMAIL);
-        SessionManager.removeAttribute(request, ATTR_RESET_CODE);
-        SessionManager.removeAttribute(request, ATTR_RESET_EXPIRATION);
-        SessionManager.removeAttribute(request, ATTR_RESET_VERIFIED);
+        SessionUtils.removeAttribute(request, ATTR_RESET_EMAIL);
+        SessionUtils.removeAttribute(request, ATTR_RESET_CODE);
+        SessionUtils.removeAttribute(request, ATTR_RESET_EXPIRATION);
+        SessionUtils.removeAttribute(request, ATTR_RESET_VERIFIED);
     }
 
     private static Long resolveExpirationMillis(HttpServletRequest request) {
-        Object value = SessionManager.getAttribute(request, ATTR_RESET_EXPIRATION);
+        Object value = SessionUtils.getAttribute(request, ATTR_RESET_EXPIRATION);
         if (value instanceof Long) {
             return (Long) value;
         }

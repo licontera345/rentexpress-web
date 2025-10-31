@@ -13,7 +13,7 @@ import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.security.EmployeeSessionResolver;
 import com.pinguela.rentexpressweb.security.RememberMeCookies;
-import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.SessionUtils;
 import com.pinguela.rentexpressweb.security.TwoFactorManager;
 import com.pinguela.rentexpressweb.util.FlashMessageUtils;
 import com.pinguela.rentexpressweb.util.MessageResolver;
@@ -55,7 +55,7 @@ public class Verify2FAServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		if (!TwoFactorManager.hasPendingVerification(request)) {
-			SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
+			SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
 					MessageResolver.getMessage(request, "error.verify2fa.sessionExpired"));
 			response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
 			return;
@@ -67,11 +67,11 @@ public class Verify2FAServlet extends HttpServlet {
 			if (code != null && email != null) {
 				boolean emailSent = sendVerificationCodeByEmail(request, email, code);
 				if (emailSent) {
-					SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_INFO,
+					SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_INFO,
 							buildVerificationInfoMessage(request, email, true));
 					LOGGER.info("Reenviado código 2FA para {}", email);
 				} else {
-					SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
+					SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
 							MessageResolver.getMessage(request, MESSAGE_KEY_EMAIL_FAILURE));
 				}
 			}
@@ -92,7 +92,7 @@ public class Verify2FAServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		if (!TwoFactorManager.hasPendingVerification(request)) {
-			SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
+			SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
 					MessageResolver.getMessage(request, "error.verify2fa.sessionExpired"));
 			response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
 			return;
@@ -130,7 +130,7 @@ public class Verify2FAServlet extends HttpServlet {
 		}
 
 		String email = TwoFactorManager.getPendingEmail(request);
-		SessionManager.setAttribute(request, AppConstants.ATTR_CURRENT_USER, email);
+		SessionUtils.setAttribute(request, AppConstants.ATTR_CURRENT_USER, email);
 		EmployeeSessionResolver.resolveFromEmail(request, email);
 		if (TwoFactorManager.shouldRemember(request)) {
 			RememberMeCookies.store(request, response, email);
@@ -142,7 +142,7 @@ public class Verify2FAServlet extends HttpServlet {
 		LOGGER.info("Verificación 2FA completada para {}", email);
 		UserActivityTracker.record(request, "home.dashboard.activity.login", "bi bi-box-arrow-in-right",
 				request.getRemoteAddr());
-		SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
+		SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
 				MessageResolver.getMessage(request, "flash.login.success"));
 		response.sendRedirect(request.getContextPath() + SecurityConstants.HOME_ENDPOINT);
 	}

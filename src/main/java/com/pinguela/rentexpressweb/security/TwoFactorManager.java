@@ -3,6 +3,7 @@ package com.pinguela.rentexpressweb.security;
 import java.security.SecureRandom;
 
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
+import com.pinguela.rentexpressweb.util.SessionUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -20,16 +21,16 @@ public final class TwoFactorManager {
         String code = generateCode();
         long expiration = System.currentTimeMillis()
                 + (SecurityConstants.TWO_FA_CODE_VALIDITY_SECONDS * 1000L);
-        SessionManager.setAttribute(request, SecurityConstants.ATTR_PENDING_2FA_EMAIL, email);
-        SessionManager.setAttribute(request, SecurityConstants.ATTR_PENDING_2FA_CODE, code);
-        SessionManager.setAttribute(request, SecurityConstants.ATTR_PENDING_2FA_EXPIRATION, expiration);
-        SessionManager.setAttribute(request, SecurityConstants.ATTR_PENDING_2FA_REMEMBER, Boolean.valueOf(remember));
+        SessionUtils.setAttribute(request, SecurityConstants.ATTR_PENDING_2FA_EMAIL, email);
+        SessionUtils.setAttribute(request, SecurityConstants.ATTR_PENDING_2FA_CODE, code);
+        SessionUtils.setAttribute(request, SecurityConstants.ATTR_PENDING_2FA_EXPIRATION, expiration);
+        SessionUtils.setAttribute(request, SecurityConstants.ATTR_PENDING_2FA_REMEMBER, Boolean.valueOf(remember));
         return code;
     }
 
     public static boolean hasPendingVerification(HttpServletRequest request) {
-        return SessionManager.getAttribute(request, SecurityConstants.ATTR_PENDING_2FA_EMAIL) != null
-                && SessionManager.getAttribute(request, SecurityConstants.ATTR_PENDING_2FA_CODE) != null;
+        return SessionUtils.getAttribute(request, SecurityConstants.ATTR_PENDING_2FA_EMAIL) != null
+                && SessionUtils.getAttribute(request, SecurityConstants.ATTR_PENDING_2FA_CODE) != null;
     }
 
     public static String regenerate(HttpServletRequest request) {
@@ -40,12 +41,12 @@ public final class TwoFactorManager {
     }
 
     public static String getPendingEmail(HttpServletRequest request) {
-        Object value = SessionManager.getAttribute(request, SecurityConstants.ATTR_PENDING_2FA_EMAIL);
+        Object value = SessionUtils.getAttribute(request, SecurityConstants.ATTR_PENDING_2FA_EMAIL);
         return value != null ? value.toString() : null;
     }
 
     public static boolean shouldRemember(HttpServletRequest request) {
-        Object value = SessionManager.getAttribute(request, SecurityConstants.ATTR_PENDING_2FA_REMEMBER);
+        Object value = SessionUtils.getAttribute(request, SecurityConstants.ATTR_PENDING_2FA_REMEMBER);
         if (value instanceof Boolean) {
             return ((Boolean) value).booleanValue();
         }
@@ -76,15 +77,15 @@ public final class TwoFactorManager {
     }
 
     public static boolean matchesCode(HttpServletRequest request, String providedCode) {
-        Object expected = SessionManager.getAttribute(request, SecurityConstants.ATTR_PENDING_2FA_CODE);
+        Object expected = SessionUtils.getAttribute(request, SecurityConstants.ATTR_PENDING_2FA_CODE);
         return expected != null && expected.toString().equals(providedCode);
     }
 
     public static void clear(HttpServletRequest request) {
-        SessionManager.removeAttribute(request, SecurityConstants.ATTR_PENDING_2FA_EMAIL);
-        SessionManager.removeAttribute(request, SecurityConstants.ATTR_PENDING_2FA_CODE);
-        SessionManager.removeAttribute(request, SecurityConstants.ATTR_PENDING_2FA_EXPIRATION);
-        SessionManager.removeAttribute(request, SecurityConstants.ATTR_PENDING_2FA_REMEMBER);
+        SessionUtils.removeAttribute(request, SecurityConstants.ATTR_PENDING_2FA_EMAIL);
+        SessionUtils.removeAttribute(request, SecurityConstants.ATTR_PENDING_2FA_CODE);
+        SessionUtils.removeAttribute(request, SecurityConstants.ATTR_PENDING_2FA_EXPIRATION);
+        SessionUtils.removeAttribute(request, SecurityConstants.ATTR_PENDING_2FA_REMEMBER);
     }
 
     private static String generateCode() {
@@ -94,7 +95,7 @@ public final class TwoFactorManager {
     }
 
     private static Long resolveExpirationMillis(HttpServletRequest request) {
-        Object value = SessionManager.getAttribute(request, SecurityConstants.ATTR_PENDING_2FA_EXPIRATION);
+        Object value = SessionUtils.getAttribute(request, SecurityConstants.ATTR_PENDING_2FA_EXPIRATION);
         if (value instanceof Long) {
             return (Long) value;
         }

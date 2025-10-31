@@ -4,6 +4,7 @@ import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.EmployeeDTO;
 import com.pinguela.rentexpres.service.EmployeeService;
 import com.pinguela.rentexpres.service.impl.EmployeeServiceImpl;
+import com.pinguela.rentexpressweb.util.SessionUtils;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -27,7 +28,7 @@ public final class EmployeeSessionResolver {
         if (request == null) {
             return;
         }
-        SessionManager.removeAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
+        SessionUtils.removeAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
         if (email == null || email.trim().isEmpty()) {
             return;
         }
@@ -43,7 +44,7 @@ public final class EmployeeSessionResolver {
                 }
                 String candidate = employee.getEmail().trim().toLowerCase(Locale.ROOT);
                 if (normalized.equals(candidate) && !Boolean.FALSE.equals(employee.getActiveStatus())) {
-                    SessionManager.setAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE, employee);
+                    SessionUtils.setAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE, employee);
                     return;
                 }
             }
@@ -56,9 +57,9 @@ public final class EmployeeSessionResolver {
         if (request == null) {
             return;
         }
-        Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
+        Object currentUser = SessionUtils.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
         if (currentUser == null) {
-            SessionManager.removeAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
+            SessionUtils.removeAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
             return;
         }
         resolveFromEmail(request, currentUser.toString());
