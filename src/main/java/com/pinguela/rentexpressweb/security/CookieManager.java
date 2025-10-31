@@ -4,37 +4,51 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class CookieManager {
+public final class CookieManager {
 
-    public String getCookieValue(HttpServletRequest request, String name) {
-        Cookie cookie = getCookie(request, name);
-        return cookie != null ? cookie.getValue() : null;
+    private static final int SECONDS_PER_DAY = 24 * 60 * 60;
+
+    private CookieManager() {
     }
 
-    public Cookie getCookie(HttpServletRequest request, String name) {
+    public static void addCookie(HttpServletResponse response, String name, String value, int days) {
+        if (response == null || name == null || value == null) {
+            return;
+        }
+        Cookie cookie = new Cookie(name, value);
+        cookie.setPath("/");
+        cookie.setMaxAge(days * SECONDS_PER_DAY);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        response.addCookie(cookie);
+    }
+
+    public static Cookie getCookie(HttpServletRequest request, String name) {
+        if (request == null || name == null) {
+            return null;
+        }
         Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals(name)) {
-                    return cookie;
-                }
+        if (cookies == null) {
+            return null;
+        }
+        for (int i = 0; i < cookies.length; i++) {
+            Cookie cookie = cookies[i];
+            if (cookie != null && name.equals(cookie.getName())) {
+                return cookie;
             }
         }
         return null;
     }
 
-    public void setCookie(HttpServletResponse response, String name, String value, int maxAge, String path) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setMaxAge(maxAge);
-        cookie.setPath(path);
-        response.addCookie(cookie);
-    }
-
-    public boolean removeCookie(HttpServletResponse response, String name, String path) {
+    public static void removeCookie(HttpServletResponse response, String name) {
+        if (response == null || name == null) {
+            return;
+        }
         Cookie cookie = new Cookie(name, "");
+        cookie.setPath("/");
         cookie.setMaxAge(0);
-        cookie.setPath(path);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
         response.addCookie(cookie);
-        return true;
     }
 }

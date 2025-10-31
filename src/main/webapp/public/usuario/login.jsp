@@ -22,7 +22,7 @@ if (cookies != null) {
 	<fmt:message key="login.title" />
 </h2>
 
-<form action="${pageContext.request.contextPath}/app/auth/login"
+<form action="${pageContext.request.contextPath}/login"
         method="post">
 	<input type="hidden" name="action" value="login" /> <label
 		for="username"><fmt:message key="login.username" /></label><br /> <input

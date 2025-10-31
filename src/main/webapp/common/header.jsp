@@ -5,8 +5,9 @@
 <fmt:setBundle basename="i18n.Messages" />
 <fmt:message key="nav.brand" var="brandName" />
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
+<c:set var="currentUserDto" value="${sessionScope.currentUser}" />
+<c:set var="currentUserEmail" value="${empty currentUserDto ? null : currentUserDto.email}" />
 <c:set var="currentEmployee" value="${sessionScope.currentEmployee}" />
-<c:set var="currentUserEmail" value="${sessionScope.currentUser}" />
 <c:set var="profileData" value="${sessionScope.userProfileData}" />
 <c:set var="homePath" value="/public/home" />
 <c:set var="rawDisplayName" value="${not empty profileData.fullName ? profileData.fullName : currentUserEmail}" />
@@ -96,7 +97,7 @@
                                     <i class="bi bi-person-circle me-2"></i>
                                     <fmt:message key="nav.profile" />
                                 </a>
-                                <form method="post" action="${ctx}/app/auth/logout" class="d-inline">
+                                <form method="post" action="${ctx}/logout" class="d-inline">
                                     <button type="submit" class="btn btn-brand">
                                         <i class="bi bi-box-arrow-right me-2"></i>
                                         <fmt:message key="nav.logout" />
@@ -107,7 +108,7 @@
                     </c:when>
                     <c:otherwise>
                         <div class="d-flex gap-2">
-                            <a class="btn btn-outline-brand" href="${ctx}/app/auth/login"><fmt:message key="nav.login" /></a>
+                            <a class="btn btn-outline-brand" href="${ctx}/login"><fmt:message key="nav.login" /></a>
                             <a class="btn btn-brand" href="${ctx}/app/users/register"><fmt:message key="nav.register" /></a>
                         </div>
                     </c:otherwise>

@@ -8,7 +8,7 @@ public final class SecurityConstants {
     private SecurityConstants() {
     }
 
-    public static final String LOGIN_ENDPOINT = "/app/auth/login";
+    public static final String LOGIN_ENDPOINT = "/login";
     public static final String HOME_ENDPOINT = "/app/home";
 
     public static final int VERIFICATION_CODE_LENGTH = 6;
