@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.pinguela.rentexpressweb.constants.UserConstants;
-import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.SessionUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -51,7 +51,7 @@ public final class UserActivityTracker {
         if (request == null) {
             return new ArrayList<ActivityEntry>();
         }
-        HttpSession session = SessionManager.getSession(request);
+        HttpSession session = SessionUtils.getSession(request);
         if (session == null) {
             return new ArrayList<ActivityEntry>();
         }

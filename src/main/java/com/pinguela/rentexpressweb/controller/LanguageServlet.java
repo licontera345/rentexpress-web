@@ -2,7 +2,7 @@ package com.pinguela.rentexpressweb.controller;
 
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
-import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.SessionUtils;
 import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.UserActivityTracker;
 import jakarta.servlet.ServletException;
@@ -37,8 +37,8 @@ public class LanguageServlet extends HttpServlet {
         if (requestedLanguage != null) {
             String normalized = requestedLanguage.toLowerCase(Locale.ROOT);
             if (SUPPORTED_LANGUAGES.contains(normalized)) {
-                SessionManager.setAttribute(request, AppConstants.ATTR_LOCALE, normalized);
-                SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
+                SessionUtils.setAttribute(request, AppConstants.ATTR_LOCALE, normalized);
+                SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
                         MessageResolver.getMessage(request, "flash.language.updated",
                                 normalized.toUpperCase(Locale.ROOT)));
                 Cookie localeCookie = new Cookie(AppConstants.ATTR_LOCALE, normalized);
@@ -47,12 +47,12 @@ public class LanguageServlet extends HttpServlet {
                 localeCookie.setHttpOnly(true);
                 localeCookie.setSecure(request.isSecure());
                 response.addCookie(localeCookie);
-                if (SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER) != null) {
+                if (SessionUtils.getAttribute(request, AppConstants.ATTR_CURRENT_USER) != null) {
                     UserActivityTracker.record(request, "home.dashboard.activity.languageChanged", "bi bi-translate",
                             normalized.toUpperCase(Locale.ROOT));
                 }
             } else {
-                SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
+                SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
                         MessageResolver.getMessage(request, "flash.language.unsupported"));
             }
         }

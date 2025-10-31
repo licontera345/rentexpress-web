@@ -8,7 +8,7 @@ import java.util.Map;
 
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.UserConstants;
-import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.SessionUtils;
 import com.pinguela.rentexpressweb.util.ActivityEntry;
 import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.UserActivityTracker;
@@ -52,7 +52,7 @@ public class PrivateDashboardServlet extends BaseServlet {
         disableCaching(response);
         exposeFlashMessages(request);
 
-        Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
+        Object currentUser = SessionUtils.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
         Map<String, String> profile = ensureProfile(request, currentUser.toString());
         String displayName = resolveDisplayName(profile, currentUser.toString());
         List<ActivityEntry> activities = UserActivityTracker.getRecentActivities(request);
@@ -75,11 +75,11 @@ public class PrivateDashboardServlet extends BaseServlet {
 
     private Map<String, String> ensureProfile(HttpServletRequest request, String email) {
         @SuppressWarnings("unchecked")
-        Map<String, String> profile = (Map<String, String>) SessionManager.getAttribute(request,
+        Map<String, String> profile = (Map<String, String>) SessionUtils.getAttribute(request,
                 UserConstants.ATTR_PROFILE_DATA);
         if (profile == null) {
             profile = new HashMap<String, String>();
-            SessionManager.setAttribute(request, UserConstants.ATTR_PROFILE_DATA, profile);
+            SessionUtils.setAttribute(request, UserConstants.ATTR_PROFILE_DATA, profile);
         }
 
         if (!profile.containsKey(KEY_ID) || isBlank(profile.get(KEY_ID))) {

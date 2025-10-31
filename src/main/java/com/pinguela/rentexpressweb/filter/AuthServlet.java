@@ -16,7 +16,7 @@ import com.pinguela.rentexpressweb.security.LoginAuthenticator;
 import com.pinguela.rentexpressweb.security.LoginRequest;
 import com.pinguela.rentexpressweb.security.LoginRequestValidator;
 import com.pinguela.rentexpressweb.security.RememberMeCookies;
-import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.SessionUtils;
 import com.pinguela.rentexpressweb.security.TwoFactorManager;
 import com.pinguela.rentexpressweb.util.FlashMessageUtils;
 import com.pinguela.rentexpressweb.util.MessageResolver;
@@ -104,13 +104,13 @@ public class AuthServlet extends HttpServlet {
 		LoginAuthenticator.updateCredential(getServletContext(), resolvedEmail, loginRequest.getEmail(),
 				loginRequest.getPassword());
 		RememberMeCookies.clear(request, response);
-		SessionManager.removeAttribute(request, AppConstants.ATTR_CURRENT_USER);
-		SessionManager.removeAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
+		SessionUtils.removeAttribute(request, AppConstants.ATTR_CURRENT_USER);
+		SessionUtils.removeAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
 
 		String normalizedEmail = LoginAuthenticator.normalize(resolvedEmail);
 		String verificationCode = TwoFactorManager.initiate(request, normalizedEmail, loginRequest.isRemember());
 		if (AuthMailHelper.sendVerification(mailService, request, resolvedEmail, verificationCode, LOGGER)) {
-			SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_INFO,
+			SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_INFO,
 					AuthMailHelper.buildVerificationInfo(request, resolvedEmail, false));
 			LOGGER.info("Generado código 2FA para {}", normalizedEmail);
 			response.sendRedirect(request.getContextPath() + "/app/auth/verify-2fa");
@@ -118,18 +118,18 @@ public class AuthServlet extends HttpServlet {
 		}
 
 		TwoFactorManager.clear(request);
-		SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
+		SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
 				MessageResolver.getMessage(request, MESSAGE_KEY_EMAIL_FAILURE));
 		response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
 	}
 
 	private void handleLogout(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
+		Object currentUser = SessionUtils.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
 		if (currentUser != null) {
 			LOGGER.info("Cierre de sesión para {}", currentUser);
 		}
 		RememberMeCookies.clear(request, response);
-		SessionManager.logout(request);
+		SessionUtils.logout(request);
 		HttpSession newSession = request.getSession(true);
 		newSession.setAttribute(AppConstants.ATTR_FLASH_SUCCESS,
 				MessageResolver.getMessage(request, MESSAGE_KEY_LOGOUT));
@@ -137,7 +137,7 @@ public class AuthServlet extends HttpServlet {
 	}
 
 	private void applyRememberedEmail(HttpServletRequest request) {
-		Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
+		Object currentUser = SessionUtils.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
 		if (currentUser != null) {
 			request.setAttribute(ATTR_ALREADY_AUTHENTICATED, Boolean.TRUE);
 			if (request.getAttribute(AppConstants.ATTR_REMEMBERED_EMAIL) == null) {

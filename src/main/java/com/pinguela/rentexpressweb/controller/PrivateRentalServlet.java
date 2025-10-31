@@ -25,7 +25,7 @@ import com.pinguela.rentexpres.service.impl.RentalServiceImpl;
 import com.pinguela.rentexpres.service.impl.RentalStatusServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.RentalConstants;
-import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.SessionUtils;
 import com.pinguela.rentexpressweb.util.LegacyDateUtils;
 
 import jakarta.servlet.ServletException;
@@ -133,15 +133,15 @@ public class PrivateRentalServlet extends BaseServlet {
 		try {
 			int converted = rentalService.autoConvertReservations();
 			if (converted > 0) {
-				SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
+				SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
 						"Se convirtieron " + converted + " reservas en alquileres.");
 			} else {
-				SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_INFO,
+				SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_INFO,
 						"No había reservas pendientes de activar.");
 			}
 		} catch (Exception ex) {
 			LOGGER.error("Error al lanzar la conversión automática de reservas", ex);
-			SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
+			SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
 					"No se pudo ejecutar la conversión automática. Consulta los logs.");
 		}
 	}

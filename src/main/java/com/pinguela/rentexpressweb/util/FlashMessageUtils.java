@@ -1,7 +1,7 @@
 package com.pinguela.rentexpressweb.util;
 
 import com.pinguela.rentexpressweb.constants.AppConstants;
-import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.SessionUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -24,10 +24,10 @@ public final class FlashMessageUtils {
     }
 
     private static void moveAttribute(HttpServletRequest request, String name) {
-        Object value = SessionManager.getAttribute(request, name);
+        Object value = SessionUtils.getAttribute(request, name);
         if (value != null) {
             request.setAttribute(name, value);
-            SessionManager.removeAttribute(request, name);
+            SessionUtils.removeAttribute(request, name);
         }
     }
 }

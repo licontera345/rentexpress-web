@@ -24,7 +24,7 @@ import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.MediaConstants;
 import com.pinguela.rentexpressweb.constants.VehicleConstants;
 import com.pinguela.rentexpressweb.security.RememberMeCookies;
-import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.SessionUtils;
 import com.pinguela.rentexpressweb.util.ImageStorage;
 import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.Views;
@@ -89,16 +89,16 @@ public class PublicHomeServlet extends HttpServlet {
 	}
 
 	private void exposeFlashMessage(HttpServletRequest request) {
-		Object success = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
+		Object success = SessionUtils.getAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
 		if (success != null) {
 			request.setAttribute(AppConstants.ATTR_FLASH_SUCCESS, success);
-			SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
+			SessionUtils.removeAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
 		}
 
-		Object error = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_ERROR);
+		Object error = SessionUtils.getAttribute(request, AppConstants.ATTR_FLASH_ERROR);
 		if (error != null) {
 			request.setAttribute(AppConstants.ATTR_FLASH_ERROR, error);
-			SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_ERROR);
+			SessionUtils.removeAttribute(request, AppConstants.ATTR_FLASH_ERROR);
 		}
 	}
 

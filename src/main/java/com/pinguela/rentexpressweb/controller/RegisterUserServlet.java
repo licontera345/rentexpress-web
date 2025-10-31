@@ -23,7 +23,7 @@ import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.constants.UserConstants;
 import com.pinguela.rentexpressweb.security.CredentialStore;
-import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.SessionUtils;
 import com.pinguela.rentexpressweb.util.Views;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -335,7 +335,7 @@ public class RegisterUserServlet extends HttpServlet {
                 CredentialStore.updatePassword(getServletContext(), sanitizedEmail, sanitizedPassword);
                 LOGGER.info("Registrado nuevo usuario {}", sanitizedEmail);
                 sendWelcomeEmail(sanitizedEmail, firstName);
-                SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
+                SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
                         "Registro completado. Ya puedes iniciar sesión con tu correo y contraseña.");
                 response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
                 return;

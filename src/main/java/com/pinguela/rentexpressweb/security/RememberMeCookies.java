@@ -4,7 +4,7 @@ import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.security.CredentialStore;
 import com.pinguela.rentexpressweb.security.EmployeeSessionResolver;
-import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.SessionUtils;
 import com.pinguela.rentexpressweb.util.CookieUtils;
 
 import jakarta.servlet.http.Cookie;
@@ -68,12 +68,12 @@ public final class RememberMeCookies {
         if (request == null) {
             return;
         }
-        Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
+        Object currentUser = SessionUtils.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
         if (currentUser instanceof String) {
             String normalized = normalize(currentUser.toString());
             if (normalized == null || !CredentialStore.isKnownEmail(request.getServletContext(), normalized)) {
-                SessionManager.removeAttribute(request, AppConstants.ATTR_CURRENT_USER);
-                SessionManager.removeAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
+                SessionUtils.removeAttribute(request, AppConstants.ATTR_CURRENT_USER);
+                SessionUtils.removeAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
                 currentUser = null;
             }
         }
@@ -83,7 +83,7 @@ public final class RememberMeCookies {
         }
         String remembered = resolve(request);
         if (remembered != null) {
-            SessionManager.setAttribute(request, AppConstants.ATTR_CURRENT_USER, remembered);
+            SessionUtils.setAttribute(request, AppConstants.ATTR_CURRENT_USER, remembered);
             request.setAttribute(AppConstants.ATTR_REMEMBERED_EMAIL, remembered);
             EmployeeSessionResolver.resolveFromEmail(request, remembered);
         }
