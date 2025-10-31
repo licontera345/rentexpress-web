@@ -1,4 +1,4 @@
-package com.pinguela.rentexpressweb.controller;
+package com.pinguela.rentexpressweb.web.private;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -7,7 +7,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import com.pinguela.rentexpressweb.constants.AppConstants;
-import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.constants.UserConstants;
 import com.pinguela.rentexpressweb.security.SessionManager;
 import com.pinguela.rentexpressweb.util.ActivityEntry;
@@ -25,7 +24,7 @@ import jakarta.servlet.http.HttpServletResponse;
  * Página de inicio privada con resumen del perfil y actividad reciente.
  */
 @WebServlet("/app/home")
-public class HomeServlet extends BaseServlet {
+public class PrivateDashboardServlet extends BaseServlet {
     private static final long serialVersionUID = 1L;
 
     private static final String KEY_ID = "id";
@@ -39,23 +38,22 @@ public class HomeServlet extends BaseServlet {
     private static final String DEFAULT_PHONE = "+34 600 000 000";
     private static final String DEFAULT_ROLE = "CLIENT";
 
-    public HomeServlet() {
+    public PrivateDashboardServlet() {
         super();
     }
 
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
-        if (currentUser == null) {
-            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
-                    MessageResolver.getMessage(request, "error.home.sessionRequired"));
-            redirect(request, response, SecurityConstants.LOGIN_ENDPOINT);
+        if (!requireUser(request, response,
+                MessageResolver.getMessage(request, "error.home.sessionRequired"))) {
             return;
         }
 
         disableCaching(response);
         exposeFlashMessages(request);
 
+        Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
         Map<String, String> profile = ensureProfile(request, currentUser.toString());
         String displayName = resolveDisplayName(profile, currentUser.toString());
         List<ActivityEntry> activities = UserActivityTracker.getRecentActivities(request);
@@ -70,6 +68,7 @@ public class HomeServlet extends BaseServlet {
         forward(request, response, Views.PRIVATE_USER_HOME);
     }
 
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         doGet(request, response);

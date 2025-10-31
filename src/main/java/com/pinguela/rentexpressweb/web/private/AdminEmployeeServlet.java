@@ -1,23 +1,5 @@
-package com.pinguela.rentexpressweb.controller;
+package com.pinguela.rentexpressweb.web.private;
 
-import com.pinguela.rentexpres.model.EmployeeDTO;
-import com.pinguela.rentexpres.model.HeadquartersDTO;
-import com.pinguela.rentexpres.model.RoleDTO;
-import com.pinguela.rentexpres.service.EmployeeService;
-import com.pinguela.rentexpres.service.RoleService;
-import com.pinguela.rentexpres.service.impl.EmployeeServiceImpl;
-import com.pinguela.rentexpres.service.impl.RoleServiceImpl;
-import com.pinguela.rentexpressweb.constants.AppConstants;
-import com.pinguela.rentexpressweb.constants.EmployeeConstants;
-import com.pinguela.rentexpressweb.constants.SecurityConstants;
-import com.pinguela.rentexpressweb.security.SessionManager;
-import com.pinguela.rentexpres.service.HeadquartersService;
-import com.pinguela.rentexpres.service.impl.HeadquartersServiceImpl;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,39 +11,51 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import com.pinguela.rentexpres.model.EmployeeDTO;
+import com.pinguela.rentexpres.model.HeadquartersDTO;
+import com.pinguela.rentexpres.model.RoleDTO;
+import com.pinguela.rentexpres.service.EmployeeService;
+import com.pinguela.rentexpres.service.HeadquartersService;
+import com.pinguela.rentexpres.service.RoleService;
+import com.pinguela.rentexpres.service.impl.EmployeeServiceImpl;
+import com.pinguela.rentexpres.service.impl.HeadquartersServiceImpl;
+import com.pinguela.rentexpres.service.impl.RoleServiceImpl;
+import com.pinguela.rentexpressweb.constants.AppConstants;
+import com.pinguela.rentexpressweb.constants.EmployeeConstants;
+import com.pinguela.rentexpressweb.web.common.BaseServlet;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Consola interna para revisar y filtrar el equipo de RentExpress.
  */
 @WebServlet("/app/employees/private")
-public class PrivateEmployeeServlet extends HttpServlet {
+public class AdminEmployeeServlet extends BaseServlet {
     private static final long serialVersionUID = 1L;
 
-    private static final Logger LOGGER = LogManager.getLogger(PrivateEmployeeServlet.class);
+    private static final Logger LOGGER = LogManager.getLogger(AdminEmployeeServlet.class);
 
     private final EmployeeService employeeService = new EmployeeServiceImpl();
     private final RoleService roleService = new RoleServiceImpl();
     private final HeadquartersService headquartersService = new HeadquartersServiceImpl();
 
-    public PrivateEmployeeServlet() {
+    public AdminEmployeeServlet() {
         super();
     }
 
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
-        Object currentEmployee = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
-        if (currentUser == null) {
-            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
-                    "Inicia sesión para acceder a la zona privada.");
-            response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
+        if (!requireUser(request, response, "Inicia sesión para acceder a la zona privada.")) {
             return;
         }
-        if (currentEmployee == null) {
-            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
-                    "No tienes permisos para consultar el panel de empleados.");
-            response.sendRedirect(request.getContextPath() + SecurityConstants.HOME_ENDPOINT);
+        if (!requireEmployee(request, response, "No tienes permisos para consultar el panel de empleados.")) {
             return;
         }
 
@@ -77,7 +71,6 @@ public class PrivateEmployeeServlet extends HttpServlet {
 
         List<EmployeeDTO> employees = loadEmployees();
         List<RoleDTO> roles = loadRoles();
-
         List<HeadquartersDTO> headquarters = loadHeadquarters();
 
         Map<Integer, String> roleNames = mapRoles(roles);
@@ -96,9 +89,10 @@ public class PrivateEmployeeServlet extends HttpServlet {
         request.setAttribute(EmployeeConstants.ATTR_HEADQUARTERS_NAMES, headquartersNames);
         request.setAttribute(EmployeeConstants.ATTR_SUMMARY, summary);
 
-        request.getRequestDispatcher("/private/employee/employee_admin.jsp").forward(request, response);
+        forward(request, response, "/private/employee/employee_admin.jsp");
     }
 
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);
     }
@@ -302,32 +296,5 @@ public class PrivateEmployeeServlet extends HttpServlet {
             errors.put(EmployeeConstants.PARAM_ACTIVE, "El estado indicado no es válido.");
         }
         return null;
-    }
-
-    private void exposeFlashMessages(HttpServletRequest request) {
-        Object success = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
-        if (success != null) {
-            request.setAttribute(AppConstants.ATTR_FLASH_SUCCESS, success);
-            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
-        }
-        Object error = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_ERROR);
-        if (error != null) {
-            request.setAttribute(AppConstants.ATTR_FLASH_ERROR, error);
-            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_ERROR);
-        }
-    }
-
-    private void disableCaching(HttpServletResponse response) {
-        response.setHeader("Cache-Control", "no-store");
-        response.setHeader("Pragma", "no-cache");
-        response.setDateHeader("Expires", 0);
-    }
-
-    private String trimToNull(String value) {
-        if (value == null) {
-            return null;
-        }
-        String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
     }
 }

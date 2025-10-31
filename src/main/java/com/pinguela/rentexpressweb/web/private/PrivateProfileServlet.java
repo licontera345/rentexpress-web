@@ -1,8 +1,14 @@
-package com.pinguela.rentexpressweb.controller;
+package com.pinguela.rentexpressweb.web.private;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.MediaConstants;
-import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.constants.UserConstants;
 import com.pinguela.rentexpressweb.security.CredentialStore;
 import com.pinguela.rentexpressweb.security.SessionManager;
@@ -10,18 +16,14 @@ import com.pinguela.rentexpressweb.util.ImageStorage;
 import com.pinguela.rentexpressweb.util.UserActivityTracker;
 import com.pinguela.rentexpressweb.util.Views;
 import com.pinguela.rentexpressweb.web.common.BaseServlet;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,10 +32,10 @@ import org.apache.logging.log4j.Logger;
  */
 @WebServlet("/app/users/private")
 @MultipartConfig
-public class PrivateUserServlet extends BaseServlet {
+public class PrivateProfileServlet extends BaseServlet {
     private static final long serialVersionUID = 1L;
 
-    private static final Logger LOGGER = LogManager.getLogger(PrivateUserServlet.class);
+    private static final Logger LOGGER = LogManager.getLogger(PrivateProfileServlet.class);
     private static final String KEY_ID = "id";
     private static final String KEY_FULL_NAME = "fullName";
     private static final String KEY_PHONE = "phone";
@@ -41,22 +43,20 @@ public class PrivateUserServlet extends BaseServlet {
     private static final String KEY_ROLE = "role";
     private static final String KEY_AVATAR = "avatarPath";
 
-    public PrivateUserServlet() {
+    public PrivateProfileServlet() {
         super();
     }
 
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
-        if (currentUser == null) {
-            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
-                    "Inicia sesión para acceder a tu perfil.");
-            redirect(request, response, SecurityConstants.LOGIN_ENDPOINT);
+        if (!requireUser(request, response, "Inicia sesión para acceder a tu perfil.")) {
             return;
         }
 
         disableCaching(response);
         exposeFlashMessages(request);
 
+        Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
         Map<String, String> profile = getOrCreateProfile(request, currentUser.toString());
         Map<String, String> errors = getErrorsFromRequest(request);
 
@@ -70,15 +70,13 @@ public class PrivateUserServlet extends BaseServlet {
         forward(request, response, Views.PRIVATE_USER_PROFILE);
     }
 
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
-        if (currentUser == null) {
-            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
-                    "Inicia sesión para actualizar tu perfil.");
-            redirect(request, response, SecurityConstants.LOGIN_ENDPOINT);
+        if (!requireUser(request, response, "Inicia sesión para actualizar tu perfil.")) {
             return;
         }
 
+        Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
         Map<String, String> profile = getOrCreateProfile(request, currentUser.toString());
         Map<String, String> formValues = new HashMap<String, String>();
         formValues.put(KEY_ID, profile.get(KEY_ID));
@@ -203,14 +201,16 @@ public class PrivateUserServlet extends BaseServlet {
         }
         String trimmed = email.trim();
         int atIndex = trimmed.indexOf('@');
-        int dotIndex = trimmed.lastIndexOf('.');
-        return atIndex > 0 && dotIndex > atIndex + 1 && dotIndex < trimmed.length() - 1;
+        if (atIndex <= 0 || atIndex == trimmed.length() - 1) {
+            return false;
+        }
+        return trimmed.indexOf(' ', atIndex) < 0;
     }
 
     private String resolveProfileIdentifier(Map<String, String> profile) {
         String identifier = profile.get(KEY_ID);
         if (identifier == null || identifier.trim().isEmpty()) {
-            identifier = generateIdentifier(profile.get(KEY_EMAIL));
+            identifier = UUID.randomUUID().toString();
             profile.put(KEY_ID, identifier);
         }
         return identifier;
@@ -220,16 +220,16 @@ public class PrivateUserServlet extends BaseServlet {
         if (seed == null) {
             return UUID.randomUUID().toString();
         }
-        String lower = seed.toLowerCase(Locale.ROOT);
+        String normalized = seed.toLowerCase(Locale.ROOT);
         StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < lower.length(); i++) {
-            char ch = lower.charAt(i);
+        for (int i = 0; i < normalized.length(); i++) {
+            char ch = normalized.charAt(i);
             if ((ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9')) {
                 builder.append(ch);
             }
         }
         if (builder.length() == 0) {
-            return UUID.randomUUID().toString();
+            builder.append(UUID.randomUUID().toString().replace("-", ""));
         }
         return builder.toString();
     }
