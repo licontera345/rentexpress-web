@@ -25,20 +25,8 @@
                         <td><a
                                 href="${ctx}/public/users/detail?id=${u.id}">
                                         <fmt:message key="action.view" />
-                        </a> | <a
-                                href="${ctx}/public/users?action=edit&amp;userId=${u.id}">
-                                        <fmt:message key="action.edit" />
-                        </a> | <a
-                                href="${ctx}/public/users?action=delete&amp;userId=${u.id}"
-                                onclick="return confirm('¿Seguro que quieres eliminar?')"> <fmt:message
-                                                key="action.delete" />
-                        </a></td>
-		</tr>
-	</c:forEach>
+                                </a>
+                        </td>
+                </tr>
+        </c:forEach>
 </table>
-
-<br />
-<a
-        href="${ctx}/public/users?action=create">
-        <fmt:message key="action.new" />
-</a>
