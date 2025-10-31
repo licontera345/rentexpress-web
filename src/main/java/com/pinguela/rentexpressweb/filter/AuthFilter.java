@@ -2,6 +2,8 @@ package com.pinguela.rentexpressweb.filter;
 
 import java.io.IOException;
 
+import com.pinguela.rentexpressweb.constants.AppConstants;
+import com.pinguela.rentexpressweb.util.Views;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -14,8 +16,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 public class AuthFilter implements Filter {
-
-    private static final String PUBLIC_REGISTER_USER_ENDPOINT = "/app/users/register";
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -34,14 +34,13 @@ public class AuthFilter implements Filter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
         String contextPath = httpRequest.getContextPath();
-        String uri = httpRequest.getRequestURI();
-        String path = uri.substring(contextPath.length());
+        String path = httpRequest.getRequestURI().substring(contextPath.length());
 
         if (requiresAuthentication(path)) {
             HttpSession session = httpRequest.getSession(false);
-            Object currentUser = session != null ? session.getAttribute("currentUser") : null;
+            Object currentUser = session != null ? session.getAttribute(AppConstants.ATTR_CURRENT_USER) : null;
             if (currentUser == null) {
-                httpResponse.sendRedirect(contextPath + "/login?error=auth");
+                httpResponse.sendRedirect(contextPath + Views.PUBLIC_LOGIN);
                 return;
             }
         }
@@ -53,20 +52,7 @@ public class AuthFilter implements Filter {
         if (path == null) {
             return false;
         }
-        if (isPublicPath(path)) {
-            return false;
-        }
         return path.startsWith("/private/") || path.startsWith("/app/");
-    }
-
-    private boolean isPublicPath(String path) {
-        if (path.isEmpty()) {
-            return true;
-        }
-        if (PUBLIC_REGISTER_USER_ENDPOINT.equals(path) || path.startsWith(PUBLIC_REGISTER_USER_ENDPOINT)) {
-            return true;
-        }
-        return false;
     }
 
     @Override

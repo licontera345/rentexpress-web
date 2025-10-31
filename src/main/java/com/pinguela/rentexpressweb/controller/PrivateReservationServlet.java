@@ -1,276 +1,79 @@
 package com.pinguela.rentexpressweb.controller;
 
-import com.pinguela.rentexpres.model.HeadquartersDTO;
-import com.pinguela.rentexpres.model.VehicleCategoryDTO;
-import com.pinguela.rentexpres.model.VehicleDTO;
-import com.pinguela.rentexpres.service.HeadquartersService;
-import com.pinguela.rentexpres.service.VehicleCategoryService;
-import com.pinguela.rentexpres.service.VehicleService;
-import com.pinguela.rentexpres.service.impl.HeadquartersServiceImpl;
-import com.pinguela.rentexpres.service.impl.VehicleCategoryServiceImpl;
-import com.pinguela.rentexpres.service.impl.VehicleServiceImpl;
+import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.ReservationConstants;
-import com.pinguela.rentexpressweb.constants.VehicleConstants;
-import com.pinguela.rentexpressweb.util.LegacyDateUtils;
 import com.pinguela.rentexpressweb.util.SessionManager;
-import com.pinguela.rentexpressweb.util.ValidatorUtils;
+import com.pinguela.rentexpressweb.util.Views;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-@WebServlet("/app/reservations/private")
+@WebServlet("/app/reservations/create")
 public class PrivateReservationServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-
-    private static final String DISPLAY_DATE_PATTERN = "dd/MM/yyyy";
-
-    private static final Logger LOGGER = LogManager.getLogger(PrivateReservationServlet.class);
-
-    private final VehicleService vehicleService = new VehicleServiceImpl();
-    private final VehicleCategoryService categoryService = new VehicleCategoryServiceImpl();
-    private final HeadquartersService headquartersService = new HeadquartersServiceImpl();
+    private static final String MESSAGE_RESERVATION_CREATED = "Reserva creada correctamente.";
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        if (!requireUser(request, response, "Debes iniciar sesión para revisar la reserva simulada.")) {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        if (SessionManager.get(request, AppConstants.ATTR_CURRENT_USER) == null) {
+            response.sendRedirect(request.getContextPath() + Views.PUBLIC_LOGIN);
             return;
         }
-
-        disableCaching(response);
-
-        Object summary = SessionManager.get(request, ReservationConstants.ATTR_RESERVATION_SUMMARY);
-        Object reference = SessionManager.get(request, ReservationConstants.ATTR_RESERVATION_REFERENCE);
-        String refParam = request.getParameter("ref");
-
-        if (summary instanceof Map<?, ?> && reference != null && reference.equals(refParam)) {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> reservationSummary = (Map<String, Object>) summary;
-            SessionManager.remove(request, ReservationConstants.ATTR_RESERVATION_SUMMARY);
-            SessionManager.remove(request, ReservationConstants.ATTR_RESERVATION_REFERENCE);
-
-            request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Reserva simulada");
-            request.setAttribute(ReservationConstants.ATTR_RESERVATION_SUMMARY, reservationSummary);
-            request.setAttribute(ReservationConstants.ATTR_RESERVATION_REFERENCE, reference);
-            forward(request, response, "/private/reservation/reservation_success.jsp");
-            return;
-        }
-
-        redirect(request, response, "/public/vehicles");
+        request.getRequestDispatcher(Views.PUBLIC_VEHICLE_DETAIL).forward(request, response);
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        if (!requireUser(request, response, "Debes iniciar sesión para completar la simulación de la reserva.")) {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        if (SessionManager.get(request, AppConstants.ATTR_CURRENT_USER) == null) {
+            response.sendRedirect(request.getContextPath() + Views.PUBLIC_LOGIN);
             return;
         }
+        Map<String, String> errors = new LinkedHashMap<String, String>();
+        Map<String, String> form = new LinkedHashMap<String, String>();
 
-        Map<String, String> formData = new HashMap<String, String>();
-        List<String> errors = new ArrayList<String>();
-        Locale locale = request.getLocale();
+        String vehicleId = normalize(request.getParameter(ReservationConstants.PARAM_VEHICLE_ID));
+        String startDate = normalize(request.getParameter(ReservationConstants.PARAM_START_DATE));
+        String endDate = normalize(request.getParameter(ReservationConstants.PARAM_END_DATE));
 
-        String vehicleIdParam = request.getParameter(ReservationConstants.PARAM_VEHICLE_ID);
-        formData.put(ReservationConstants.PARAM_VEHICLE_ID, vehicleIdParam);
-
-        Integer vehicleId = ValidatorUtils.parseInteger(vehicleIdParam);
-        VehicleDTO vehicle = loadVehicle(vehicleId);
-
-        if (vehicle == null) {
-            SessionManager.set(request, AppConstants.ATTR_FLASH_ERROR,
-                    "El vehículo indicado no está disponible. Selecciona un coche del catálogo.");
-            redirect(request, response, "/public/vehicles?notfound=1");
-            return;
+        if (vehicleId == null) {
+            errors.put(ReservationConstants.PARAM_VEHICLE_ID, "Debes seleccionar un vehículo válido.");
+        } else {
+            form.put(ReservationConstants.PARAM_VEHICLE_ID, vehicleId);
         }
-
-        Date startDate = ValidatorUtils.requireDate(request.getParameter(ReservationConstants.PARAM_START_DATE),
-                "La fecha de recogida es obligatoria y debe tener formato válido.", errors);
-        Date endDate = ValidatorUtils.requireDate(request.getParameter(ReservationConstants.PARAM_END_DATE),
-                "La fecha de devolución es obligatoria y debe tener formato válido.", errors);
-        formData.put(ReservationConstants.PARAM_START_DATE, request.getParameter(ReservationConstants.PARAM_START_DATE));
-        formData.put(ReservationConstants.PARAM_END_DATE, request.getParameter(ReservationConstants.PARAM_END_DATE));
-
-        if (startDate != null && endDate != null && !endDate.after(startDate)) {
-            errors.add("La devolución debe ser posterior a la recogida.");
+        if (startDate == null) {
+            errors.put(ReservationConstants.PARAM_START_DATE, "Introduce una fecha de inicio válida.");
+        } else {
+            form.put(ReservationConstants.PARAM_START_DATE, startDate);
         }
-
-        List<HeadquartersDTO> headquarters = loadHeadquarters();
-        Map<Integer, HeadquartersDTO> headquartersById = new HashMap<Integer, HeadquartersDTO>();
-        for (HeadquartersDTO headquartersDTO : headquarters) {
-            if (headquartersDTO != null && headquartersDTO.getId() != null) {
-                headquartersById.put(headquartersDTO.getId(), headquartersDTO);
-            }
-        }
-
-        String pickupParam = request.getParameter(ReservationConstants.PARAM_PICKUP_HEADQUARTERS);
-        String dropoffParam = request.getParameter(ReservationConstants.PARAM_RETURN_HEADQUARTERS);
-        formData.put(ReservationConstants.PARAM_PICKUP_HEADQUARTERS, pickupParam);
-        formData.put(ReservationConstants.PARAM_RETURN_HEADQUARTERS, dropoffParam);
-
-        Integer pickupId = ValidatorUtils.parseInteger(pickupParam);
-        Integer dropoffId = ValidatorUtils.parseInteger(dropoffParam);
-
-        HeadquartersDTO pickup = pickupId == null ? null : headquartersById.get(pickupId);
-        HeadquartersDTO dropoff = dropoffId == null ? null : headquartersById.get(dropoffId);
-
-        if (pickup == null) {
-            errors.add("Selecciona una sede de recogida válida.");
-        }
-        if (dropoff == null) {
-            errors.add("Selecciona una sede de devolución válida.");
+        if (endDate == null) {
+            errors.put(ReservationConstants.PARAM_END_DATE, "Introduce una fecha de devolución válida.");
+        } else {
+            form.put(ReservationConstants.PARAM_END_DATE, endDate);
         }
 
         if (!errors.isEmpty()) {
             request.setAttribute(ReservationConstants.ATTR_RESERVATION_ERRORS, errors);
-            request.setAttribute(ReservationConstants.ATTR_RESERVATION_FORM, formData);
-            request.setAttribute(ReservationConstants.ATTR_HEADQUARTERS, headquarters);
-            request.setAttribute(VehicleConstants.ATTR_SELECTED_VEHICLE, vehicle);
-            request.setAttribute(VehicleConstants.ATTR_SELECTED_CATEGORY_NAME,
-                    resolveCategoryName(vehicle.getCategoryId(), locale));
-            request.setAttribute(VehicleConstants.ATTR_RELATED_VEHICLES, findRelatedVehicles(vehicle));
-            exposeReservationParameterNames(request);
-            forward(request, response, "/public/vehicle/vehicle_detail.jsp");
+            request.setAttribute(ReservationConstants.ATTR_RESERVATION_FORM, form);
+            request.getRequestDispatcher(Views.PUBLIC_VEHICLE_DETAIL).forward(request, response);
             return;
         }
 
-        int rentalDays = LegacyDateUtils.daysBetween(startDate, endDate);
-        BigDecimal dailyPrice = vehicle.getDailyPrice() == null ? BigDecimal.ZERO : vehicle.getDailyPrice();
-        BigDecimal vehicleSubtotal = dailyPrice.multiply(BigDecimal.valueOf(rentalDays));
-        BigDecimal total = vehicleSubtotal;
-
-        Object currentUser = SessionManager.get(request, AppConstants.ATTR_CURRENT_USER);
-        String reference = generateReference();
-        Map<String, Object> summary = new HashMap<String, Object>();
-        summary.put("vehicle", vehicle);
-        summary.put("vehicleCategoryName", resolveCategoryName(vehicle.getCategoryId(), locale));
-        summary.put("startDate", startDate);
-        summary.put("endDate", endDate);
-        summary.put("formattedStartDate", formatDisplayDate(startDate));
-        summary.put("formattedEndDate", formatDisplayDate(endDate));
-        summary.put("rentalDays", Integer.valueOf(rentalDays));
-        summary.put("vehicleSubtotal", vehicleSubtotal);
-        summary.put("total", total);
-        summary.put("pickupHeadquarters", pickup != null ? pickup.getName() : null);
-        summary.put("returnHeadquarters", dropoff != null ? dropoff.getName() : null);
-        summary.put("contactEmail", currentUser != null ? currentUser.toString() : null);
-        summary.put("reference", reference);
-
-        SessionManager.set(request, ReservationConstants.ATTR_RESERVATION_SUMMARY, summary);
-        SessionManager.set(request, ReservationConstants.ATTR_RESERVATION_REFERENCE, reference);
-
-        redirect(request, response, "/app/reservations/private?ref=" + reference);
+        SessionManager.set(request, AppConstants.ATTR_FLASH_SUCCESS, MESSAGE_RESERVATION_CREATED);
+        response.sendRedirect(request.getContextPath() + Views.PRIVATE_RESERVATION_SUCCESS);
     }
 
-    private VehicleDTO loadVehicle(Integer vehicleId) {
-        if (vehicleId == null) {
+    private String normalize(String value) {
+        if (value == null) {
             return null;
         }
-        try {
-            return vehicleService.findById(vehicleId);
-        } catch (Exception ex) {
-            LOGGER.error("No se pudo cargar el vehículo {}", vehicleId, ex);
-            return null;
-        }
-    }
-
-    private List<HeadquartersDTO> loadHeadquarters() {
-        try {
-            return headquartersService.findAll();
-        } catch (Exception ex) {
-            LOGGER.error("No se pudieron recuperar las sedes", ex);
-            return new ArrayList<HeadquartersDTO>();
-        }
-    }
-
-    private List<VehicleDTO> findRelatedVehicles(VehicleDTO vehicle) {
-        if (vehicle == null || vehicle.getCategoryId() == null) {
-            return new ArrayList<VehicleDTO>();
-        }
-        try {
-            return vehicleService.findByCategory(vehicle.getCategoryId(), 4);
-        } catch (Exception ex) {
-            LOGGER.warn("No se pudieron cargar vehículos relacionados", ex);
-            return new ArrayList<VehicleDTO>();
-        }
-    }
-
-    private String resolveCategoryName(Integer categoryId, Locale locale) {
-        if (categoryId == null) {
-            return null;
-        }
-        try {
-            String language = locale != null ? locale.getLanguage() : Locale.getDefault().getLanguage();
-            VehicleCategoryDTO category = categoryService.findById(categoryId, language);
-            return category != null ? category.getCategoryName() : null;
-        } catch (Exception ex) {
-            LOGGER.warn("No se pudo recuperar la categoría {}", categoryId, ex);
-            return null;
-        }
-    }
-
-    private String formatDisplayDate(Date date) {
-        if (date == null) {
-            return "-";
-        }
-        return LegacyDateUtils.formatDate(date, DISPLAY_DATE_PATTERN);
-    }
-
-    private String generateReference() {
-        return UUID.randomUUID().toString();
-    }
-
-    private void exposeReservationParameterNames(HttpServletRequest request) {
-        request.setAttribute(ReservationConstants.ATTR_PARAM_VEHICLE_ID, ReservationConstants.PARAM_VEHICLE_ID);
-        request.setAttribute(ReservationConstants.ATTR_PARAM_START_DATE, ReservationConstants.PARAM_START_DATE);
-        request.setAttribute(ReservationConstants.ATTR_PARAM_END_DATE, ReservationConstants.PARAM_END_DATE);
-        request.setAttribute(ReservationConstants.ATTR_PARAM_PICKUP_HEADQUARTERS,
-                ReservationConstants.PARAM_PICKUP_HEADQUARTERS);
-        request.setAttribute(ReservationConstants.ATTR_PARAM_RETURN_HEADQUARTERS,
-                ReservationConstants.PARAM_RETURN_HEADQUARTERS);
-    }
-
-    private boolean requireUser(HttpServletRequest request, HttpServletResponse response, String errorMessage)
-            throws IOException {
-        if (SessionManager.get(request, AppConstants.ATTR_CURRENT_USER) != null) {
-            return true;
-        }
-        if (errorMessage != null && !errorMessage.isEmpty()) {
-            SessionManager.set(request, AppConstants.ATTR_FLASH_ERROR, errorMessage);
-        }
-        response.sendRedirect(request.getContextPath() + "/login");
-        return false;
-    }
-
-    private void disableCaching(HttpServletResponse response) {
-        response.setHeader("Cache-Control", "no-store");
-        response.setHeader("Pragma", "no-cache");
-        response.setDateHeader("Expires", 0);
-    }
-
-    private void forward(HttpServletRequest request, HttpServletResponse response, String view)
-            throws ServletException, IOException {
-        request.getRequestDispatcher(view).forward(request, response);
-    }
-
-    private void redirect(HttpServletRequest request, HttpServletResponse response, String location) throws IOException {
-        String target = location;
-        if (!location.startsWith("http://") && !location.startsWith("https://")) {
-            target = request.getContextPath() + location;
-        }
-        response.sendRedirect(target);
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }
