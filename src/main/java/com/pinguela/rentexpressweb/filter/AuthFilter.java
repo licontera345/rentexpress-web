@@ -2,6 +2,7 @@ package com.pinguela.rentexpressweb.filter;
 
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
+import com.pinguela.rentexpressweb.security.RememberMeManager;
 import com.pinguela.rentexpressweb.security.SessionManager;
 import com.pinguela.rentexpressweb.util.MessageResolver;
 import jakarta.servlet.Filter;
@@ -61,6 +62,8 @@ public class AuthFilter implements Filter {
 
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+        RememberMeManager.applyRememberedUser(httpRequest);
 
         String path = extractPath(httpRequest);
         if (isPublic(path)) {
