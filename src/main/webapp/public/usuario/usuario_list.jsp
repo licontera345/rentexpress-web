@@ -11,19 +11,19 @@
 </h2>
 
 <table border="1">
-        <tr>
-                <th>ID</th>
-                <th><fmt:message key="usuario.detail.name" /></th>
-                <th><fmt:message key="usuario.detail.email" /></th>
-                <th><fmt:message key="actions" /></th>
-        </tr>
-        <c:forEach var="user" items="${items}">
-                <tr>
-                        <td><c:out value="${user.userId}" /></td>
-                        <td><c:out value="${empty user.firstName ? user.username : user.firstName}" /></td>
-                        <td><c:out value="${user.email}" /></td>
-                        <td>
-                                <a href="${ctx}/public/users/detail?id=${user.userId}">
+	<tr>
+		<th>ID</th>
+		<th><fmt:message key="usuario.detail.name" /></th>
+		<th><fmt:message key="usuario.detail.email" /></th>
+		<th><fmt:message key="actions" /></th>
+	</tr>
+	<c:forEach var="u" items="${usuarios}">
+		<tr>
+			<td><c:out value="${u.id}" /></td>
+			<td><c:out value="${u.nombreUsuario}" /></td>
+			<td><c:out value="${u.email}" /></td>
+                        <td><a
+                                href="${ctx}/public/users/detail?id=${u.id}">
                                         <fmt:message key="action.view" />
                                 </a>
                         </td>
