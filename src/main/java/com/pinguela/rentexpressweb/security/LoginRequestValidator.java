@@ -22,7 +22,6 @@ public final class LoginRequestValidator {
     public static LoginRequest validate(HttpServletRequest request) {
         String emailParam = request.getParameter(UserConstants.PARAM_EMAIL);
         String passwordParam = request.getParameter(UserConstants.PARAM_PASSWORD);
-        boolean remember = request.getParameter(UserConstants.PARAM_REMEMBER_ME) != null;
 
         String sanitizedEmail = emailParam != null ? emailParam.trim() : null;
         Map<String, String> errors = new LinkedHashMap<String, String>();
@@ -34,6 +33,6 @@ public final class LoginRequestValidator {
             errors.put(UserConstants.PARAM_PASSWORD, MessageResolver.getMessage(request, MESSAGE_KEY_PASSWORD_REQUIRED));
         }
 
-        return new LoginRequest(sanitizedEmail, passwordParam, remember, errors);
+        return new LoginRequest(sanitizedEmail, passwordParam, errors);
     }
 }

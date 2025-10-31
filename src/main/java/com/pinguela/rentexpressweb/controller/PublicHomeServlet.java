@@ -23,7 +23,6 @@ import com.pinguela.rentexpres.service.impl.VehicleStatusServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.MediaConstants;
 import com.pinguela.rentexpressweb.constants.VehicleConstants;
-import com.pinguela.rentexpressweb.security.RememberMeCookies;
 import com.pinguela.rentexpressweb.util.SessionUtils;
 import com.pinguela.rentexpressweb.util.ImageStorage;
 import com.pinguela.rentexpressweb.util.MessageResolver;
@@ -60,8 +59,7 @@ public class PublicHomeServlet extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		RememberMeCookies.syncSession(request);
-		exposeFlashMessage(request);
+                exposeFlashMessage(request);
 
 		String pageTitle = MessageResolver.getMessage(request, "home.title");
 		request.setAttribute(AppConstants.ATTR_PAGE_TITLE, pageTitle);

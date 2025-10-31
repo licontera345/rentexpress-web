@@ -22,7 +22,6 @@ public final class UserConstants {
     public static final String PARAM_PROVINCE_ID = "provinceId";
     public static final String PARAM_CITY_ID = "cityId";
     public static final String PARAM_ACCEPT_TERMS = "acceptTerms";
-    public static final String PARAM_REMEMBER_ME = "remember";
 
     public static final String ROLE_NAME_CUSTOMER = "Customer";
     public static final String ROLE_NAME_CUSTOMER_ES = "Cliente";

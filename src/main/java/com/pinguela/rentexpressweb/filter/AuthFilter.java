@@ -7,7 +7,6 @@ import org.apache.logging.log4j.Logger;
 
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
-import com.pinguela.rentexpressweb.security.RememberMeCookies;
 import com.pinguela.rentexpressweb.util.SessionUtils;
 import com.pinguela.rentexpressweb.util.MessageResolver;
 
@@ -28,13 +27,13 @@ public class AuthFilter implements Filter {
 
 	private static final Logger LOGGER = LogManager.getLogger(AuthFilter.class);
 
-	private static final String[] PUBLIC_PATH_PREFIXES = new String[] { "/public/", "/css/", "/common/", "/resources/",
-			"/images/", "/js/", "/favicon", "/private/security/" };
+        private static final String[] PUBLIC_PATH_PREFIXES = new String[] { "/public/", "/css/", "/common/", "/resources/",
+                        "/images/", "/js/", "/favicon" };
 
-	private static final String[] PUBLIC_PATHS = new String[] { "/", "", SecurityConstants.LOGIN_ENDPOINT,
-			"/app/auth/verify-2fa", "/app/auth/logout", "/app/users/register", "/app/password/forgot",
-			"/app/password/reset", "/app/password/verify-reset", "/app/settings/language", "/public/home",
-			"/app/images/view" };
+        private static final String[] PUBLIC_PATHS = new String[] { "/", "", SecurityConstants.LOGIN_ENDPOINT,
+                        "/app/auth/logout", "/app/users/register", "/app/password/forgot",
+                        "/app/password/reset", "/app/password/verify-reset", "/app/settings/language", "/public/home",
+                        "/app/images/view" };
 
 	private static final String[] AUTH_PATHS = new String[] { "/app/home", "/app/users/private", "/app/users/profile",
 			"/app/reservations/private", "/app/rentals/private", "/app/images/download", "/app/images/upload",
@@ -64,9 +63,7 @@ public class AuthFilter implements Filter {
 		HttpServletRequest httpRequest = (HttpServletRequest) request;
 		HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-		RememberMeCookies.syncSession(httpRequest);
-
-		String path = extractPath(httpRequest);
+                String path = extractPath(httpRequest);
 		if (isPublic(path)) {
 			chain.doFilter(request, response);
 			return;

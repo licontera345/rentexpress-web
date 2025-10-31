@@ -158,10 +158,10 @@ public class PasswordRecoveryServlet extends HttpServlet {
         if (sanitizedCode.isEmpty()) {
             errors.put(PasswordConstants.PARAM_RESET_CODE,
                     MessageResolver.getMessage(request, "validation.verifyReset.code.required"));
-        } else if (!sanitizedCode.matches("\\d{" + SecurityConstants.TWO_FA_CODE_LENGTH + "}")) {
+        } else if (!sanitizedCode.matches("\\d{" + SecurityConstants.VERIFICATION_CODE_LENGTH + "}")) {
             errors.put(PasswordConstants.PARAM_RESET_CODE,
                     MessageResolver.getMessage(request, "validation.verifyReset.code.length",
-                            Integer.valueOf(SecurityConstants.TWO_FA_CODE_LENGTH)));
+                            Integer.valueOf(SecurityConstants.VERIFICATION_CODE_LENGTH)));
         }
 
         if (errors.isEmpty() && PasswordResetManager.isExpired(request)) {
@@ -286,6 +286,6 @@ public class PasswordRecoveryServlet extends HttpServlet {
     private String buildInfoMessage(HttpServletRequest request, String email, String code, boolean resent) {
         String key = resent ? "info.reset.code.resent" : "info.reset.code.sent";
         return MessageResolver.getMessage(request, key, email, code,
-                Integer.valueOf(SecurityConstants.TWO_FA_CODE_VALIDITY_SECONDS));
+                Integer.valueOf(SecurityConstants.VERIFICATION_CODE_VALIDITY_SECONDS));
     }
 }

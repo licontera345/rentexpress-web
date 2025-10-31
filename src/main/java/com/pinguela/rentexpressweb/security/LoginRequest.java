@@ -10,13 +10,11 @@ public final class LoginRequest {
 
     private final String email;
     private final String password;
-    private final boolean remember;
     private final Map<String, String> errors;
 
-    public LoginRequest(String email, String password, boolean remember, Map<String, String> errors) {
+    public LoginRequest(String email, String password, Map<String, String> errors) {
         this.email = email;
         this.password = password;
-        this.remember = remember;
         this.errors = errors;
     }
 
@@ -26,10 +24,6 @@ public final class LoginRequest {
 
     public String getPassword() {
         return password;
-    }
-
-    public boolean isRemember() {
-        return remember;
     }
 
     public Map<String, String> getErrors() {
