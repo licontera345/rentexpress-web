@@ -52,10 +52,21 @@ public class AuthFilter implements Filter {
         if (path == null) {
             return false;
         }
-        if (SecurityConstants.PUBLIC_REGISTER_USER_ENDPOINT.equals(path)) {
+        if (isPublicPath(path)) {
             return false;
         }
         return path.startsWith("/private/") || path.startsWith("/app/");
+    }
+
+    private boolean isPublicPath(String path) {
+        if (path.isEmpty()) {
+            return true;
+        }
+        if (SecurityConstants.PUBLIC_REGISTER_USER_ENDPOINT.equals(path)
+                || path.startsWith(SecurityConstants.PUBLIC_REGISTER_USER_ENDPOINT)) {
+            return true;
+        }
+        return false;
     }
 
     @Override
