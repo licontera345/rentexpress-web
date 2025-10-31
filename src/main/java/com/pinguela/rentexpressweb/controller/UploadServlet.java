@@ -2,8 +2,7 @@ package com.pinguela.rentexpressweb.controller;
 
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.MediaConstants;
-import com.pinguela.rentexpressweb.constants.SecurityConstants;
-import com.pinguela.rentexpressweb.util.SessionUtils;
+import com.pinguela.rentexpressweb.util.SessionManager;
 import com.pinguela.rentexpressweb.util.ImageStorage;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -30,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 @MultipartConfig
 public class UploadServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
+    private static final String HOME_PATH = "/app/home";
 
     static final String UPLOAD_PATH = "/app/images/upload";
     static final String DOWNLOAD_PATH = "/app/images/download";
@@ -97,8 +97,8 @@ public class UploadServlet extends HttpServlet {
 
         try {
             String stored = ImageStorage.store(getServletContext(), filePart, entity, entityId);
-            SessionUtils.setAttribute(request, MediaConstants.ATTR_IMAGE_PATH, stored);
-            SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
+            SessionManager.set(request, MediaConstants.ATTR_IMAGE_PATH, stored);
+            SessionManager.set(request, AppConstants.ATTR_FLASH_SUCCESS,
                     "Imagen almacenada correctamente.");
         } catch (IOException ex) {
             LOGGER.error("Error almacenando imagen para {}:{}", entity, entityId, ex);
@@ -164,8 +164,8 @@ public class UploadServlet extends HttpServlet {
             }
             builder.append(entry.getValue());
         }
-        SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_ERROR, builder.toString());
-        SessionUtils.setAttribute(request, MediaConstants.ATTR_IMAGE_ERRORS, errors);
+        SessionManager.set(request, AppConstants.ATTR_FLASH_ERROR, builder.toString());
+        SessionManager.set(request, MediaConstants.ATTR_IMAGE_ERRORS, errors);
     }
 
     private String resolveRedirect(HttpServletRequest request) {
@@ -177,7 +177,7 @@ public class UploadServlet extends HttpServlet {
         if (referer != null && !referer.trim().isEmpty()) {
             return referer;
         }
-        return request.getContextPath() + SecurityConstants.HOME_ENDPOINT;
+        return request.getContextPath() + HOME_PATH;
     }
 
     private String sanitizeEntity(String value) {

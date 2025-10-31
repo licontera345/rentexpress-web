@@ -8,7 +8,7 @@ import com.pinguela.rentexpres.service.impl.RentalServiceImpl;
 import com.pinguela.rentexpres.service.impl.RentalStatusServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.RentalConstants;
-import com.pinguela.rentexpressweb.util.SessionUtils;
+import com.pinguela.rentexpressweb.util.SessionManager;
 import com.pinguela.rentexpressweb.util.LegacyDateUtils;
 
 import jakarta.servlet.ServletException;
@@ -55,7 +55,7 @@ public class PublicRentalServlet extends HttpServlet {
      * @see HttpServlet#doGet(HttpServletRequest, HttpServletResponse)
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        if (SessionUtils.getAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE) == null) {
+        if (SessionManager.get(request, AppConstants.ATTR_CURRENT_EMPLOYEE) == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }

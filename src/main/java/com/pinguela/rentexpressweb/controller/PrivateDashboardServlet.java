@@ -1,21 +1,20 @@
 package com.pinguela.rentexpressweb.controller;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.UserConstants;
-import com.pinguela.rentexpressweb.util.SessionUtils;
-import com.pinguela.rentexpressweb.util.ActivityEntry;
 import com.pinguela.rentexpressweb.util.MessageResolver;
-import com.pinguela.rentexpressweb.util.UserActivityTracker;
+import com.pinguela.rentexpressweb.util.SessionManager;
 import com.pinguela.rentexpressweb.util.Views;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -23,7 +22,7 @@ import jakarta.servlet.http.HttpServletResponse;
  * Página de inicio privada con resumen del perfil y actividad reciente.
  */
 @WebServlet("/app/home")
-public class PrivateDashboardServlet extends BaseServlet {
+public class PrivateDashboardServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     private static final String KEY_ID = "id";
@@ -50,18 +49,17 @@ public class PrivateDashboardServlet extends BaseServlet {
         }
 
         disableCaching(response);
-        exposeFlashMessages(request);
+        copyFlashMessages(request);
 
-        Object currentUser = SessionUtils.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
+        Object currentUser = SessionManager.get(request, AppConstants.ATTR_CURRENT_USER);
         Map<String, String> profile = ensureProfile(request, currentUser.toString());
         String displayName = resolveDisplayName(profile, currentUser.toString());
-        List<ActivityEntry> activities = UserActivityTracker.getRecentActivities(request);
 
         request.setAttribute(AppConstants.ATTR_PAGE_TITLE,
                 MessageResolver.getMessage(request, "home.dashboard.pageTitle"));
         request.setAttribute("profile", profile);
         request.setAttribute("greetingName", displayName);
-        request.setAttribute("activityEntries", activities);
+        request.setAttribute("activityEntries", Collections.emptyList());
         request.setAttribute("profileRoleKey", resolveRoleMessageKey(profile.get(KEY_ROLE)));
 
         forward(request, response, Views.PRIVATE_USER_HOME);
@@ -75,11 +73,11 @@ public class PrivateDashboardServlet extends BaseServlet {
 
     private Map<String, String> ensureProfile(HttpServletRequest request, String email) {
         @SuppressWarnings("unchecked")
-        Map<String, String> profile = (Map<String, String>) SessionUtils.getAttribute(request,
+        Map<String, String> profile = (Map<String, String>) SessionManager.get(request,
                 UserConstants.ATTR_PROFILE_DATA);
         if (profile == null) {
             profile = new HashMap<String, String>();
-            SessionUtils.setAttribute(request, UserConstants.ATTR_PROFILE_DATA, profile);
+            SessionManager.set(request, UserConstants.ATTR_PROFILE_DATA, profile);
         }
 
         if (!profile.containsKey(KEY_ID) || isBlank(profile.get(KEY_ID))) {
@@ -152,5 +150,42 @@ public class PrivateDashboardServlet extends BaseServlet {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private boolean requireUser(HttpServletRequest request, HttpServletResponse response, String errorMessage)
+            throws IOException {
+        if (SessionManager.get(request, AppConstants.ATTR_CURRENT_USER) != null) {
+            return true;
+        }
+        if (errorMessage != null && !errorMessage.isEmpty()) {
+            SessionManager.set(request, AppConstants.ATTR_FLASH_ERROR, errorMessage);
+        }
+        response.sendRedirect(request.getContextPath() + "/login");
+        return false;
+    }
+
+    private void disableCaching(HttpServletResponse response) {
+        response.setHeader("Cache-Control", "no-store");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
+    }
+
+    private void copyFlashMessages(HttpServletRequest request) {
+        transferFlashAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
+        transferFlashAttribute(request, AppConstants.ATTR_FLASH_ERROR);
+        transferFlashAttribute(request, AppConstants.ATTR_FLASH_INFO);
+    }
+
+    private void transferFlashAttribute(HttpServletRequest request, String name) {
+        Object value = SessionManager.get(request, name);
+        if (value != null) {
+            request.setAttribute(name, value);
+            SessionManager.remove(request, name);
+        }
+    }
+
+    private void forward(HttpServletRequest request, HttpServletResponse response, String view)
+            throws ServletException, IOException {
+        request.getRequestDispatcher(view).forward(request, response);
     }
 }

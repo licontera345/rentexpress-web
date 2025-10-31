@@ -12,7 +12,6 @@ import com.pinguela.rentexpres.service.impl.VehicleCategoryServiceImpl;
 import com.pinguela.rentexpres.service.impl.VehicleServiceImpl;
 import com.pinguela.rentexpres.service.impl.VehicleStatusServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
-import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.constants.VehicleConstants;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -37,6 +36,9 @@ import org.apache.logging.log4j.Logger;
 public class VehicleServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
+    private static final String LOGIN_PATH = "/login";
+    private static final String HOME_PATH = "/app/home";
+
     private static final Logger LOGGER = LogManager.getLogger(VehicleServlet.class);
 
     private final VehicleService vehicleService = new VehicleServiceImpl();
@@ -53,13 +55,13 @@ public class VehicleServlet extends HttpServlet {
         if (currentUser == null) {
             setSessionAttribute(request, AppConstants.ATTR_FLASH_ERROR,
                     "Inicia sesión para consultar el catálogo interno.");
-            response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
+            response.sendRedirect(request.getContextPath() + LOGIN_PATH);
             return;
         }
         if (currentEmployee == null) {
             setSessionAttribute(request, AppConstants.ATTR_FLASH_ERROR,
                     "No dispones de permisos para gestionar los vehículos.");
-            response.sendRedirect(request.getContextPath() + SecurityConstants.HOME_ENDPOINT);
+            response.sendRedirect(request.getContextPath() + HOME_PATH);
             return;
         }
 

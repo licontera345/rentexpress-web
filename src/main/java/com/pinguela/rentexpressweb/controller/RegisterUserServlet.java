@@ -20,10 +20,9 @@ import com.pinguela.rentexpres.service.impl.ProvinceServiceImpl;
 import com.pinguela.rentexpres.service.impl.RoleServiceImpl;
 import com.pinguela.rentexpres.service.impl.UserServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
-import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.constants.UserConstants;
 import com.pinguela.rentexpressweb.security.CredentialStore;
-import com.pinguela.rentexpressweb.util.SessionUtils;
+import com.pinguela.rentexpressweb.util.SessionManager;
 import com.pinguela.rentexpressweb.util.Views;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -49,6 +48,7 @@ import org.apache.logging.log4j.Logger;
 @WebServlet("/app/users/register")
 public class RegisterUserServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
+    private static final String LOGIN_PATH = "/login";
 
     private static final Logger LOGGER = LogManager.getLogger(RegisterUserServlet.class);
     private final UserService userService = new UserServiceImpl();
@@ -335,9 +335,9 @@ public class RegisterUserServlet extends HttpServlet {
                 CredentialStore.updatePassword(getServletContext(), sanitizedEmail, sanitizedPassword);
                 LOGGER.info("Registrado nuevo usuario {}", sanitizedEmail);
                 sendWelcomeEmail(sanitizedEmail, firstName);
-                SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
+                SessionManager.set(request, AppConstants.ATTR_FLASH_SUCCESS,
                         "Registro completado. Ya puedes iniciar sesión con tu correo y contraseña.");
-                response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
+                response.sendRedirect(request.getContextPath() + LOGIN_PATH);
                 return;
             }
             errors.add("No se pudo completar el registro. Inténtalo de nuevo.");
