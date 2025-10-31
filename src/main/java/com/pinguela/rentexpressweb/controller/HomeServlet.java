@@ -14,10 +14,10 @@ import com.pinguela.rentexpressweb.util.ActivityEntry;
 import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.UserActivityTracker;
 import com.pinguela.rentexpressweb.util.Views;
+import com.pinguela.rentexpressweb.web.common.BaseServlet;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -25,7 +25,7 @@ import jakarta.servlet.http.HttpServletResponse;
  * Página de inicio privada con resumen del perfil y actividad reciente.
  */
 @WebServlet("/app/home")
-public class HomeServlet extends HttpServlet {
+public class HomeServlet extends BaseServlet {
     private static final long serialVersionUID = 1L;
 
     private static final String KEY_ID = "id";
@@ -49,7 +49,7 @@ public class HomeServlet extends HttpServlet {
         if (currentUser == null) {
             SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
                     MessageResolver.getMessage(request, "error.home.sessionRequired"));
-            response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
+            redirect(request, response, SecurityConstants.LOGIN_ENDPOINT);
             return;
         }
 
@@ -67,7 +67,7 @@ public class HomeServlet extends HttpServlet {
         request.setAttribute("activityEntries", activities);
         request.setAttribute("profileRoleKey", resolveRoleMessageKey(profile.get(KEY_ROLE)));
 
-        request.getRequestDispatcher(Views.PRIVATE_USER_HOME).forward(request, response);
+        forward(request, response, Views.PRIVATE_USER_HOME);
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -105,26 +105,6 @@ public class HomeServlet extends HttpServlet {
         return profile;
     }
 
-    private void exposeFlashMessages(HttpServletRequest request) {
-        Object success = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
-        if (success != null) {
-            request.setAttribute(AppConstants.ATTR_FLASH_SUCCESS, success);
-            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
-        }
-
-        Object error = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_ERROR);
-        if (error != null) {
-            request.setAttribute(AppConstants.ATTR_FLASH_ERROR, error);
-            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_ERROR);
-        }
-
-        Object info = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_INFO);
-        if (info != null) {
-            request.setAttribute(AppConstants.ATTR_FLASH_INFO, info);
-            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_INFO);
-        }
-    }
-
     private String resolveDisplayName(Map<String, String> profile, String fallback) {
         if (profile != null) {
             String name = profile.get(KEY_FULL_NAME);
@@ -152,12 +132,6 @@ public class HomeServlet extends HttpServlet {
             return "home.dashboard.role.employee";
         }
         return "home.dashboard.role.client";
-    }
-
-    private void disableCaching(HttpServletResponse response) {
-        response.setHeader("Cache-Control", "no-store");
-        response.setHeader("Pragma", "no-cache");
-        response.setDateHeader("Expires", 0);
     }
 
     private String generateIdentifier(String seed) {
