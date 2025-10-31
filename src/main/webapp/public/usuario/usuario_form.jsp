@@ -9,8 +9,8 @@
 		key="${empty usuario ? 'usuario.create.title' : 'usuario.edit.title'}" />
 </h2>
 
-<form action="${pageContext.request.contextPath}/public/UsuarioServlet"
-	method="post">
+<form action="${pageContext.request.contextPath}/public/users"
+        method="post">
 	<input type="hidden" name="action"
 		value="${empty usuario ? 'save' : 'update'}" />
 	<c:if test="${not empty usuario}">

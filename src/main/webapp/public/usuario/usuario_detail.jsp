@@ -39,9 +39,9 @@
 			<p>
 				<strong><fmt:message key="usuario.detail.image" />:</strong>
 			</p>
-			<img
-				src="${pageContext.request.contextPath}/DownloadImageServlet?id=${usuario.id}"
-				alt="Imagen de usuario" style="max-width: 200px;" />
+                        <img
+                                src="${pageContext.request.contextPath}/app/images/view?entity=user&amp;entityId=${usuario.id}"
+                                alt="Imagen de usuario" style="max-width: 200px;" />
 		</c:if>
 	</c:if>
 
@@ -52,12 +52,12 @@
 	</c:if>
 
 	<!-- Botón Volver al inicio -->
-	<form action="${pageContext.request.contextPath}/public/UsuarioServlet"
-		method="get">
-		<input type="hidden" name="action" value="index" />
-		<button type="submit">
-			<fmt:message key="back.index" />
-		</button>
+        <form action="${pageContext.request.contextPath}/public/users"
+                method="get">
+                <input type="hidden" name="action" value="list" />
+                <button type="submit">
+                        <fmt:message key="back.index" />
+                </button>
 	</form>
 </body>
 </html>
