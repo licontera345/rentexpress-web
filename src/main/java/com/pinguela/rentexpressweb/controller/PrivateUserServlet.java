@@ -9,10 +9,10 @@ import com.pinguela.rentexpressweb.security.SessionManager;
 import com.pinguela.rentexpressweb.util.ImageStorage;
 import com.pinguela.rentexpressweb.util.UserActivityTracker;
 import com.pinguela.rentexpressweb.util.Views;
+import com.pinguela.rentexpressweb.web.common.BaseServlet;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
@@ -30,7 +30,7 @@ import org.apache.logging.log4j.Logger;
  */
 @WebServlet("/app/users/private")
 @MultipartConfig
-public class PrivateUserServlet extends HttpServlet {
+public class PrivateUserServlet extends BaseServlet {
     private static final long serialVersionUID = 1L;
 
     private static final Logger LOGGER = LogManager.getLogger(PrivateUserServlet.class);
@@ -50,7 +50,7 @@ public class PrivateUserServlet extends HttpServlet {
         if (currentUser == null) {
             SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
                     "Inicia sesión para acceder a tu perfil.");
-            response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
+            redirect(request, response, SecurityConstants.LOGIN_ENDPOINT);
             return;
         }
 
@@ -67,7 +67,7 @@ public class PrivateUserServlet extends HttpServlet {
             request.setAttribute(AppConstants.ATTR_FORM_ERRORS, errors);
         }
 
-        request.getRequestDispatcher(Views.PRIVATE_USER_PROFILE).forward(request, response);
+        forward(request, response, Views.PRIVATE_USER_PROFILE);
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -75,7 +75,7 @@ public class PrivateUserServlet extends HttpServlet {
         if (currentUser == null) {
             SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
                     "Inicia sesión para actualizar tu perfil.");
-            response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
+            redirect(request, response, SecurityConstants.LOGIN_ENDPOINT);
             return;
         }
 
@@ -86,10 +86,10 @@ public class PrivateUserServlet extends HttpServlet {
 
         Map<String, String> errors = new LinkedHashMap<String, String>();
 
-        String fullName = trimToNull(request.getParameter(UserConstants.PARAM_FULL_NAME));
-        String phone = trimToNull(request.getParameter(UserConstants.PARAM_PHONE));
-        String email = trimToNull(request.getParameter(UserConstants.PARAM_EMAIL));
-        String password = request.getParameter(UserConstants.PARAM_PASSWORD);
+        String fullName = trimToNull(getTrimmedParameter(request, UserConstants.PARAM_FULL_NAME));
+        String phone = getTrimmedParameter(request, UserConstants.PARAM_PHONE);
+        String email = trimToNull(getTrimmedParameter(request, UserConstants.PARAM_EMAIL));
+        String password = getTrimmedParameter(request, UserConstants.PARAM_PASSWORD);
 
         if (fullName == null) {
             errors.put(UserConstants.PARAM_FULL_NAME, "El nombre es obligatorio.");
@@ -111,8 +111,8 @@ public class PrivateUserServlet extends HttpServlet {
         }
         formValues.put(KEY_EMAIL, email != null ? email : "");
 
-        String sanitizedPassword = password == null ? null : password.trim();
-        if (sanitizedPassword != null && !sanitizedPassword.isEmpty() && sanitizedPassword.length() < 8) {
+        String sanitizedPassword = trimToNull(password);
+        if (sanitizedPassword != null && sanitizedPassword.length() < 8) {
             errors.put(UserConstants.PARAM_PASSWORD, "La contraseña debe tener al menos 8 caracteres.");
         }
 
@@ -133,7 +133,7 @@ public class PrivateUserServlet extends HttpServlet {
             request.setAttribute("account", formValues);
             request.setAttribute("role", formValues.get(KEY_ROLE));
             request.setAttribute(AppConstants.ATTR_FORM_ERRORS, errors);
-            request.getRequestDispatcher(Views.PRIVATE_USER_PROFILE).forward(request, response);
+            forward(request, response, Views.PRIVATE_USER_PROFILE);
             return;
         }
 
@@ -158,7 +158,7 @@ public class PrivateUserServlet extends HttpServlet {
                 request.setAttribute("role", profile.get(KEY_ROLE));
                 errors.put(MediaConstants.PARAM_IMAGE_FILE, "No se pudo guardar la imagen seleccionada.");
                 request.setAttribute(AppConstants.ATTR_FORM_ERRORS, errors);
-                request.getRequestDispatcher(Views.PRIVATE_USER_PROFILE).forward(request, response);
+                forward(request, response, Views.PRIVATE_USER_PROFILE);
                 return;
             }
         }
@@ -168,7 +168,7 @@ public class PrivateUserServlet extends HttpServlet {
                 "Perfil actualizado correctamente.");
         UserActivityTracker.record(request, "home.dashboard.activity.profileUpdated", "bi bi-person-check-fill");
 
-        response.sendRedirect(request.getContextPath() + "/app/users/private");
+        redirect(request, response, "/app/users/private");
     }
 
     private Map<String, String> getOrCreateProfile(HttpServletRequest request, String email) {
@@ -195,33 +195,6 @@ public class PrivateUserServlet extends HttpServlet {
             return map;
         }
         return null;
-    }
-
-    private void exposeFlashMessages(HttpServletRequest request) {
-        Object success = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
-        if (success != null) {
-            request.setAttribute(AppConstants.ATTR_FLASH_SUCCESS, success);
-            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
-        }
-        Object error = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_ERROR);
-        if (error != null) {
-            request.setAttribute(AppConstants.ATTR_FLASH_ERROR, error);
-            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_ERROR);
-        }
-    }
-
-    private void disableCaching(HttpServletResponse response) {
-        response.setHeader("Cache-Control", "no-store");
-        response.setHeader("Pragma", "no-cache");
-        response.setDateHeader("Expires", 0);
-    }
-
-    private String trimToNull(String value) {
-        if (value == null) {
-            return null;
-        }
-        String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private boolean isValidEmail(String email) {
