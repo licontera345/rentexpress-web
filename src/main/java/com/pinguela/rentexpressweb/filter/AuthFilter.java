@@ -2,7 +2,6 @@ package com.pinguela.rentexpressweb.filter;
 
 import java.io.IOException;
 
-import com.pinguela.rentexpressweb.constants.SecurityConstants;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -15,6 +14,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 public class AuthFilter implements Filter {
+
+    private static final String PUBLIC_REGISTER_USER_ENDPOINT = "/app/users/register";
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -62,8 +63,7 @@ public class AuthFilter implements Filter {
         if (path.isEmpty()) {
             return true;
         }
-        if (SecurityConstants.PUBLIC_REGISTER_USER_ENDPOINT.equals(path)
-                || path.startsWith(SecurityConstants.PUBLIC_REGISTER_USER_ENDPOINT)) {
+        if (PUBLIC_REGISTER_USER_ENDPOINT.equals(path) || path.startsWith(PUBLIC_REGISTER_USER_ENDPOINT)) {
             return true;
         }
         return false;

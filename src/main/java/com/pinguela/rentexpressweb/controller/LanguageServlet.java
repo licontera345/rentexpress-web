@@ -1,10 +1,8 @@
 package com.pinguela.rentexpressweb.controller;
 
 import com.pinguela.rentexpressweb.constants.AppConstants;
-import com.pinguela.rentexpressweb.constants.SecurityConstants;
-import com.pinguela.rentexpressweb.util.SessionUtils;
 import com.pinguela.rentexpressweb.util.MessageResolver;
-import com.pinguela.rentexpressweb.util.UserActivityTracker;
+import com.pinguela.rentexpressweb.util.SessionManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.Cookie;
@@ -25,6 +23,8 @@ public class LanguageServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final List<String> SUPPORTED_LANGUAGES = Arrays.asList("es", "en", "fr");
 
+    private static final String HOME_PATH = "/app/home";
+
     public LanguageServlet() {
         super();
     }
@@ -37,8 +37,8 @@ public class LanguageServlet extends HttpServlet {
         if (requestedLanguage != null) {
             String normalized = requestedLanguage.toLowerCase(Locale.ROOT);
             if (SUPPORTED_LANGUAGES.contains(normalized)) {
-                SessionUtils.setAttribute(request, AppConstants.ATTR_LOCALE, normalized);
-                SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
+                SessionManager.set(request, AppConstants.ATTR_LOCALE, normalized);
+                SessionManager.set(request, AppConstants.ATTR_FLASH_SUCCESS,
                         MessageResolver.getMessage(request, "flash.language.updated",
                                 normalized.toUpperCase(Locale.ROOT)));
                 Cookie localeCookie = new Cookie(AppConstants.ATTR_LOCALE, normalized);
@@ -47,12 +47,8 @@ public class LanguageServlet extends HttpServlet {
                 localeCookie.setHttpOnly(true);
                 localeCookie.setSecure(request.isSecure());
                 response.addCookie(localeCookie);
-                if (SessionUtils.getAttribute(request, AppConstants.ATTR_CURRENT_USER) != null) {
-                    UserActivityTracker.record(request, "home.dashboard.activity.languageChanged", "bi bi-translate",
-                            normalized.toUpperCase(Locale.ROOT));
-                }
             } else {
-                SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
+                SessionManager.set(request, AppConstants.ATTR_FLASH_ERROR,
                         MessageResolver.getMessage(request, "flash.language.unsupported"));
             }
         }
@@ -61,7 +57,7 @@ public class LanguageServlet extends HttpServlet {
         if (referer != null && !referer.trim().isEmpty()) {
             response.sendRedirect(referer);
         } else {
-            response.sendRedirect(request.getContextPath() + SecurityConstants.HOME_ENDPOINT);
+            response.sendRedirect(request.getContextPath() + HOME_PATH);
         }
     }
 
