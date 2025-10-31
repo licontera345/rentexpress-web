@@ -4,7 +4,7 @@
 <fmt:message key="reservation.success.pageTitle" var="reservationSuccessTitle" />
 <c:set var="pageTitle" value="${reservationSuccessTitle}" />
 <%@ include file="/common/header.jsp" %>
-<c:set var="privateHome" value="${empty sessionScope.currentUser ? ctx.concat('/app/welcome') : ctx.concat('/app/home')}" />
+<c:set var="privateHome" value="${empty sessionScope.currentUser ? ctx.concat('/public/home') : ctx.concat('/app/home')}" />
 <c:set var="summary" value="${reservationSummary}" />
 <c:if test="${summary == null}">
     <div class="alert alert-warning"><fmt:message key="reservation.success.empty" /></div>

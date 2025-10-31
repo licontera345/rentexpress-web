@@ -1,4 +1,4 @@
-package com.pinguela.rentexpressweb.controller;
+package com.pinguela.rentexpressweb.web.public;
 
 import java.io.IOException;
 import java.math.BigDecimal;

@@ -30,7 +30,7 @@ public class AuthFilter implements Filter {
 
     private static final String[] PUBLIC_PATHS = new String[] { "/", "", SecurityConstants.LOGIN_ENDPOINT,
             "/app/auth/verify-2fa", "/app/auth/logout", "/app/users/register", "/app/password/forgot",
-            "/app/password/reset", "/app/password/verify-reset", "/app/settings/language", "/app/welcome",
+            "/app/password/reset", "/app/password/verify-reset", "/app/settings/language", "/public/home",
             "/app/images/view" };
 
     private static final String[] AUTH_PATHS = new String[] { "/app/home", "/app/users/private",

@@ -1,4 +1,4 @@
-package com.pinguela.rentexpressweb.controller;
+package com.pinguela.rentexpressweb.web.public;
 
 import com.pinguela.rentexpres.model.HeadquartersDTO;
 import com.pinguela.rentexpres.model.VehicleDTO;
@@ -35,13 +35,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Servlet implementation class WelcomeServlet
+ * Controlador público que renderiza la página de inicio para visitantes.
  */
-@WebServlet("/app/welcome")
-public class WelcomeServlet extends HttpServlet {
+@WebServlet("/public/home")
+public class PublicHomeServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    private static final Logger LOGGER = LogManager.getLogger(WelcomeServlet.class);
+    private static final Logger LOGGER = LogManager.getLogger(PublicHomeServlet.class);
     private static final int FEATURED_LIMIT = 4;
     private static final int DEFAULT_AVAILABLE_STATUS_ID = 1;
     private static final String[] AVAILABLE_STATUS_KEYWORDS = new String[] { "disponible", "available", "libre" };
@@ -50,7 +50,7 @@ public class WelcomeServlet extends HttpServlet {
     private final VehicleService vehicleService = new VehicleServiceImpl();
     private final VehicleStatusService vehicleStatusService = new VehicleStatusServiceImpl();
 
-    public WelcomeServlet() {
+    public PublicHomeServlet() {
         super();
     }
 
