@@ -1,4 +1,4 @@
-package com.pinguela.rentexpressweb.web.public;
+package com.pinguela.rentexpressweb.controller;
 
 import com.pinguela.rentexpres.model.RoleDTO;
 import com.pinguela.rentexpres.model.UserDTO;

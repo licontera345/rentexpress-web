@@ -1,4 +1,4 @@
-package com.pinguela.rentexpressweb.web.security;
+package com.pinguela.rentexpressweb.filter;
 
 import com.pinguela.rentexpres.service.MailService;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;

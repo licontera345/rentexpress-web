@@ -1,4 +1,4 @@
-package com.pinguela.rentexpressweb.web.private;
+package com.pinguela.rentexpressweb.controller;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -13,7 +13,6 @@ import com.pinguela.rentexpressweb.util.ActivityEntry;
 import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.UserActivityTracker;
 import com.pinguela.rentexpressweb.util.Views;
-import com.pinguela.rentexpressweb.web.common.BaseServlet;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;

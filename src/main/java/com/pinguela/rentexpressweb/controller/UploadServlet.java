@@ -1,4 +1,4 @@
-package com.pinguela.rentexpressweb.web.security;
+package com.pinguela.rentexpressweb.controller;
 
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.MediaConstants;

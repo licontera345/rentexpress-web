@@ -1,5 +1,4 @@
-package com.pinguela.rentexpressweb.web.private;
-
+package com.pinguela.rentexpressweb.controller;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +25,6 @@ import com.pinguela.rentexpres.service.impl.HeadquartersServiceImpl;
 import com.pinguela.rentexpres.service.impl.RoleServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.EmployeeConstants;
-import com.pinguela.rentexpressweb.web.common.BaseServlet;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
