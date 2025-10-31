@@ -10,13 +10,13 @@ import com.pinguela.rentexpres.service.impl.VehicleStatusServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.MediaConstants;
 import com.pinguela.rentexpressweb.constants.VehicleConstants;
-import com.pinguela.rentexpressweb.security.RememberMeManager;
 import com.pinguela.rentexpressweb.security.SessionManager;
 import com.pinguela.rentexpres.service.HeadquartersService;
 import com.pinguela.rentexpres.service.impl.HeadquartersServiceImpl;
 import com.pinguela.rentexpressweb.util.ImageStorage;
 import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.Views;
+import com.pinguela.rentexpressweb.web.security.RememberMeCookies;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -58,7 +58,7 @@ public class PublicHomeServlet extends HttpServlet {
      * @see HttpServlet#doGet(HttpServletRequest, HttpServletResponse)
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RememberMeManager.applyRememberedUser(request);
+        RememberMeCookies.syncSession(request);
         exposeFlashMessage(request);
 
         String pageTitle = MessageResolver.getMessage(request, "home.title");
