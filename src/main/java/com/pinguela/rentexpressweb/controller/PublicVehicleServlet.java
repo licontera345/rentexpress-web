@@ -32,6 +32,7 @@ import com.pinguela.rentexpres.service.impl.VehicleServiceImpl;
 import com.pinguela.rentexpres.service.impl.VehicleStatusServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.VehicleConstants;
+import com.pinguela.rentexpressweb.util.ValidatorUtils;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -113,33 +114,41 @@ public class PublicVehicleServlet extends HttpServlet {
 		request.setAttribute(VehicleConstants.ATTR_PARAM_NAMES, PARAM_NAMES);
 		request.setAttribute(VehicleConstants.ATTR_SORT_VALUES, SORT_VALUES);
 
-		BigDecimal minPrice = parsePrice(filters.get(VehicleConstants.PARAM_MIN_PRICE), filterErrors,
-				"El precio mínimo debe tener un formato numérico válido.");
-		BigDecimal maxPrice = parsePrice(filters.get(VehicleConstants.PARAM_MAX_PRICE), filterErrors,
-				"El precio máximo debe tener un formato numérico válido.");
+                BigDecimal minPrice = ValidatorUtils.parsePositiveBigDecimal(
+                                filters.get(VehicleConstants.PARAM_MIN_PRICE), filterErrors,
+                                "El precio mínimo debe tener un formato numérico válido.",
+                                "Los importes deben ser positivos.");
+                BigDecimal maxPrice = ValidatorUtils.parsePositiveBigDecimal(
+                                filters.get(VehicleConstants.PARAM_MAX_PRICE), filterErrors,
+                                "El precio máximo debe tener un formato numérico válido.",
+                                "Los importes deben ser positivos.");
 
 		if (minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0) {
 			filterErrors.add("El precio mínimo no puede ser mayor que el máximo.");
 		}
 
-		Integer categoryId = parseInteger(filters.get(VehicleConstants.PARAM_CATEGORY), filterErrors,
-				"La categoría seleccionada no es válida.");
-		Integer headquartersId = parseInteger(filters.get(VehicleConstants.PARAM_HEADQUARTERS), filterErrors,
-				"La sede seleccionada no es válida.");
-		Integer statusId = parseInteger(filters.get(VehicleConstants.PARAM_STATUS), filterErrors,
-				"El estado seleccionado no es válido.");
-		Integer minYear = parseYear(filters.get(VehicleConstants.PARAM_MIN_YEAR), filterErrors,
-				"El año mínimo debe ser un número de cuatro dígitos.");
-		Integer maxYear = parseYear(filters.get(VehicleConstants.PARAM_MAX_YEAR), filterErrors,
-				"El año máximo debe ser un número de cuatro dígitos.");
+                Integer categoryId = ValidatorUtils.parseInteger(filters.get(VehicleConstants.PARAM_CATEGORY),
+                                filterErrors, "La categoría seleccionada no es válida.");
+                Integer headquartersId = ValidatorUtils.parseInteger(filters.get(VehicleConstants.PARAM_HEADQUARTERS),
+                                filterErrors, "La sede seleccionada no es válida.");
+                Integer statusId = ValidatorUtils.parseInteger(filters.get(VehicleConstants.PARAM_STATUS), filterErrors,
+                                "El estado seleccionado no es válido.");
+                Integer minYear = ValidatorUtils.parseYear(filters.get(VehicleConstants.PARAM_MIN_YEAR), 1900, 2100,
+                                filterErrors, "El año mínimo debe ser un número de cuatro dígitos.",
+                                "El año debe estar entre 1900 y 2100.");
+                Integer maxYear = ValidatorUtils.parseYear(filters.get(VehicleConstants.PARAM_MAX_YEAR), 1900, 2100,
+                                filterErrors, "El año máximo debe ser un número de cuatro dígitos.",
+                                "El año debe estar entre 1900 y 2100.");
 
 		if (minYear != null && maxYear != null && minYear.intValue() > maxYear.intValue()) {
 			filterErrors.add("El año inicial no puede ser mayor que el final.");
 		}
 
-		boolean onlyAvailable = Boolean.parseBoolean(filters.get(VehicleConstants.PARAM_ONLY_AVAILABLE));
-		int page = parsePage(filters.get(VehicleConstants.PARAM_PAGE), filterErrors);
-		int pageSize = parsePageSize(filters.get(VehicleConstants.PARAM_PAGE_SIZE), filterErrors);
+                boolean onlyAvailable = ValidatorUtils.parseBooleanFlag(filters.get(VehicleConstants.PARAM_ONLY_AVAILABLE));
+                int page = ValidatorUtils.parsePositiveInt(filters.get(VehicleConstants.PARAM_PAGE), 1, filterErrors,
+                                "La página seleccionada no es válida.");
+                int pageSize = ValidatorUtils.parseAllowedInteger(filters.get(VehicleConstants.PARAM_PAGE_SIZE), 20,
+                                PAGE_SIZE_OPTIONS, filterErrors, "El tamaño de página seleccionado no es válido.");
 
 		List<VehicleCategoryDTO> categories = loadCategories(locale);
 		Map<Integer, String> categoryNames = buildCategoryNames(categories);
@@ -183,55 +192,50 @@ public class PublicVehicleServlet extends HttpServlet {
 
 	private Map<String, String> buildFilters(HttpServletRequest request) {
 		Map<String, String> filters = new HashMap<>();
-		filters.put(VehicleConstants.PARAM_SEARCH, sanitize(request.getParameter(VehicleConstants.PARAM_SEARCH)));
-		filters.put(VehicleConstants.PARAM_BRAND, sanitize(request.getParameter(VehicleConstants.PARAM_BRAND)));
-		filters.put(VehicleConstants.PARAM_MODEL, sanitize(request.getParameter(VehicleConstants.PARAM_MODEL)));
-		filters.put(VehicleConstants.PARAM_CATEGORY, sanitize(request.getParameter(VehicleConstants.PARAM_CATEGORY)));
-		filters.put(VehicleConstants.PARAM_MIN_PRICE, sanitize(request.getParameter(VehicleConstants.PARAM_MIN_PRICE)));
-		filters.put(VehicleConstants.PARAM_MAX_PRICE, sanitize(request.getParameter(VehicleConstants.PARAM_MAX_PRICE)));
-		filters.put(VehicleConstants.PARAM_HEADQUARTERS,
-				sanitize(request.getParameter(VehicleConstants.PARAM_HEADQUARTERS)));
-		filters.put(VehicleConstants.PARAM_PICKUP_DATE,
-				sanitize(request.getParameter(VehicleConstants.PARAM_PICKUP_DATE)));
-		filters.put(VehicleConstants.PARAM_PICKUP_TIME,
-				sanitize(request.getParameter(VehicleConstants.PARAM_PICKUP_TIME)));
-		filters.put(VehicleConstants.PARAM_RETURN_DATE,
-				sanitize(request.getParameter(VehicleConstants.PARAM_RETURN_DATE)));
-		filters.put(VehicleConstants.PARAM_RETURN_TIME,
-				sanitize(request.getParameter(VehicleConstants.PARAM_RETURN_TIME)));
-		filters.put(VehicleConstants.PARAM_STATUS, sanitize(request.getParameter(VehicleConstants.PARAM_STATUS)));
-		filters.put(VehicleConstants.PARAM_MIN_YEAR, sanitize(request.getParameter(VehicleConstants.PARAM_MIN_YEAR)));
-		filters.put(VehicleConstants.PARAM_MAX_YEAR, sanitize(request.getParameter(VehicleConstants.PARAM_MAX_YEAR)));
-		filters.put(VehicleConstants.PARAM_PAGE, sanitize(request.getParameter(VehicleConstants.PARAM_PAGE)));
-		filters.put(VehicleConstants.PARAM_PAGE_SIZE, sanitize(request.getParameter(VehicleConstants.PARAM_PAGE_SIZE)));
+                filters.put(VehicleConstants.PARAM_SEARCH,
+                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_SEARCH)));
+                filters.put(VehicleConstants.PARAM_BRAND,
+                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_BRAND)));
+                filters.put(VehicleConstants.PARAM_MODEL,
+                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_MODEL)));
+                filters.put(VehicleConstants.PARAM_CATEGORY,
+                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_CATEGORY)));
+                filters.put(VehicleConstants.PARAM_MIN_PRICE,
+                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_MIN_PRICE)));
+                filters.put(VehicleConstants.PARAM_MAX_PRICE,
+                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_MAX_PRICE)));
+                filters.put(VehicleConstants.PARAM_HEADQUARTERS,
+                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_HEADQUARTERS)));
+                filters.put(VehicleConstants.PARAM_PICKUP_DATE,
+                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_PICKUP_DATE)));
+                filters.put(VehicleConstants.PARAM_PICKUP_TIME,
+                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_PICKUP_TIME)));
+                filters.put(VehicleConstants.PARAM_RETURN_DATE,
+                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_RETURN_DATE)));
+                filters.put(VehicleConstants.PARAM_RETURN_TIME,
+                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_RETURN_TIME)));
+                filters.put(VehicleConstants.PARAM_STATUS,
+                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_STATUS)));
+                filters.put(VehicleConstants.PARAM_MIN_YEAR,
+                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_MIN_YEAR)));
+                filters.put(VehicleConstants.PARAM_MAX_YEAR,
+                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_MAX_YEAR)));
+                filters.put(VehicleConstants.PARAM_PAGE,
+                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_PAGE)));
+                filters.put(VehicleConstants.PARAM_PAGE_SIZE,
+                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_PAGE_SIZE)));
 
-		String sort = sanitize(request.getParameter(VehicleConstants.PARAM_SORT));
+                String sort = ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_SORT));
 		if (!VehicleConstants.VALUE_SORT_PRICE_ASC.equals(sort) && !VehicleConstants.VALUE_SORT_PRICE_DESC.equals(sort)
 				&& !VehicleConstants.VALUE_SORT_YEAR_DESC.equals(sort)) {
 			sort = VehicleConstants.VALUE_SORT_PRICE_ASC;
 		}
 		filters.put(VehicleConstants.PARAM_SORT, sort);
-		boolean onlyAvailable = parseBooleanFlag(request.getParameter(VehicleConstants.PARAM_ONLY_AVAILABLE));
-		filters.put(VehicleConstants.PARAM_ONLY_AVAILABLE, Boolean.toString(onlyAvailable));
-		return filters;
-	}
-
-	private BigDecimal parsePrice(String rawValue, List<String> errors, String errorMessage) {
-		if (rawValue == null || rawValue.trim().isEmpty()) {
-			return null;
-		}
-		try {
-			BigDecimal price = new BigDecimal(rawValue.trim());
-			if (price.compareTo(BigDecimal.ZERO) < 0) {
-				errors.add("Los importes deben ser positivos.");
-				return null;
-			}
-			return price;
-		} catch (NumberFormatException ex) {
-			errors.add(errorMessage);
-			return null;
-		}
-	}
+                boolean onlyAvailable = ValidatorUtils.parseBooleanFlag(
+                                request.getParameter(VehicleConstants.PARAM_ONLY_AVAILABLE));
+                filters.put(VehicleConstants.PARAM_ONLY_AVAILABLE, Boolean.toString(onlyAvailable));
+                return filters;
+        }
 
 	private List<VehicleCategoryDTO> loadCategories(Locale locale) {
 		try {
@@ -372,82 +376,6 @@ public class PublicVehicleServlet extends HttpServlet {
 		criteria.setPageSize(Integer.valueOf(pageSize));
 
 		return criteria;
-	}
-
-	private Integer parseInteger(String rawValue, List<String> errors, String errorMessage) {
-		if (rawValue == null || rawValue.trim().isEmpty()) {
-			return null;
-		}
-		try {
-			return Integer.valueOf(rawValue.trim());
-		} catch (NumberFormatException ex) {
-			errors.add(errorMessage);
-			return null;
-		}
-	}
-
-	private Integer parseYear(String rawValue, List<String> errors, String errorMessage) {
-		if (rawValue == null || rawValue.trim().isEmpty()) {
-			return null;
-		}
-		try {
-			int year = Integer.parseInt(rawValue.trim());
-			if (year < 1900 || year > 2100) {
-				errors.add("El año debe estar entre 1900 y 2100.");
-				return null;
-			}
-			return Integer.valueOf(year);
-		} catch (NumberFormatException ex) {
-			errors.add(errorMessage);
-			return null;
-		}
-	}
-
-	private int parsePage(String rawValue, List<String> errors) {
-		if (rawValue == null || rawValue.trim().isEmpty()) {
-			return 1;
-		}
-		try {
-			int parsed = Integer.parseInt(rawValue.trim());
-			if (parsed < 1) {
-				errors.add("La página seleccionada no es válida.");
-				return 1;
-			}
-			return parsed;
-		} catch (NumberFormatException ex) {
-			errors.add("La página seleccionada no es válida.");
-			return 1;
-		}
-	}
-
-	private int parsePageSize(String rawValue, List<String> errors) {
-		if (rawValue == null || rawValue.trim().isEmpty()) {
-			return 20;
-		}
-		try {
-			int parsed = Integer.parseInt(rawValue.trim());
-			if (!PAGE_SIZE_OPTIONS.contains(parsed)) {
-				errors.add("El tamaño de página seleccionado no es válido.");
-				return 20;
-			}
-			return parsed;
-		} catch (NumberFormatException ex) {
-			errors.add("El tamaño de página seleccionado no es válido.");
-			return 20;
-		}
-	}
-
-	private boolean parseBooleanFlag(String rawValue) {
-		if (rawValue == null) {
-			return false;
-		}
-		String normalized = rawValue.trim().toLowerCase(Locale.ROOT);
-		return "true".equals(normalized) || "on".equals(normalized) || "1".equals(normalized)
-				|| "yes".equals(normalized) || "si".equals(normalized) || "sí".equals(normalized);
-	}
-
-	private String sanitize(String value) {
-		return value != null ? value.trim() : null;
 	}
 
 	private Map<Integer, String> buildStatusNames(List<VehicleStatusDTO> statuses) {
