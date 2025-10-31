@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.pinguela.rentexpressweb.constants.AppConstants;
+import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.security.SessionManager;
 import com.pinguela.rentexpressweb.util.LegacyDateUtils;
 
@@ -50,6 +51,31 @@ public abstract class BaseServlet extends HttpServlet {
         response.setHeader("Cache-Control", "no-store");
         response.setHeader("Pragma", "no-cache");
         response.setDateHeader("Expires", 0);
+    }
+
+    protected boolean requireUser(HttpServletRequest request, HttpServletResponse response, String errorMessage)
+            throws IOException {
+        return requireAttribute(request, response, AppConstants.ATTR_CURRENT_USER, errorMessage,
+                SecurityConstants.LOGIN_ENDPOINT);
+    }
+
+    protected boolean requireEmployee(HttpServletRequest request, HttpServletResponse response, String errorMessage)
+            throws IOException {
+        return requireAttribute(request, response, AppConstants.ATTR_CURRENT_EMPLOYEE, errorMessage,
+                SecurityConstants.HOME_ENDPOINT);
+    }
+
+    private boolean requireAttribute(HttpServletRequest request, HttpServletResponse response, String attributeName,
+            String errorMessage, String redirectPath) throws IOException {
+        Object attribute = SessionManager.getAttribute(request, attributeName);
+        if (attribute != null) {
+            return true;
+        }
+        if (errorMessage != null && !errorMessage.isEmpty()) {
+            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR, errorMessage);
+        }
+        redirect(request, response, redirectPath);
+        return false;
     }
 
     protected void exposeFlashMessages(HttpServletRequest request) {

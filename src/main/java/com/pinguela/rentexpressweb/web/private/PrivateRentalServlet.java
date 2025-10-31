@@ -1,30 +1,12 @@
-package com.pinguela.rentexpressweb.controller;
-
-import com.pinguela.rentexpres.model.RentalDTO;
-import com.pinguela.rentexpres.model.RentalStatusDTO;
-import com.pinguela.rentexpres.service.RentalService;
-import com.pinguela.rentexpres.service.RentalStatusService;
-import com.pinguela.rentexpres.service.impl.RentalServiceImpl;
-import com.pinguela.rentexpres.service.impl.RentalStatusServiceImpl;
-import com.pinguela.rentexpressweb.constants.AppConstants;
-import com.pinguela.rentexpressweb.constants.RentalConstants;
-import com.pinguela.rentexpressweb.constants.SecurityConstants;
-import com.pinguela.rentexpressweb.security.SessionManager;
-import com.pinguela.rentexpressweb.util.LegacyDateUtils;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+package com.pinguela.rentexpressweb.web.private;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,11 +17,28 @@ import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.pinguela.rentexpres.model.RentalDTO;
+import com.pinguela.rentexpres.model.RentalStatusDTO;
+import com.pinguela.rentexpres.service.RentalService;
+import com.pinguela.rentexpres.service.RentalStatusService;
+import com.pinguela.rentexpres.service.impl.RentalServiceImpl;
+import com.pinguela.rentexpres.service.impl.RentalStatusServiceImpl;
+import com.pinguela.rentexpressweb.constants.AppConstants;
+import com.pinguela.rentexpressweb.constants.RentalConstants;
+import com.pinguela.rentexpressweb.security.SessionManager;
+import com.pinguela.rentexpressweb.util.LegacyDateUtils;
+import com.pinguela.rentexpressweb.web.common.BaseServlet;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 /**
  * Dashboard privado con métricas de alquileres y automatización de reservas.
  */
 @WebServlet("/app/rentals/private")
-public class PrivateRentalServlet extends HttpServlet {
+public class PrivateRentalServlet extends BaseServlet {
     private static final long serialVersionUID = 1L;
 
     private static final Logger LOGGER = LogManager.getLogger(PrivateRentalServlet.class);
@@ -52,26 +51,18 @@ public class PrivateRentalServlet extends HttpServlet {
         super();
     }
 
-    /**
-     * @see HttpServlet#doGet(HttpServletRequest, HttpServletResponse)
-     */
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
-        if (currentUser == null) {
-            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
-                    "Inicia sesión para acceder al panel de alquileres.");
-            response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
+        if (!requireUser(request, response, "Inicia sesión para acceder al panel de alquileres.")) {
+            return;
+        }
+        if (!requireEmployee(request, response, "No tienes permisos para acceder al panel de alquileres.")) {
             return;
         }
 
-        if (SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE) == null) {
-            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
-                    "No tienes permisos para acceder al panel de alquileres.");
-            response.sendRedirect(request.getContextPath() + SecurityConstants.HOME_ENDPOINT);
-            return;
-        }
-
+        disableCaching(response);
         exposeFlashMessages(request);
+
         request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Panel de alquileres");
 
         Map<String, String> filters = buildFilters(request);
@@ -80,9 +71,9 @@ public class PrivateRentalServlet extends HttpServlet {
 
         Integer statusId = parseInteger(filters.get(RentalConstants.PARAM_STATUS), errors,
                 "Selecciona un estado válido.");
-        Date startFrom = parseDate(filters.get(RentalConstants.PARAM_START_FROM), errors,
+        Date startFrom = parseIsoDate(filters.get(RentalConstants.PARAM_START_FROM), errors,
                 "La fecha desde no es válida.");
-        Date startTo = parseDate(filters.get(RentalConstants.PARAM_START_TO), errors,
+        Date startTo = parseIsoDate(filters.get(RentalConstants.PARAM_START_TO), errors,
                 "La fecha hasta no es válida.");
 
         if (startFrom != null && startTo != null && startFrom.after(startTo)) {
@@ -90,9 +81,9 @@ public class PrivateRentalServlet extends HttpServlet {
         }
 
         BigDecimal minCost = parseDecimal(filters.get(RentalConstants.PARAM_MIN_COST), errors,
-                "El coste mínimo indicado no es correcto.");
+                "El coste mínimo indicado no es correcto.", "Los importes deben ser positivos.");
         BigDecimal maxCost = parseDecimal(filters.get(RentalConstants.PARAM_MAX_COST), errors,
-                "El coste máximo indicado no es correcto.");
+                "El coste máximo indicado no es correcto.", "Los importes deben ser positivos.");
 
         if (minCost != null && maxCost != null && minCost.compareTo(maxCost) > 0) {
             errors.add("El coste mínimo no puede ser mayor que el máximo.");
@@ -116,25 +107,16 @@ public class PrivateRentalServlet extends HttpServlet {
         request.setAttribute(RentalConstants.ATTR_LATEST_RENTALS, buildRentalViews(latestRentals, statusNames));
         request.setAttribute(RentalConstants.ATTR_RENTAL_SUMMARY, summary);
         exposeParameterNames(request);
-        request.getRequestDispatcher("/private/rental/rental_dashboard.jsp").forward(request, response);
+
+        forward(request, response, "/private/rental/rental_dashboard.jsp");
     }
 
-    /**
-     * @see HttpServlet#doPost(HttpServletRequest, HttpServletResponse)
-     */
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Object currentUser = SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
-        if (currentUser == null) {
-            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
-                    "Inicia sesión para gestionar los alquileres.");
-            response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
+        if (!requireUser(request, response, "Inicia sesión para gestionar los alquileres.")) {
             return;
         }
-
-        if (SessionManager.getAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE) == null) {
-            SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
-                    "No tienes permisos para acceder al panel de alquileres.");
-            response.sendRedirect(request.getContextPath() + SecurityConstants.HOME_ENDPOINT);
+        if (!requireEmployee(request, response, "No tienes permisos para acceder al panel de alquileres.")) {
             return;
         }
 
@@ -143,27 +125,7 @@ public class PrivateRentalServlet extends HttpServlet {
             triggerAutoConversion(request);
         }
 
-        response.sendRedirect(request.getContextPath() + "/app/rentals/private");
-    }
-
-    private void exposeFlashMessages(HttpServletRequest request) {
-        Object success = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
-        if (success != null) {
-            request.setAttribute(AppConstants.ATTR_FLASH_SUCCESS, success);
-            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
-        }
-
-        Object error = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_ERROR);
-        if (error != null) {
-            request.setAttribute(AppConstants.ATTR_FLASH_ERROR, error);
-            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_ERROR);
-        }
-
-        Object info = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_INFO);
-        if (info != null) {
-            request.setAttribute(AppConstants.ATTR_FLASH_INFO, info);
-            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_INFO);
-        }
+        redirect(request, response, "/app/rentals/private");
     }
 
     private void triggerAutoConversion(HttpServletRequest request) {
@@ -194,56 +156,12 @@ public class PrivateRentalServlet extends HttpServlet {
 
     private Map<String, String> buildFilters(HttpServletRequest request) {
         Map<String, String> filters = new HashMap<>();
-        filters.put(RentalConstants.PARAM_STATUS, sanitize(request.getParameter(RentalConstants.PARAM_STATUS)));
-        filters.put(RentalConstants.PARAM_START_FROM, sanitize(request.getParameter(RentalConstants.PARAM_START_FROM)));
-        filters.put(RentalConstants.PARAM_START_TO, sanitize(request.getParameter(RentalConstants.PARAM_START_TO)));
-        filters.put(RentalConstants.PARAM_MIN_COST, sanitize(request.getParameter(RentalConstants.PARAM_MIN_COST)));
-        filters.put(RentalConstants.PARAM_MAX_COST, sanitize(request.getParameter(RentalConstants.PARAM_MAX_COST)));
+        filters.put(RentalConstants.PARAM_STATUS, trim(request.getParameter(RentalConstants.PARAM_STATUS)));
+        filters.put(RentalConstants.PARAM_START_FROM, trim(request.getParameter(RentalConstants.PARAM_START_FROM)));
+        filters.put(RentalConstants.PARAM_START_TO, trim(request.getParameter(RentalConstants.PARAM_START_TO)));
+        filters.put(RentalConstants.PARAM_MIN_COST, trim(request.getParameter(RentalConstants.PARAM_MIN_COST)));
+        filters.put(RentalConstants.PARAM_MAX_COST, trim(request.getParameter(RentalConstants.PARAM_MAX_COST)));
         return filters;
-    }
-
-    private String sanitize(String value) {
-        return value != null ? value.trim() : null;
-    }
-
-    private Integer parseInteger(String value, List<String> errors, String message) {
-        if (value == null || value.isEmpty()) {
-            return null;
-        }
-        try {
-            return Integer.valueOf(value);
-        } catch (NumberFormatException ex) {
-            errors.add(message);
-            return null;
-        }
-    }
-
-    private Date parseDate(String value, List<String> errors, String message) {
-        if (value == null || value.isEmpty()) {
-            return null;
-        }
-        Date parsed = LegacyDateUtils.parseIsoDate(value);
-        if (parsed == null) {
-            errors.add(message);
-        }
-        return parsed;
-    }
-
-    private BigDecimal parseDecimal(String value, List<String> errors, String message) {
-        if (value == null || value.isEmpty()) {
-            return null;
-        }
-        try {
-            BigDecimal decimal = new BigDecimal(value);
-            if (decimal.compareTo(BigDecimal.ZERO) < 0) {
-                errors.add("Los importes deben ser positivos.");
-                return null;
-            }
-            return decimal;
-        } catch (NumberFormatException ex) {
-            errors.add(message);
-            return null;
-        }
     }
 
     private List<RentalDTO> loadRentals() {
@@ -337,8 +255,7 @@ public class PrivateRentalServlet extends HttpServlet {
             if (status != null && status.getRentalStatusId() != null) {
                 long count = 0L;
                 for (RentalDTO rental : rentals) {
-                    if (rental != null
-                            && Objects.equals(rental.getRentalStatusId(), status.getRentalStatusId())) {
+                    if (rental != null && Objects.equals(rental.getRentalStatusId(), status.getRentalStatusId())) {
                         count++;
                     }
                 }
