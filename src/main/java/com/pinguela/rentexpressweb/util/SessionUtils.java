@@ -1,5 +1,8 @@
 package com.pinguela.rentexpressweb.util;
 
+import com.pinguela.rentexpres.model.UserDTO;
+import com.pinguela.rentexpressweb.constants.AppConstants;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
@@ -42,7 +45,12 @@ public final class SessionUtils {
         if (session == null) {
             return null;
         }
-        return session.getAttribute(name);
+        Object value = session.getAttribute(name);
+        if (AppConstants.ATTR_CURRENT_USER.equals(name) && value instanceof UserDTO) {
+            UserDTO user = (UserDTO) value;
+            return user.getEmail();
+        }
+        return value;
     }
 
     public static void removeAttribute(HttpServletRequest request, String name) {

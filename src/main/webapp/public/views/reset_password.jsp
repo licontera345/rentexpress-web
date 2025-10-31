@@ -46,7 +46,7 @@
                     </div>
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <button type="submit" class="btn btn-brand"><fmt:message key="resetPassword.submit" /></button>
-                        <a href="${ctx}/app/auth/login" class="text-decoration-none"><fmt:message key="resetPassword.back" /></a>
+                        <a href="${ctx}/login" class="text-decoration-none"><fmt:message key="resetPassword.back" /></a>
                     </div>
                 </form>
             </div>

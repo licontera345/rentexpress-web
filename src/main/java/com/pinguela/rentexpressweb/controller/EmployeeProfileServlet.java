@@ -5,132 +5,78 @@ import com.pinguela.rentexpres.model.EmployeeDTO;
 import com.pinguela.rentexpres.model.HeadquartersDTO;
 import com.pinguela.rentexpres.model.ProvinceDTO;
 import com.pinguela.rentexpres.model.RoleDTO;
-import com.pinguela.rentexpres.service.RoleService;
-import com.pinguela.rentexpres.service.impl.RoleServiceImpl;
-import com.pinguela.rentexpressweb.constants.AppConstants;
-import com.pinguela.rentexpressweb.constants.EmployeeConstants;
-import com.pinguela.rentexpressweb.constants.SecurityConstants;
-import com.pinguela.rentexpressweb.security.EmployeeSessionResolver;
-import com.pinguela.rentexpressweb.util.SessionUtils;
 import com.pinguela.rentexpres.service.HeadquartersService;
+import com.pinguela.rentexpres.service.RoleService;
 import com.pinguela.rentexpres.service.impl.HeadquartersServiceImpl;
+import com.pinguela.rentexpres.service.impl.RoleServiceImpl;
 import com.pinguela.rentexpressweb.util.LegacyDateUtils;
-import com.pinguela.rentexpressweb.util.Views;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.StringJoiner;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-/**
- * Servlet implementation class EmployeeProfileServlet
- */
 @WebServlet("/app/employees/profile")
 public class EmployeeProfileServlet extends HttpServlet {
+
     private static final long serialVersionUID = 1L;
 
     private static final Logger LOGGER = LogManager.getLogger(EmployeeProfileServlet.class);
-
-    private static final String DATE_DISPLAY_PATTERN = "dd/MM/yyyy HH:mm";
-    private static final String DEFAULT_VALUE = "No disponible";
-    private static final String STATUS_LABEL_ACTIVE = "Activo";
-    private static final String STATUS_LABEL_INACTIVE = "Inactivo";
-    private static final String STATUS_STYLE_ACTIVE = "bg-success-subtle text-success fw-semibold";
-    private static final String STATUS_STYLE_INACTIVE = "bg-secondary-subtle text-secondary fw-semibold";
-
-    private static final String PROFILE_KEY_EMPLOYEE_ID = "employeeId";
-    private static final String PROFILE_KEY_FULL_NAME = "fullName";
-    private static final String PROFILE_KEY_ACCOUNT_NAME = "accountName";
-    private static final String PROFILE_KEY_EMAIL = "email";
-    private static final String PROFILE_KEY_PHONE = "phone";
-    private static final String PROFILE_KEY_ROLE = "role";
-    private static final String PROFILE_KEY_HEADQUARTERS = "headquarters";
-    private static final String PROFILE_KEY_HEADQUARTERS_LOCATION = "headquartersLocation";
-    private static final String PROFILE_KEY_HEADQUARTERS_PHONE = "headquartersPhone";
-    private static final String PROFILE_KEY_HEADQUARTERS_EMAIL = "headquartersEmail";
-    private static final String PROFILE_KEY_STATUS_LABEL = "statusLabel";
-    private static final String PROFILE_KEY_STATUS_STYLE = "statusStyle";
-    private static final String PROFILE_KEY_CREATED_AT = "createdAt";
-    private static final String PROFILE_KEY_UPDATED_AT = "updatedAt";
+    private static final String DATE_PATTERN = "dd/MM/yyyy HH:mm";
+    private static final String STATUS_ACTIVE_CLASS = "bg-success-subtle text-success fw-semibold";
+    private static final String STATUS_INACTIVE_CLASS = "bg-secondary-subtle text-secondary fw-semibold";
 
     private final RoleService roleService = new RoleServiceImpl();
     private final HeadquartersService headquartersService = new HeadquartersServiceImpl();
 
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public EmployeeProfileServlet() {
-        super();
-    }
-
-    /**
-     * @see HttpServlet#doGet(HttpServletRequest, HttpServletResponse)
-     */
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Object currentUser = SessionUtils.getAttribute(request, AppConstants.ATTR_CURRENT_USER);
-        if (currentUser == null) {
-            SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
-                    "Inicia sesión para consultar tu perfil de empleado.");
-            response.sendRedirect(request.getContextPath() + SecurityConstants.LOGIN_ENDPOINT);
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            response.sendRedirect(request.getContextPath() + "/login?error=login");
             return;
         }
 
-        EmployeeSessionResolver.refresh(request);
-        Object employeeAttr = SessionUtils.getAttribute(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
+        Object employeeAttr = session.getAttribute("currentEmployee");
         if (!(employeeAttr instanceof EmployeeDTO)) {
-            SessionUtils.setAttribute(request, AppConstants.ATTR_FLASH_ERROR,
-                    "Tu cuenta no está vinculada a un perfil de empleado.");
-            response.sendRedirect(request.getContextPath() + SecurityConstants.HOME_ENDPOINT);
+            response.sendRedirect(request.getContextPath() + "/login?error=login");
             return;
         }
 
         disableCaching(response);
-        exposeFlashMessages(request);
 
         EmployeeDTO employee = (EmployeeDTO) employeeAttr;
-        Map<String, Object> profile = buildEmployeeProfile(employee);
+        boolean active = Boolean.TRUE.equals(employee.getActiveStatus());
+        request.setAttribute("employee", employee);
+        request.setAttribute("fullName", buildFullName(employee));
+        request.setAttribute("roleName", resolveRoleName(employee));
 
-        request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Perfil del empleado");
-        request.setAttribute(EmployeeConstants.ATTR_EMPLOYEE_PROFILE, profile);
-        request.getRequestDispatcher(Views.PRIVATE_EMPLOYEE_PROFILE).forward(request, response);
+        HeadquartersDTO headquarters = resolveHeadquarters(employee);
+        request.setAttribute("headquarters", headquarters);
+        request.setAttribute("headquartersLocation", buildHeadquartersLocation(headquarters));
+        request.setAttribute("headquartersPhone", headquarters == null ? null : headquarters.getPhone());
+        request.setAttribute("headquartersEmail", headquarters == null ? null : headquarters.getEmail());
+
+        request.setAttribute("isActive", Boolean.valueOf(active));
+        request.setAttribute("statusClass", active ? STATUS_ACTIVE_CLASS : STATUS_INACTIVE_CLASS);
+        request.setAttribute("createdAtFormatted", formatDate(employee.getCreatedAt()));
+        request.setAttribute("updatedAtFormatted", formatDate(employee.getUpdatedAt()));
+
+        request.getRequestDispatcher("/private/employee/employee_profile.jsp").forward(request, response);
     }
 
-    /**
-     * @see HttpServlet#doPost(HttpServletRequest, HttpServletResponse)
-     */
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);
-    }
-
-    private void exposeFlashMessages(HttpServletRequest request) {
-        Object success = SessionUtils.getAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
-        if (success != null) {
-            request.setAttribute(AppConstants.ATTR_FLASH_SUCCESS, success);
-            SessionUtils.removeAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
-        }
-
-        Object error = SessionUtils.getAttribute(request, AppConstants.ATTR_FLASH_ERROR);
-        if (error != null) {
-            request.setAttribute(AppConstants.ATTR_FLASH_ERROR, error);
-            SessionUtils.removeAttribute(request, AppConstants.ATTR_FLASH_ERROR);
-        }
-
-        Object info = SessionUtils.getAttribute(request, AppConstants.ATTR_FLASH_INFO);
-        if (info != null) {
-            request.setAttribute(AppConstants.ATTR_FLASH_INFO, info);
-            SessionUtils.removeAttribute(request, AppConstants.ATTR_FLASH_INFO);
-        }
     }
 
     private void disableCaching(HttpServletResponse response) {
@@ -139,69 +85,18 @@ public class EmployeeProfileServlet extends HttpServlet {
         response.setDateHeader("Expires", 0);
     }
 
-    private Map<String, Object> buildEmployeeProfile(EmployeeDTO employee) {
-        if (employee == null) {
-            return Collections.emptyMap();
-        }
-
-        Map<String, Object> profile = new LinkedHashMap<String, Object>();
-        Integer identifier = resolveEmployeeId(employee);
-        profile.put(PROFILE_KEY_EMPLOYEE_ID, identifier);
-
-        String fullName = resolveFullName(employee);
-        profile.put(PROFILE_KEY_FULL_NAME, defaultString(fullName));
-
-        String accountName = employee.getEmployeeName();
-        if (accountName == null || accountName.trim().isEmpty()) {
-            accountName = fullName;
-        }
-        profile.put(PROFILE_KEY_ACCOUNT_NAME, defaultString(accountName));
-
-        profile.put(PROFILE_KEY_EMAIL, defaultString(employee.getEmail()));
-        profile.put(PROFILE_KEY_PHONE, defaultString(employee.getPhone()));
-        profile.put(PROFILE_KEY_ROLE, defaultString(resolveRoleName(employee)));
-
-        HeadquartersDTO headquarters = resolveHeadquarters(employee);
-        profile.put(PROFILE_KEY_HEADQUARTERS, defaultString(resolveHeadquartersName(headquarters)));
-
-        String location = optionalString(resolveHeadquartersLocation(headquarters));
-        if (location != null) {
-            profile.put(PROFILE_KEY_HEADQUARTERS_LOCATION, location);
-        }
-
-        profile.put(PROFILE_KEY_HEADQUARTERS_PHONE, defaultString(resolveHeadquartersPhone(headquarters)));
-        profile.put(PROFILE_KEY_HEADQUARTERS_EMAIL, defaultString(resolveHeadquartersEmail(headquarters)));
-
-        boolean active = Boolean.TRUE.equals(employee.getActiveStatus());
-        profile.put(PROFILE_KEY_STATUS_LABEL, active ? STATUS_LABEL_ACTIVE : STATUS_LABEL_INACTIVE);
-        profile.put(PROFILE_KEY_STATUS_STYLE, active ? STATUS_STYLE_ACTIVE : STATUS_STYLE_INACTIVE);
-
-        profile.put(PROFILE_KEY_CREATED_AT, formatTimestamp(employee.getCreatedAt()));
-        profile.put(PROFILE_KEY_UPDATED_AT, formatTimestamp(employee.getUpdatedAt()));
-
-        return Collections.unmodifiableMap(profile);
-    }
-
-    private Integer resolveEmployeeId(EmployeeDTO employee) {
-        if (employee.getId() != null) {
-            return employee.getId();
-        }
-        return employee.getId();
-    }
-
-    private String resolveFullName(EmployeeDTO employee) {
+    private String buildFullName(EmployeeDTO employee) {
         StringBuilder builder = new StringBuilder();
         appendNamePart(builder, employee.getFirstName());
         appendNamePart(builder, employee.getLastName1());
         appendNamePart(builder, employee.getLastName2());
-        String fullName = builder.toString().trim();
-        if (fullName.isEmpty()) {
-            String employeeName = employee.getEmployeeName();
-            if (employeeName != null) {
-                return employeeName.trim();
+        if (builder.length() == 0 && employee.getEmployeeName() != null) {
+            String payrollName = employee.getEmployeeName().trim();
+            if (!payrollName.isEmpty()) {
+                builder.append(payrollName);
             }
         }
-        return fullName;
+        return builder.toString();
     }
 
     private void appendNamePart(StringBuilder builder, String value) {
@@ -221,9 +116,9 @@ public class EmployeeProfileServlet extends HttpServlet {
     private String resolveRoleName(EmployeeDTO employee) {
         RoleDTO role = employee.getRole();
         if (role != null && role.getRoleName() != null) {
-            String roleName = role.getRoleName().trim();
-            if (!roleName.isEmpty()) {
-                return roleName;
+            String name = role.getRoleName().trim();
+            if (!name.isEmpty()) {
+                return name;
             }
         }
         Integer roleId = employee.getRoleId();
@@ -233,49 +128,35 @@ public class EmployeeProfileServlet extends HttpServlet {
         try {
             RoleDTO resolved = roleService.findById(roleId);
             if (resolved != null && resolved.getRoleName() != null) {
-                String name = resolved.getRoleName().trim();
-                if (!name.isEmpty()) {
-                    return name;
+                String resolvedName = resolved.getRoleName().trim();
+                if (!resolvedName.isEmpty()) {
+                    return resolvedName;
                 }
             }
         } catch (Exception ex) {
-            LOGGER.warn("No se pudo recuperar el rol {}", roleId, ex);
+            LOGGER.warn("No se pudo recuperar el nombre del rol {}", roleId, ex);
         }
         return null;
     }
 
     private HeadquartersDTO resolveHeadquarters(EmployeeDTO employee) {
         HeadquartersDTO headquarters = employee.getHeadquarters();
-        if (headquarters != null && optionalString(headquarters.getName()) != null) {
+        if (headquarters != null && headquarters.getName() != null && !headquarters.getName().trim().isEmpty()) {
             return headquarters;
         }
-        return findHeadquarters(employee.getHeadquartersId());
-    }
-
-    private HeadquartersDTO findHeadquarters(Integer headquartersId) {
+        Integer headquartersId = employee.getHeadquartersId();
         if (headquartersId == null) {
             return null;
         }
         try {
-            HeadquartersDTO headquarters = headquartersService.findById(headquartersId);
-            if (headquarters == null) {
-                LOGGER.warn("No se pudo recuperar la sede {}", headquartersId);
-            }
-            return headquarters;
+            return headquartersService.findById(headquartersId);
         } catch (Exception ex) {
-            LOGGER.warn("Error al recuperar la sede {}", headquartersId, ex);
+            LOGGER.warn("No se pudo cargar la sede {} asociada al empleado", headquartersId, ex);
             return null;
         }
     }
 
-    private String resolveHeadquartersName(HeadquartersDTO headquarters) {
-        if (headquarters == null) {
-            return null;
-        }
-        return headquarters.getName();
-    }
-
-    private String resolveHeadquartersLocation(HeadquartersDTO headquarters) {
+    private String buildHeadquartersLocation(HeadquartersDTO headquarters) {
         if (headquarters == null) {
             return null;
         }
@@ -298,47 +179,11 @@ public class EmployeeProfileServlet extends HttpServlet {
         return result.isEmpty() ? null : result;
     }
 
-    private String resolveHeadquartersPhone(HeadquartersDTO headquarters) {
-        if (headquarters == null) {
-            return null;
-        }
-        return headquarters.getPhone();
-    }
-
-    private String resolveHeadquartersEmail(HeadquartersDTO headquarters) {
-        if (headquarters == null) {
-            return null;
-        }
-        return headquarters.getEmail();
-    }
-
-    private String formatTimestamp(Object value) {
+    private String formatDate(Object value) {
         Date date = LegacyDateUtils.toDate(value);
         if (date == null) {
-            return DEFAULT_VALUE;
-        }
-        return LegacyDateUtils.formatDate(date, DATE_DISPLAY_PATTERN);
-    }
-
-    private String defaultString(String value) {
-        if (value == null) {
-            return DEFAULT_VALUE;
-        }
-        String trimmed = value.trim();
-        if (trimmed.isEmpty()) {
-            return DEFAULT_VALUE;
-        }
-        return trimmed;
-    }
-
-    private String optionalString(String value) {
-        if (value == null) {
             return null;
         }
-        String trimmed = value.trim();
-        if (trimmed.isEmpty()) {
-            return null;
-        }
-        return trimmed;
+        return LegacyDateUtils.formatDate(date, DATE_PATTERN);
     }
 }

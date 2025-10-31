@@ -11,34 +11,22 @@
 </h2>
 
 <table border="1">
-	<tr>
-		<th>ID</th>
-		<th><fmt:message key="usuario.detail.name" /></th>
-		<th><fmt:message key="usuario.detail.email" /></th>
-		<th><fmt:message key="actions" /></th>
-	</tr>
-	<c:forEach var="u" items="${usuarios}">
-		<tr>
-			<td><c:out value="${u.id}" /></td>
-			<td><c:out value="${u.nombreUsuario}" /></td>
-			<td><c:out value="${u.email}" /></td>
-                        <td><a
-                                href="${ctx}/public/users?action=view&amp;userId=${u.id}">
+        <tr>
+                <th>ID</th>
+                <th><fmt:message key="usuario.detail.name" /></th>
+                <th><fmt:message key="usuario.detail.email" /></th>
+                <th><fmt:message key="actions" /></th>
+        </tr>
+        <c:forEach var="user" items="${items}">
+                <tr>
+                        <td><c:out value="${user.userId}" /></td>
+                        <td><c:out value="${empty user.firstName ? user.username : user.firstName}" /></td>
+                        <td><c:out value="${user.email}" /></td>
+                        <td>
+                                <a href="${ctx}/public/users/detail?id=${user.userId}">
                                         <fmt:message key="action.view" />
-                        </a> | <a
-                                href="${ctx}/public/users?action=edit&amp;userId=${u.id}">
-                                        <fmt:message key="action.edit" />
-                        </a> | <a
-                                href="${ctx}/public/users?action=delete&amp;userId=${u.id}"
-                                onclick="return confirm('¿Seguro que quieres eliminar?')"> <fmt:message
-                                                key="action.delete" />
-                        </a></td>
-		</tr>
-	</c:forEach>
+                                </a>
+                        </td>
+                </tr>
+        </c:forEach>
 </table>
-
-<br />
-<a
-        href="${ctx}/public/users?action=create">
-        <fmt:message key="action.new" />
-</a>

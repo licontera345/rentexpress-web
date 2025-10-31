@@ -105,7 +105,7 @@
                     </c:if>
                 </p>
             </div>
-            <a class="btn btn-outline-brand" href="${ctx}/app/auth/login">
+            <a class="btn btn-outline-brand" href="${ctx}/login">
                 <i class="bi bi-box-arrow-in-right me-2"></i><fmt:message key="vehicle.catalog.header.loginCta" />
             </a>
         </div>
