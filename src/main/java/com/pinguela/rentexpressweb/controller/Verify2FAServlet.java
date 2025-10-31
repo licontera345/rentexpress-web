@@ -8,6 +8,7 @@ import com.pinguela.rentexpressweb.security.EmployeeSessionResolver;
 import com.pinguela.rentexpressweb.security.RememberMeManager;
 import com.pinguela.rentexpressweb.security.SessionManager;
 import com.pinguela.rentexpressweb.security.TwoFactorManager;
+import com.pinguela.rentexpressweb.util.FlashMessageUtils;
 import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.UserActivityTracker;
 
@@ -77,7 +78,7 @@ public class Verify2FAServlet extends HttpServlet {
             return;
         }
 
-        copyFlashMessages(request);
+        FlashMessageUtils.transferToRequest(request);
         request.setAttribute(AppConstants.ATTR_PAGE_TITLE,
                 MessageResolver.getMessage(request, "page.verify2fa.title"));
         request.setAttribute(ATTR_PENDING_EMAIL, TwoFactorManager.getPendingEmail(request));
@@ -146,26 +147,6 @@ public class Verify2FAServlet extends HttpServlet {
         SessionManager.setAttribute(request, AppConstants.ATTR_FLASH_SUCCESS,
                 MessageResolver.getMessage(request, "flash.login.success"));
         response.sendRedirect(request.getContextPath() + SecurityConstants.HOME_ENDPOINT);
-    }
-
-    private void copyFlashMessages(HttpServletRequest request) {
-        Object success = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
-        if (success != null) {
-            request.setAttribute(AppConstants.ATTR_FLASH_SUCCESS, success);
-            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_SUCCESS);
-        }
-
-        Object error = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_ERROR);
-        if (error != null) {
-            request.setAttribute(AppConstants.ATTR_FLASH_ERROR, error);
-            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_ERROR);
-        }
-
-        Object info = SessionManager.getAttribute(request, AppConstants.ATTR_FLASH_INFO);
-        if (info != null) {
-            request.setAttribute(AppConstants.ATTR_FLASH_INFO, info);
-            SessionManager.removeAttribute(request, AppConstants.ATTR_FLASH_INFO);
-        }
     }
 
     private String buildVerificationInfoMessage(HttpServletRequest request, String email, boolean resent) {
