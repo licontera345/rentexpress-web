@@ -13,7 +13,7 @@
                                 <fmt:param value="<strong>${rememberedEmail}</strong>" />
                             </fmt:message>
                         </span>
-                        <a class="btn btn-sm btn-outline-brand" href="${ctx}/app/welcome">
+                        <a class="btn btn-sm btn-outline-brand" href="${ctx}/public/home">
                             <fmt:message key="login.alreadyAuthenticated.cta" />
                         </a>
                     </div>

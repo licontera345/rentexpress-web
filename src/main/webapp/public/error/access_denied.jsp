@@ -9,7 +9,7 @@
                 <p class="text-muted"><fmt:message key="error.accessDenied.message" /></p>
                 <div class="d-flex justify-content-center gap-2">
                     <a class="btn btn-outline-brand" href="${pageContext.request.contextPath}/app/auth/login"><fmt:message key="error.accessDenied.login" /></a>
-                    <a class="btn btn-brand" href="${pageContext.request.contextPath}/app/welcome"><fmt:message key="error.accessDenied.home" /></a>
+                    <a class="btn btn-brand" href="${pageContext.request.contextPath}/public/home"><fmt:message key="error.accessDenied.home" /></a>
                 </div>
             </div>
         </div>

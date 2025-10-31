@@ -10,7 +10,7 @@
                 <c:if test="${not empty exception}">
                     <pre class="alert alert-light text-start overflow-auto small">${exception}</pre>
                 </c:if>
-                <a class="btn btn-brand mt-3" href="${pageContext.request.contextPath}/app/welcome"><fmt:message key="error.generic.home" /></a>
+                <a class="btn btn-brand mt-3" href="${pageContext.request.contextPath}/public/home"><fmt:message key="error.generic.home" /></a>
             </div>
         </div>
     </div>

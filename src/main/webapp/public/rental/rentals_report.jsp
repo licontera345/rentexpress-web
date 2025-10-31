@@ -2,7 +2,7 @@
 <%@ include file="/common/header.jsp" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <c:if test="${empty currentEmployee}">
-    <c:redirect url="${ctx}/app/welcome" />
+    <c:redirect url="${ctx}/public/home" />
 </c:if>
 <c:set var="filters" value="${rentalFilters}" />
 <c:set var="errors" value="${rentalFilterErrors}" />
