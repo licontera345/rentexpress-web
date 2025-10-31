@@ -27,6 +27,7 @@ import com.pinguela.rentexpressweb.constants.ReservationConstants;
 import com.pinguela.rentexpressweb.constants.VehicleConstants;
 import com.pinguela.rentexpressweb.security.SessionManager;
 import com.pinguela.rentexpressweb.util.LegacyDateUtils;
+import com.pinguela.rentexpressweb.util.ValidatorUtils;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -95,7 +96,7 @@ public class PrivateReservationServlet extends BaseServlet {
 		String vehicleIdParam = request.getParameter(ReservationConstants.PARAM_VEHICLE_ID);
 		formData.put(ReservationConstants.PARAM_VEHICLE_ID, vehicleIdParam);
 
-		Integer vehicleId = parseInteger(vehicleIdParam);
+                Integer vehicleId = ValidatorUtils.parseInteger(vehicleIdParam);
 		VehicleDTO vehicle = loadVehicle(vehicleId);
 
 		if (vehicle == null) {
@@ -105,10 +106,10 @@ public class PrivateReservationServlet extends BaseServlet {
 			return;
 		}
 
-		Date startDate = parseDate(request.getParameter(ReservationConstants.PARAM_START_DATE),
-				"La fecha de recogida es obligatoria y debe tener formato válido.", errors);
-		Date endDate = parseDate(request.getParameter(ReservationConstants.PARAM_END_DATE),
-				"La fecha de devolución es obligatoria y debe tener formato válido.", errors);
+                Date startDate = ValidatorUtils.requireDate(request.getParameter(ReservationConstants.PARAM_START_DATE),
+                                "La fecha de recogida es obligatoria y debe tener formato válido.", errors);
+                Date endDate = ValidatorUtils.requireDate(request.getParameter(ReservationConstants.PARAM_END_DATE),
+                                "La fecha de devolución es obligatoria y debe tener formato válido.", errors);
 		formData.put(ReservationConstants.PARAM_START_DATE,
 				request.getParameter(ReservationConstants.PARAM_START_DATE));
 		formData.put(ReservationConstants.PARAM_END_DATE, request.getParameter(ReservationConstants.PARAM_END_DATE));
@@ -130,8 +131,8 @@ public class PrivateReservationServlet extends BaseServlet {
 		formData.put(ReservationConstants.PARAM_PICKUP_HEADQUARTERS, pickupParam);
 		formData.put(ReservationConstants.PARAM_RETURN_HEADQUARTERS, dropoffParam);
 
-		Integer pickupId = parseInteger(pickupParam);
-		Integer dropoffId = parseInteger(dropoffParam);
+                Integer pickupId = ValidatorUtils.parseInteger(pickupParam);
+                Integer dropoffId = ValidatorUtils.parseInteger(dropoffParam);
 
 		HeadquartersDTO pickup = pickupId == null ? null : headquartersById.get(pickupId);
 		HeadquartersDTO dropoff = dropoffId == null ? null : headquartersById.get(dropoffId);
@@ -182,29 +183,6 @@ public class PrivateReservationServlet extends BaseServlet {
 		SessionManager.setAttribute(request, ReservationConstants.ATTR_RESERVATION_REFERENCE, reference);
 
 		redirect(request, response, "/app/reservations/private?ref=" + reference);
-	}
-
-	private Integer parseInteger(String value) {
-		if (value == null || value.trim().isEmpty()) {
-			return null;
-		}
-		try {
-			return Integer.valueOf(value.trim());
-		} catch (NumberFormatException ex) {
-			return null;
-		}
-	}
-
-	private Date parseDate(String rawValue, String errorMessage, List<String> errors) {
-		if (rawValue == null || rawValue.trim().isEmpty()) {
-			errors.add(errorMessage);
-			return null;
-		}
-		Date parsed = LegacyDateUtils.parseIsoDate(rawValue);
-		if (parsed == null) {
-			errors.add(errorMessage);
-		}
-		return parsed;
 	}
 
 	private VehicleDTO loadVehicle(Integer vehicleId) {
