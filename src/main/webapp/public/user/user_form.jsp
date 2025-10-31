@@ -6,7 +6,7 @@
             <a class="btn btn-outline-brand" href="${ctx}/app/users/register">
                 <i class="bi bi-person-plus"></i> <fmt:message key="public.user.form.registerLink" />
             </a>
-            <a class="btn btn-outline-secondary" href="${ctx}/app/auth/login">
+            <a class="btn btn-outline-secondary" href="${ctx}/login">
                 <i class="bi bi-box-arrow-in-right"></i> <fmt:message key="public.user.form.loginLink" />
             </a>
         </div>

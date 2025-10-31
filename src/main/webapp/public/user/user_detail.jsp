@@ -1,7 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ include file="/common/header.jsp" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<c:set var="user" value="${selectedUser}" />
+<c:set var="user" value="${item}" />
 <section class="mb-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="h3 mb-0"><fmt:message key="public.user.detail.title" /></h1>
@@ -38,10 +38,10 @@
                         <dt class="col-sm-4"><fmt:message key="public.user.detail.role" /></dt>
                         <dd class="col-sm-8">
                             <c:choose>
-                                <c:when test="${empty selectedUserRole}">
+                                <c:when test="${empty roleName}">
                                     <fmt:message key="public.user.detail.role.missing" />
                                 </c:when>
-                                <c:otherwise>${selectedUserRole}</c:otherwise>
+                                <c:otherwise>${roleName}</c:otherwise>
                             </c:choose>
                         </dd>
                         <dt class="col-sm-4"><fmt:message key="common.table.header.status" /></dt>

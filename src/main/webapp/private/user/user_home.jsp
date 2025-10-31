@@ -40,7 +40,7 @@
                         <i class="bi bi-calendar-check me-2"></i>
                         <fmt:message key="home.dashboard.actions.reservations" />
                     </a>
-                    <form method="post" action="${ctx}/app/auth/logout" class="d-inline">
+                    <form method="post" action="${ctx}/logout" class="d-inline">
                         <button type="submit" class="btn btn-outline-secondary">
                             <i class="bi bi-box-arrow-right me-2"></i>
                             <fmt:message key="home.dashboard.actions.logout" />

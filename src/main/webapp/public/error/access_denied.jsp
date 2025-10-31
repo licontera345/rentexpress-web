@@ -8,7 +8,7 @@
                 <h1 class="h3 fw-bold mb-2"><fmt:message key="error.accessDenied.title" /></h1>
                 <p class="text-muted"><fmt:message key="error.accessDenied.message" /></p>
                 <div class="d-flex justify-content-center gap-2">
-                    <a class="btn btn-outline-brand" href="${pageContext.request.contextPath}/app/auth/login"><fmt:message key="error.accessDenied.login" /></a>
+                    <a class="btn btn-outline-brand" href="${pageContext.request.contextPath}/login"><fmt:message key="error.accessDenied.login" /></a>
                     <a class="btn btn-brand" href="${pageContext.request.contextPath}/public/home"><fmt:message key="error.accessDenied.home" /></a>
                 </div>
             </div>
