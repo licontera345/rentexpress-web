@@ -1,4 +1,4 @@
-package com.pinguela.rentexpressweb.controller;
+package com.pinguela.rentexpressweb.web.security;
 
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.MediaConstants;
@@ -12,7 +12,11 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
+import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -20,24 +24,46 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Punto centralizado para la subida manual de imágenes (demo interna).
+ * Centraliza la subida y descarga de imágenes bajo el paquete de seguridad.
  */
-@WebServlet("/app/images/upload")
+@WebServlet({ UploadServlet.UPLOAD_PATH, UploadServlet.DOWNLOAD_PATH })
 @MultipartConfig
-public class UploadImageServlet extends HttpServlet {
+public class UploadServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    private static final Logger LOGGER = LogManager.getLogger(UploadImageServlet.class);
+    static final String UPLOAD_PATH = "/app/images/upload";
+    static final String DOWNLOAD_PATH = "/app/images/download";
 
-    public UploadImageServlet() {
+    private static final Logger LOGGER = LogManager.getLogger(UploadServlet.class);
+
+    public UploadServlet() {
         super();
     }
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        if (DOWNLOAD_PATH.equals(request.getServletPath())) {
+            handleDownload(request, response);
+        } else {
+            response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+        }
     }
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        if (UPLOAD_PATH.equals(request.getServletPath())) {
+            handleUpload(request, response);
+        } else if (DOWNLOAD_PATH.equals(request.getServletPath())) {
+            handleDownload(request, response);
+        } else {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+
+    private void handleUpload(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         Map<String, String> errors = new LinkedHashMap<String, String>();
         String entity = sanitizeEntity(request.getParameter(MediaConstants.PARAM_ENTITY));
         String entityId = trimToNull(request.getParameter(MediaConstants.PARAM_ENTITY_ID));
@@ -84,11 +110,57 @@ public class UploadImageServlet extends HttpServlet {
         response.sendRedirect(resolveRedirect(request));
     }
 
+    private void handleDownload(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        String entity = normalize(request.getParameter(MediaConstants.PARAM_ENTITY));
+        String entityId = normalize(request.getParameter(MediaConstants.PARAM_ENTITY_ID));
+        if (!MediaConstants.isAllowedEntity(entity) || entityId == null || entityId.isEmpty()) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+
+        File image = ImageStorage.resolveImage(getServletContext(), entity, entityId);
+        if (image == null || !image.exists()) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        String mimeType = getServletContext().getMimeType(image.getName());
+        if (mimeType == null) {
+            mimeType = "application/octet-stream";
+        }
+        response.setContentType(mimeType);
+        response.setContentLengthLong(image.length());
+        response.setHeader("Cache-Control", "no-store");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
+
+        String encodedName = URLEncoder.encode(image.getName(), StandardCharsets.UTF_8.name());
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + encodedName + "\"");
+
+        OutputStream output = null;
+        try {
+            output = response.getOutputStream();
+            ImageStorage.copyToResponse(image, output);
+        } catch (IOException ex) {
+            LOGGER.error("Error enviando la imagen {}", image.getAbsolutePath(), ex);
+            throw ex;
+        } finally {
+            if (output != null) {
+                try {
+                    output.flush();
+                } catch (IOException ex) {
+                    LOGGER.error("Error liberando el flujo de salida", ex);
+                }
+            }
+        }
+    }
+
     private void notifyFailure(HttpServletRequest request, Map<String, String> errors) {
         StringBuilder builder = new StringBuilder();
         for (Map.Entry<String, String> entry : errors.entrySet()) {
             if (builder.length() > 0) {
-                builder.append(" ");
+                builder.append(' ');
             }
             builder.append(entry.getValue());
         }
@@ -109,6 +181,13 @@ public class UploadImageServlet extends HttpServlet {
     }
 
     private String sanitizeEntity(String value) {
+        if (value == null) {
+            return null;
+        }
+        return value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String normalize(String value) {
         if (value == null) {
             return null;
         }
