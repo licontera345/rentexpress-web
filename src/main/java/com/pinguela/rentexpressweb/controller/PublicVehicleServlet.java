@@ -4,35 +4,23 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.pinguela.rentexpres.model.HeadquartersDTO;
 import com.pinguela.rentexpres.model.Results;
 import com.pinguela.rentexpres.model.VehicleCategoryDTO;
 import com.pinguela.rentexpres.model.VehicleCriteria;
 import com.pinguela.rentexpres.model.VehicleDTO;
 import com.pinguela.rentexpres.model.VehicleStatusDTO;
-import com.pinguela.rentexpres.service.HeadquartersService;
 import com.pinguela.rentexpres.service.VehicleCategoryService;
 import com.pinguela.rentexpres.service.VehicleService;
 import com.pinguela.rentexpres.service.VehicleStatusService;
-import com.pinguela.rentexpres.service.impl.HeadquartersServiceImpl;
 import com.pinguela.rentexpres.service.impl.VehicleCategoryServiceImpl;
 import com.pinguela.rentexpres.service.impl.VehicleServiceImpl;
 import com.pinguela.rentexpres.service.impl.VehicleStatusServiceImpl;
-import com.pinguela.rentexpressweb.constants.AppConstants;
-import com.pinguela.rentexpressweb.constants.VehicleConstants;
-import com.pinguela.rentexpressweb.util.ValidatorUtils;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -40,461 +28,173 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-/**
- * Servlet encargado de mostrar el catálogo público de vehículos con filtros
- * básicos.
- */
 @WebServlet("/public/vehicles")
 public class PublicVehicleServlet extends HttpServlet {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = LogManager.getLogger(PublicVehicleServlet.class);
+    private static final int DEFAULT_PAGE = 1;
+    private static final int DEFAULT_SIZE = 20;
+    private static final int DEFAULT_AVAILABLE_STATUS_ID = 1;
+    private final VehicleService vehicleService = new VehicleServiceImpl();
+    private final VehicleCategoryService categoryService = new VehicleCategoryServiceImpl();
+    private final VehicleStatusService statusService = new VehicleStatusServiceImpl();
 
-	private static final Logger LOGGER = LogManager.getLogger(PublicVehicleServlet.class);
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        List<String> errors = new ArrayList<String>();
+        String search = trim(request.getParameter("search"));
+        String minPriceValue = trim(request.getParameter("minPrice"));
+        String maxPriceValue = trim(request.getParameter("maxPrice"));
+        Integer categoryId = parseInteger(trim(request.getParameter("category")), "La categoría seleccionada no es válida.", errors);
+        Integer statusId = parseInteger(trim(request.getParameter("status")), "El estado seleccionado no es válido.", errors);
+        BigDecimal minPrice = parsePrice(minPriceValue, "El precio mínimo debe ser un número positivo.", errors);
+        BigDecimal maxPrice = parsePrice(maxPriceValue, "El precio máximo debe ser un número positivo.", errors);
+        if (minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0) { errors.add("El precio mínimo no puede ser mayor que el máximo."); }
+        boolean onlyAvailable = parseBoolean(request.getParameter("onlyAvailable"));
+        int page = parsePage(request.getParameter("page"));
+        int size = parseSize(request.getParameter("size"), errors);
 
-	private final VehicleService vehicleService = new VehicleServiceImpl();
-	private final VehicleCategoryService categoryService = new VehicleCategoryServiceImpl();
-	private final VehicleStatusService statusService = new VehicleStatusServiceImpl();
-	private final HeadquartersService headquartersService = new HeadquartersServiceImpl();
+        Locale locale = request.getLocale();
+        String language = locale != null ? locale.getLanguage() : Locale.getDefault().getLanguage();
+        List<VehicleCategoryDTO> categories = loadCategories(language);
+        List<VehicleStatusDTO> statuses = loadStatuses(language);
+        Integer availableStatusId = findAvailableStatusId(statuses);
 
-	private static final int DEFAULT_AVAILABLE_STATUS_ID = 1;
-	private static final Set<String> AVAILABLE_STATUS_KEYWORDS = new HashSet<>();
-	private static final List<Integer> PAGE_SIZE_OPTIONS = Collections
-			.unmodifiableList(Arrays.asList(10, 20, 25, 50, 100));
-	private static final Map<String, String> PARAM_NAMES;
-	private static final Map<String, String> SORT_VALUES;
+        VehicleCriteria criteria = new VehicleCriteria();
+        if (search != null) { criteria.setBrand(search); }
+        criteria.setCategoryId(categoryId);
+        criteria.setVehicleStatusId(resolveStatusId(statusId, onlyAvailable, availableStatusId));
+        criteria.setDailyPriceMin(minPrice);
+        criteria.setDailyPriceMax(maxPrice);
+        criteria.setPageNumber(Integer.valueOf(page));
+        criteria.setPageSize(Integer.valueOf(size));
 
-	static {
-		AVAILABLE_STATUS_KEYWORDS.add("disponible");
-		AVAILABLE_STATUS_KEYWORDS.add("available");
-		AVAILABLE_STATUS_KEYWORDS.add("libre");
-
-		Map<String, String> paramNames = new LinkedHashMap<String, String>();
-		paramNames.put("search", VehicleConstants.PARAM_SEARCH);
-		paramNames.put("brand", VehicleConstants.PARAM_BRAND);
-		paramNames.put("model", VehicleConstants.PARAM_MODEL);
-		paramNames.put("category", VehicleConstants.PARAM_CATEGORY);
-		paramNames.put("minPrice", VehicleConstants.PARAM_MIN_PRICE);
-		paramNames.put("maxPrice", VehicleConstants.PARAM_MAX_PRICE);
-		paramNames.put("status", VehicleConstants.PARAM_STATUS);
-		paramNames.put("minYear", VehicleConstants.PARAM_MIN_YEAR);
-		paramNames.put("maxYear", VehicleConstants.PARAM_MAX_YEAR);
-		paramNames.put("sort", VehicleConstants.PARAM_SORT);
-		paramNames.put("onlyAvailable", VehicleConstants.PARAM_ONLY_AVAILABLE);
-		paramNames.put("page", VehicleConstants.PARAM_PAGE);
-		paramNames.put("pageSize", VehicleConstants.PARAM_PAGE_SIZE);
-		paramNames.put("headquarters", VehicleConstants.PARAM_HEADQUARTERS);
-		paramNames.put("pickupDate", VehicleConstants.PARAM_PICKUP_DATE);
-		paramNames.put("pickupTime", VehicleConstants.PARAM_PICKUP_TIME);
-		paramNames.put("returnDate", VehicleConstants.PARAM_RETURN_DATE);
-		paramNames.put("returnTime", VehicleConstants.PARAM_RETURN_TIME);
-		paramNames.put("vehicleId", VehicleConstants.PARAM_VEHICLE_ID);
-		PARAM_NAMES = Collections.unmodifiableMap(paramNames);
-
-		Map<String, String> sortValues = new LinkedHashMap<String, String>();
-		sortValues.put("priceAsc", VehicleConstants.VALUE_SORT_PRICE_ASC);
-		sortValues.put("priceDesc", VehicleConstants.VALUE_SORT_PRICE_DESC);
-		sortValues.put("yearDesc", VehicleConstants.VALUE_SORT_YEAR_DESC);
-		SORT_VALUES = Collections.unmodifiableMap(sortValues);
-	}
-
-	public PublicVehicleServlet() {
-		super();
-	}
-
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest, HttpServletResponse)
-	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		request.setAttribute(AppConstants.ATTR_PAGE_TITLE, "Catálogo de vehículos");
-
-		Map<String, String> filters = buildFilters(request);
-		List<String> filterErrors = new ArrayList<>();
-		Locale locale = request.getLocale();
-
-		request.setAttribute(VehicleConstants.ATTR_PARAM_NAMES, PARAM_NAMES);
-		request.setAttribute(VehicleConstants.ATTR_SORT_VALUES, SORT_VALUES);
-
-                BigDecimal minPrice = ValidatorUtils.parsePositiveBigDecimal(
-                                filters.get(VehicleConstants.PARAM_MIN_PRICE), filterErrors,
-                                "El precio mínimo debe tener un formato numérico válido.",
-                                "Los importes deben ser positivos.");
-                BigDecimal maxPrice = ValidatorUtils.parsePositiveBigDecimal(
-                                filters.get(VehicleConstants.PARAM_MAX_PRICE), filterErrors,
-                                "El precio máximo debe tener un formato numérico válido.",
-                                "Los importes deben ser positivos.");
-
-		if (minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0) {
-			filterErrors.add("El precio mínimo no puede ser mayor que el máximo.");
-		}
-
-                Integer categoryId = ValidatorUtils.parseInteger(filters.get(VehicleConstants.PARAM_CATEGORY),
-                                filterErrors, "La categoría seleccionada no es válida.");
-                Integer headquartersId = ValidatorUtils.parseInteger(filters.get(VehicleConstants.PARAM_HEADQUARTERS),
-                                filterErrors, "La sede seleccionada no es válida.");
-                Integer statusId = ValidatorUtils.parseInteger(filters.get(VehicleConstants.PARAM_STATUS), filterErrors,
-                                "El estado seleccionado no es válido.");
-                Integer minYear = ValidatorUtils.parseYear(filters.get(VehicleConstants.PARAM_MIN_YEAR), 1900, 2100,
-                                filterErrors, "El año mínimo debe ser un número de cuatro dígitos.",
-                                "El año debe estar entre 1900 y 2100.");
-                Integer maxYear = ValidatorUtils.parseYear(filters.get(VehicleConstants.PARAM_MAX_YEAR), 1900, 2100,
-                                filterErrors, "El año máximo debe ser un número de cuatro dígitos.",
-                                "El año debe estar entre 1900 y 2100.");
-
-		if (minYear != null && maxYear != null && minYear.intValue() > maxYear.intValue()) {
-			filterErrors.add("El año inicial no puede ser mayor que el final.");
-		}
-
-                boolean onlyAvailable = ValidatorUtils.parseBooleanFlag(filters.get(VehicleConstants.PARAM_ONLY_AVAILABLE));
-                int page = ValidatorUtils.parsePositiveInt(filters.get(VehicleConstants.PARAM_PAGE), 1, filterErrors,
-                                "La página seleccionada no es válida.");
-                int pageSize = ValidatorUtils.parseAllowedInteger(filters.get(VehicleConstants.PARAM_PAGE_SIZE), 20,
-                                PAGE_SIZE_OPTIONS, filterErrors, "El tamaño de página seleccionado no es válido.");
-
-		List<VehicleCategoryDTO> categories = loadCategories(locale);
-		Map<Integer, String> categoryNames = buildCategoryNames(categories);
-		List<HeadquartersDTO> headquarters = loadHeadquarters();
-		Map<Integer, String> headquartersNames = mapHeadquarters(headquarters);
-		List<VehicleStatusDTO> statuses = loadStatuses(locale);
-		Map<Integer, String> statusNames = buildStatusNames(statuses);
-		Integer availableStatusId = resolveAvailableStatusId(statuses);
-
-		VehicleCriteria criteria = buildCriteria(filters, minPrice, maxPrice, categoryId, headquartersId, statusId,
-				minYear, maxYear, onlyAvailable, availableStatusId, page, pageSize);
-
-		Results<VehicleDTO> results = searchVehicles(criteria, filterErrors);
-		List<VehicleDTO> vehicles = results.getResults();
-
-		request.setAttribute(VehicleConstants.ATTR_FILTERS, filters);
-		request.setAttribute(VehicleConstants.ATTR_FILTER_ERRORS, filterErrors);
-		request.setAttribute(VehicleConstants.ATTR_AVAILABLE_CATEGORIES, categories);
-		request.setAttribute(VehicleConstants.ATTR_CATEGORY_NAMES, categoryNames);
-		request.setAttribute(VehicleConstants.ATTR_HEADQUARTERS, headquarters);
-		request.setAttribute(VehicleConstants.ATTR_HEADQUARTERS_NAMES, headquartersNames);
-		request.setAttribute(VehicleConstants.ATTR_AVAILABLE_STATUSES, statuses);
-		request.setAttribute(VehicleConstants.ATTR_STATUS_NAMES, statusNames);
-		request.setAttribute(VehicleConstants.ATTR_PAGE_SIZES, PAGE_SIZE_OPTIONS);
-		request.setAttribute(VehicleConstants.ATTR_RESULTS, results);
-		request.setAttribute(VehicleConstants.ATTR_VEHICLES, vehicles);
-		request.setAttribute(VehicleConstants.ATTR_TOTAL_RESULTS, resolveTotalRecords(results));
-		request.setAttribute(VehicleConstants.ATTR_RESULTS_FROM_ROW, resolveFromRow(results));
-		request.setAttribute(VehicleConstants.ATTR_RESULTS_TO_ROW, resolveToRow(results));
-
-		request.getRequestDispatcher("/public/vehicle/catalog.jsp").forward(request, response);
-	}
-
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest, HttpServletResponse)
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		doGet(request, response);
-	}
-
-	private Map<String, String> buildFilters(HttpServletRequest request) {
-		Map<String, String> filters = new HashMap<>();
-                filters.put(VehicleConstants.PARAM_SEARCH,
-                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_SEARCH)));
-                filters.put(VehicleConstants.PARAM_BRAND,
-                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_BRAND)));
-                filters.put(VehicleConstants.PARAM_MODEL,
-                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_MODEL)));
-                filters.put(VehicleConstants.PARAM_CATEGORY,
-                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_CATEGORY)));
-                filters.put(VehicleConstants.PARAM_MIN_PRICE,
-                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_MIN_PRICE)));
-                filters.put(VehicleConstants.PARAM_MAX_PRICE,
-                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_MAX_PRICE)));
-                filters.put(VehicleConstants.PARAM_HEADQUARTERS,
-                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_HEADQUARTERS)));
-                filters.put(VehicleConstants.PARAM_PICKUP_DATE,
-                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_PICKUP_DATE)));
-                filters.put(VehicleConstants.PARAM_PICKUP_TIME,
-                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_PICKUP_TIME)));
-                filters.put(VehicleConstants.PARAM_RETURN_DATE,
-                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_RETURN_DATE)));
-                filters.put(VehicleConstants.PARAM_RETURN_TIME,
-                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_RETURN_TIME)));
-                filters.put(VehicleConstants.PARAM_STATUS,
-                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_STATUS)));
-                filters.put(VehicleConstants.PARAM_MIN_YEAR,
-                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_MIN_YEAR)));
-                filters.put(VehicleConstants.PARAM_MAX_YEAR,
-                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_MAX_YEAR)));
-                filters.put(VehicleConstants.PARAM_PAGE,
-                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_PAGE)));
-                filters.put(VehicleConstants.PARAM_PAGE_SIZE,
-                                ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_PAGE_SIZE)));
-
-                String sort = ValidatorUtils.sanitize(request.getParameter(VehicleConstants.PARAM_SORT));
-		if (!VehicleConstants.VALUE_SORT_PRICE_ASC.equals(sort) && !VehicleConstants.VALUE_SORT_PRICE_DESC.equals(sort)
-				&& !VehicleConstants.VALUE_SORT_YEAR_DESC.equals(sort)) {
-			sort = VehicleConstants.VALUE_SORT_PRICE_ASC;
-		}
-		filters.put(VehicleConstants.PARAM_SORT, sort);
-                boolean onlyAvailable = ValidatorUtils.parseBooleanFlag(
-                                request.getParameter(VehicleConstants.PARAM_ONLY_AVAILABLE));
-                filters.put(VehicleConstants.PARAM_ONLY_AVAILABLE, Boolean.toString(onlyAvailable));
-                return filters;
+        List<VehicleDTO> items = new ArrayList<VehicleDTO>();
+        int total = 0;
+        try {
+            Results<VehicleDTO> results = vehicleService.findByCriteria(criteria);
+            if (results != null) {
+                if (results.getResults() != null) { items = results.getResults(); }
+                if (results.getTotalRecords() != null) { total = results.getTotalRecords().intValue(); } else { total = items.size(); }
+                if (results.getPageNumber() != null) { page = results.getPageNumber().intValue(); }
+                if (results.getPageSize() != null) { size = results.getPageSize().intValue(); }
+            }
+        } catch (Exception ex) {
+            LOGGER.error("Error al recuperar el catálogo público de vehículos", ex);
+            errors.add("No se pudo cargar el catálogo en este momento. Inténtalo de nuevo más tarde.");
         }
 
-	private List<VehicleCategoryDTO> loadCategories(Locale locale) {
-		try {
-			String language = locale != null ? locale.getLanguage() : Locale.getDefault().getLanguage();
-			return categoryService.findAll(language);
-		} catch (Exception ex) {
-			LOGGER.error("Error al recuperar las categorías de vehículos", ex);
-			return new ArrayList<>();
-		}
-	}
+        int totalPages = size > 0 ? (int) Math.ceil((double) total / (double) size) : 1;
+        if (totalPages == 0) { totalPages = 1; }
+        if (page > totalPages) { page = totalPages; }
+        int from = 0;
+        int to = 0;
+        if (!items.isEmpty() && size > 0) {
+            from = ((page - 1) * size) + 1;
+            if (from > total) { from = total; }
+            to = from + items.size() - 1;
+            if (to > total) { to = total; }
+        }
 
-	private Map<Integer, String> buildCategoryNames(List<VehicleCategoryDTO> categories) {
-		Map<Integer, String> names = new LinkedHashMap<>();
-		if (categories != null) {
-			for (VehicleCategoryDTO category : categories) {
-				if (category != null && category.getCategoryId() != null) {
-					names.put(category.getCategoryId(), category.getCategoryName());
-				}
-			}
-		}
-		return names;
-	}
+        request.setAttribute("pageTitle", "Catálogo de vehículos");
+        if (!errors.isEmpty()) { request.setAttribute("error", errors); }
+        request.setAttribute("items", items);
+        request.setAttribute("categories", categories);
+        request.setAttribute("statuses", statuses);
+        request.setAttribute("search", search);
+        request.setAttribute("categoryId", categoryId);
+        request.setAttribute("statusId", statusId);
+        request.setAttribute("minPrice", minPriceValue);
+        request.setAttribute("maxPrice", maxPriceValue);
+        request.setAttribute("onlyAvailable", Boolean.valueOf(onlyAvailable));
+        request.setAttribute("page", Integer.valueOf(page));
+        request.setAttribute("size", Integer.valueOf(size));
+        request.setAttribute("total", Integer.valueOf(total));
+        request.setAttribute("from", Integer.valueOf(from));
+        request.setAttribute("to", Integer.valueOf(to));
+        request.setAttribute("totalPages", Integer.valueOf(totalPages));
+        request.setAttribute("pageSizes", Arrays.asList(Integer.valueOf(10), Integer.valueOf(20), Integer.valueOf(50)));
 
-	private List<HeadquartersDTO> loadHeadquarters() {
-		try {
-			List<HeadquartersDTO> headquarters = headquartersService.findAll();
-			if (headquarters == null) {
-				LOGGER.error("Error al recuperar las sedes");
-				return new ArrayList<HeadquartersDTO>();
-			}
-			return headquarters;
-		} catch (Exception ex) {
-			LOGGER.error("Error al recuperar las sedes", ex);
-			return new ArrayList<HeadquartersDTO>();
-		}
-	}
+        request.getRequestDispatcher("/public/vehicle/catalog.jsp").forward(request, response);
+    }
 
-	private Map<Integer, String> mapHeadquarters(List<HeadquartersDTO> headquarters) {
-		Map<Integer, String> names = new LinkedHashMap<>();
-		if (headquarters != null) {
-			for (HeadquartersDTO dto : headquarters) {
-				if (dto == null || dto.getId() == null) {
-					continue;
-				}
-				StringBuilder label = new StringBuilder();
-				if (dto.getName() != null) {
-					label.append(dto.getName().trim());
-				}
-				String city = dto.getCity() != null ? dto.getCity().getCityName() : null;
-				String province = dto.getProvince() != null ? dto.getProvince().getProvinceName() : null;
-				List<String> locationParts = new ArrayList<>();
-				if (city != null && !city.trim().isEmpty()) {
-					locationParts.add(city.trim());
-				}
-				if (province != null && !province.trim().isEmpty()) {
-					locationParts.add(province.trim());
-				}
-				if (!locationParts.isEmpty()) {
-					if (label.length() > 0) {
-						label.append(" · ");
-					}
-					for (int i = 0; i < locationParts.size(); i++) {
-						if (i > 0) {
-							label.append(", ");
-						}
-						label.append(locationParts.get(i));
-					}
-				}
-				names.put(dto.getId(), label.toString());
-			}
-		}
-		return names;
-	}
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException { doGet(request, response); }
 
-	private List<VehicleStatusDTO> loadStatuses(Locale locale) {
-		try {
-			String language = locale != null ? locale.getLanguage() : Locale.getDefault().getLanguage();
-			return statusService.findAll(language);
-		} catch (Exception ex) {
-			LOGGER.error("Error al recuperar los estados de los vehículos", ex);
-			return new ArrayList<>();
-		}
-	}
+    private String trim(String value) {
+        if (value == null) { return null; }
+        value = value.trim();
+        return value.isEmpty() ? null : value;
+    }
 
-	private Integer resolveAvailableStatusId(List<VehicleStatusDTO> statuses) {
-		if (statuses != null) {
-			for (VehicleStatusDTO status : statuses) {
-				if (status == null || status.getStatusName() == null || status.getVehicleStatusId() == null) {
-					continue;
-				}
-				String normalized = status.getStatusName().trim().toLowerCase(Locale.ROOT);
-				for (String keyword : AVAILABLE_STATUS_KEYWORDS) {
-					if (normalized.contains(keyword)) {
-						return status.getVehicleStatusId();
-					}
-				}
-			}
-		}
-		return Integer.valueOf(DEFAULT_AVAILABLE_STATUS_ID);
-	}
+    private Integer parseInteger(String value, String message, List<String> errors) {
+        if (value == null) { return null; }
+        try { return Integer.valueOf(value); } catch (NumberFormatException ex) { errors.add(message); return null; }
+    }
 
-	private VehicleCriteria buildCriteria(Map<String, String> filters, BigDecimal minPrice, BigDecimal maxPrice,
-			Integer categoryId, Integer headquartersId, Integer statusId, Integer minYear, Integer maxYear,
-			boolean onlyAvailable, Integer availableStatusId, int page, int pageSize) {
-		VehicleCriteria criteria = new VehicleCriteria();
-		criteria.setCategoryId(categoryId);
-		criteria.setCurrentHeadquartersId(headquartersId);
-		criteria.setDailyPriceMin(minPrice);
-		criteria.setDailyPriceMax(maxPrice);
-		criteria.setManufactureYearFrom(minYear);
-		criteria.setManufactureYearTo(maxYear);
+    private BigDecimal parsePrice(String value, String message, List<String> errors) {
+        if (value == null) { return null; }
+        try {
+            BigDecimal price = new BigDecimal(value);
+            if (price.compareTo(BigDecimal.ZERO) < 0) { errors.add(message); return null; }
+            return price;
+        } catch (NumberFormatException ex) { errors.add(message); return null; }
+    }
 
-		String brand = filters.get(VehicleConstants.PARAM_BRAND);
-		String model = filters.get(VehicleConstants.PARAM_MODEL);
-		String search = filters.get(VehicleConstants.PARAM_SEARCH);
+    private boolean parseBoolean(String value) { return value != null && "true".equalsIgnoreCase(value); }
 
-		if (brand != null) {
-			criteria.setBrand(brand);
-		}
-		if (model != null) {
-			criteria.setModel(model);
-		}
-		if ((brand == null || brand.isEmpty()) && search != null && !search.isEmpty()) {
-			String[] parts = search.split("\\s+", 2);
-			criteria.setBrand(parts[0]);
-			if ((model == null || model.isEmpty()) && parts.length > 1) {
-				criteria.setModel(parts[1]);
-			}
-		}
+    private int parsePage(String value) {
+        try { return value == null ? DEFAULT_PAGE : Math.max(Integer.parseInt(value), 1); }
+        catch (NumberFormatException ex) { return DEFAULT_PAGE; }
+    }
 
-		if (statusId != null) {
-			criteria.setVehicleStatusId(statusId);
-		} else if (onlyAvailable && availableStatusId != null) {
-			criteria.setVehicleStatusId(availableStatusId);
-		}
+    private int parseSize(String value, List<String> errors) {
+        try {
+            if (value != null) {
+                int parsed = Integer.parseInt(value);
+                if (parsed == 10 || parsed == 20 || parsed == 50) { return parsed; }
+            }
+        } catch (NumberFormatException ex) {
+            // ignored
+        }
+        errors.add("El tamaño de página seleccionado no es válido.");
+        return DEFAULT_SIZE;
+    }
 
-		criteria.setPageNumber(Integer.valueOf(page));
-		criteria.setPageSize(Integer.valueOf(pageSize));
+    private List<VehicleCategoryDTO> loadCategories(String language) {
+        try {
+            List<VehicleCategoryDTO> categories = categoryService.findAll(language);
+            return categories != null ? categories : new ArrayList<VehicleCategoryDTO>();
+        } catch (Exception ex) {
+            LOGGER.error("Error al recuperar las categorías de vehículos", ex);
+            return new ArrayList<VehicleCategoryDTO>();
+        }
+    }
 
-		return criteria;
-	}
+    private List<VehicleStatusDTO> loadStatuses(String language) {
+        try {
+            List<VehicleStatusDTO> statuses = statusService.findAll(language);
+            return statuses != null ? statuses : new ArrayList<VehicleStatusDTO>();
+        } catch (Exception ex) {
+            LOGGER.error("Error al recuperar los estados de los vehículos", ex);
+            return new ArrayList<VehicleStatusDTO>();
+        }
+    }
 
-	private Map<Integer, String> buildStatusNames(List<VehicleStatusDTO> statuses) {
-		Map<Integer, String> names = new LinkedHashMap<Integer, String>();
-		if (statuses != null) {
-			for (int i = 0; i < statuses.size(); i++) {
-				VehicleStatusDTO status = statuses.get(i);
-				if (status != null && status.getVehicleStatusId() != null) {
-					names.put(status.getVehicleStatusId(), status.getStatusName());
-				}
-			}
-		}
-		return names;
-	}
+    private Integer findAvailableStatusId(List<VehicleStatusDTO> statuses) {
+        if (statuses == null) { return Integer.valueOf(DEFAULT_AVAILABLE_STATUS_ID); }
+        for (int i = 0; i < statuses.size(); i++) {
+            VehicleStatusDTO status = statuses.get(i);
+            if (status == null || status.getStatusName() == null || status.getVehicleStatusId() == null) { continue; }
+            String normalized = status.getStatusName().trim().toLowerCase(Locale.ROOT);
+            if (normalized.contains("disponible") || normalized.contains("available") || normalized.contains("libre")) {
+                return status.getVehicleStatusId();
+            }
+        }
+        return Integer.valueOf(DEFAULT_AVAILABLE_STATUS_ID);
+    }
 
-	private Results<VehicleDTO> searchVehicles(VehicleCriteria criteria, List<String> errors) {
-		try {
-			Results<VehicleDTO> results = vehicleService.findByCriteria(criteria);
-			return normalizeResults(results, criteria);
-		} catch (Exception ex) {
-			LOGGER.error("Error al recuperar el catálogo público de vehículos", ex);
-			if (errors != null) {
-				errors.add("No se pudo cargar el catálogo en este momento. Inténtalo de nuevo más tarde.");
-			}
-			return normalizeResults(null, criteria);
-		}
-	}
-
-	private Results<VehicleDTO> normalizeResults(Results<VehicleDTO> results, VehicleCriteria criteria) {
-		if (results == null) {
-			results = new Results<VehicleDTO>();
-		}
-		if (results.getResults() == null) {
-			results.setResults(new ArrayList<VehicleDTO>());
-		}
-		if (criteria != null) {
-			int safePage = resolveSafePage(criteria);
-			int safePageSize = resolveSafePageSize(criteria);
-			Integer resultPageNumber = results.getPageNumber();
-			if (resultPageNumber == null || resultPageNumber.intValue() < 1) {
-				results.setPageNumber(Integer.valueOf(safePage));
-			}
-			Integer resultPageSize = results.getPageSize();
-			if (resultPageSize == null || resultPageSize.intValue() < 1) {
-				results.setPageSize(Integer.valueOf(safePageSize));
-			}
-		}
-		if (results.getTotalRecords() == null) {
-			results.setTotalRecords(Integer.valueOf(results.getResults().size()));
-		}
-		return results;
-	}
-
-	private int resolveSafePage(VehicleCriteria criteria) {
-		if (criteria == null || criteria.getPageNumber() == null) {
-			return 1;
-		}
-		int pageNumber = criteria.getPageNumber().intValue();
-		return pageNumber < 1 ? 1 : pageNumber;
-	}
-
-	private int resolveSafePageSize(VehicleCriteria criteria) {
-		if (criteria == null || criteria.getPageSize() == null) {
-			return 20;
-		}
-		int pageSize = criteria.getPageSize().intValue();
-		if (!PAGE_SIZE_OPTIONS.contains(Integer.valueOf(pageSize))) {
-			return 20;
-		}
-		return pageSize;
-	}
-
-	private Integer resolveTotalRecords(Results<VehicleDTO> results) {
-		if (results == null) {
-			return Integer.valueOf(0);
-		}
-		Integer totalRecords = results.getTotalRecords();
-		if (totalRecords != null) {
-			return totalRecords;
-		}
-		List<VehicleDTO> list = results.getResults();
-		int count = list != null ? list.size() : 0;
-		return Integer.valueOf(count);
-	}
-
-	private Integer resolveFromRow(Results<VehicleDTO> results) {
-		Integer totalRecords = resolveTotalRecords(results);
-		if (totalRecords.intValue() == 0) {
-			return Integer.valueOf(0);
-		}
-		int pageNumber = 1;
-		if (results != null && results.getPageNumber() != null && results.getPageNumber().intValue() > 0) {
-			pageNumber = results.getPageNumber().intValue();
-		}
-		int pageSize = totalRecords.intValue();
-		if (results != null && results.getPageSize() != null && results.getPageSize().intValue() > 0) {
-			pageSize = results.getPageSize().intValue();
-		}
-		int fromRow = ((pageNumber - 1) * pageSize) + 1;
-		if (fromRow > totalRecords.intValue()) {
-			fromRow = totalRecords.intValue();
-		}
-		return Integer.valueOf(fromRow);
-	}
-
-	private Integer resolveToRow(Results<VehicleDTO> results) {
-		Integer totalRecords = resolveTotalRecords(results);
-		if (totalRecords.intValue() == 0) {
-			return Integer.valueOf(0);
-		}
-		Integer fromRow = resolveFromRow(results);
-		int pageSize = totalRecords.intValue();
-		if (results != null && results.getPageSize() != null && results.getPageSize().intValue() > 0) {
-			pageSize = results.getPageSize().intValue();
-		}
-		int toRow = fromRow.intValue() + pageSize - 1;
-		if (toRow > totalRecords.intValue()) {
-			toRow = totalRecords.intValue();
-		}
-		return Integer.valueOf(toRow);
-	}
+    private Integer resolveStatusId(Integer statusId, boolean onlyAvailable, Integer availableStatusId) {
+        if (statusId != null) { return statusId; }
+        if (onlyAvailable) { return availableStatusId; }
+        return null;
+    }
 }
