@@ -22,8 +22,8 @@ if (cookies != null) {
 	<fmt:message key="login.title" />
 </h2>
 
-<form action="${pageContext.request.contextPath}/public/UsuarioServlet"
-	method="post">
+<form action="${pageContext.request.contextPath}/app/auth/login"
+        method="post">
 	<input type="hidden" name="action" value="login" /> <label
 		for="username"><fmt:message key="login.username" /></label><br /> <input
 		type="text" id="username" name="username" value="<%=rememberedUser%>"
