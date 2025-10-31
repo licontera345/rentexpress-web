@@ -24,7 +24,7 @@ public final class PasswordResetManager {
     public static String initiate(HttpServletRequest request, String email) {
         String code = generateCode();
         long expiration = System.currentTimeMillis()
-                + (SecurityConstants.TWO_FA_CODE_VALIDITY_SECONDS * 1000L);
+                + (SecurityConstants.VERIFICATION_CODE_VALIDITY_SECONDS * 1000L);
         SessionUtils.setAttribute(request, ATTR_RESET_EMAIL, email);
         SessionUtils.setAttribute(request, ATTR_RESET_CODE, code);
         SessionUtils.setAttribute(request, ATTR_RESET_EXPIRATION, expiration);
@@ -106,8 +106,8 @@ public final class PasswordResetManager {
     }
 
     private static String generateCode() {
-        int bound = (int) Math.pow(10, SecurityConstants.TWO_FA_CODE_LENGTH);
+        int bound = (int) Math.pow(10, SecurityConstants.VERIFICATION_CODE_LENGTH);
         int number = RANDOM.nextInt(bound);
-        return String.format("%0" + SecurityConstants.TWO_FA_CODE_LENGTH + "d", number);
+        return String.format("%0" + SecurityConstants.VERIFICATION_CODE_LENGTH + "d", number);
     }
 }

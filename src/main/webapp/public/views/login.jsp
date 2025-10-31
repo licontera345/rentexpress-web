@@ -6,18 +6,6 @@
             <div class="card-header"><fmt:message key="login.title" /></div>
             <div class="card-body p-4">
                 <p class="text-muted"><fmt:message key="login.intro" /></p>
-                <c:if test="${alreadyAuthenticated}">
-                    <div class="alert alert-warning d-flex flex-column flex-md-row align-items-md-center gap-2 justify-content-between">
-                        <span>
-                            <fmt:message key="login.alreadyAuthenticated.message">
-                                <fmt:param value="<strong>${rememberedEmail}</strong>" />
-                            </fmt:message>
-                        </span>
-                        <a class="btn btn-sm btn-outline-brand" href="${ctx}/public/home">
-                            <fmt:message key="login.alreadyAuthenticated.cta" />
-                        </a>
-                    </div>
-                </c:if>
                 <c:if test="${not empty flashSuccess}">
                     <div class="alert alert-success">${flashSuccess}</div>
                 </c:if>
@@ -43,13 +31,6 @@
                     <div class="mb-3">
                         <label for="password" class="form-label"><fmt:message key="login.password" /></label>
                         <input type="password" class="form-control" id="password" name="password" required>
-                    </div>
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" value="on" id="remember" name="remember"
-                                ${not empty rememberedEmail ? 'checked' : ''}>
-                        <label class="form-check-label" for="remember">
-                            <fmt:message key="login.rememberMe" />
-                        </label>
                     </div>
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <button type="submit" class="btn btn-brand"><fmt:message key="login.button" /></button>
