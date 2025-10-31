@@ -5,12 +5,12 @@ import com.pinguela.rentexpres.service.impl.MailServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.SecurityConstants;
 import com.pinguela.rentexpressweb.security.EmployeeSessionResolver;
-import com.pinguela.rentexpressweb.security.RememberMeManager;
 import com.pinguela.rentexpressweb.security.SessionManager;
 import com.pinguela.rentexpressweb.security.TwoFactorManager;
 import com.pinguela.rentexpressweb.util.FlashMessageUtils;
 import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.UserActivityTracker;
+import com.pinguela.rentexpressweb.web.security.RememberMeCookies;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -135,9 +135,9 @@ public class Verify2FAServlet extends HttpServlet {
         SessionManager.setAttribute(request, AppConstants.ATTR_CURRENT_USER, email);
         EmployeeSessionResolver.resolveFromEmail(request, email);
         if (TwoFactorManager.shouldRemember(request)) {
-            RememberMeManager.rememberUser(request, response, email);
+            RememberMeCookies.store(request, response, email);
         } else {
-            RememberMeManager.forgetUser(request, response);
+            RememberMeCookies.clear(request, response);
         }
 
         TwoFactorManager.clear(request);
