@@ -10,6 +10,7 @@ public final class SecurityConstants {
 
     public static final String LOGIN_ENDPOINT = "/login";
     public static final String HOME_ENDPOINT = "/app/home";
+    public static final String PUBLIC_REGISTER_USER_ENDPOINT = "/app/users/register";
 
     public static final int VERIFICATION_CODE_LENGTH = 6;
     public static final int VERIFICATION_CODE_VALIDITY_SECONDS = 60;
