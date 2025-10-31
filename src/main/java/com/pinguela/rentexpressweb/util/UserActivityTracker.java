@@ -63,41 +63,4 @@ public final class UserActivityTracker {
         }
         return new ArrayList<ActivityEntry>(stored);
     }
-
-    public static final class ActivityEntry {
-        private final String messageKey;
-        private final String icon;
-        private final Date timestamp;
-        private final Object[] messageArguments;
-
-        private ActivityEntry(String messageKey, String icon, Date timestamp, Object[] messageArguments) {
-            this.messageKey = messageKey;
-            this.icon = icon;
-            this.timestamp = timestamp;
-            if (messageArguments == null || messageArguments.length == 0) {
-                this.messageArguments = new Object[0];
-            } else {
-                this.messageArguments = new Object[messageArguments.length];
-                System.arraycopy(messageArguments, 0, this.messageArguments, 0, messageArguments.length);
-            }
-        }
-
-        public String getMessageKey() {
-            return messageKey;
-        }
-
-        public String getIcon() {
-            return icon;
-        }
-
-        public Date getTimestamp() {
-            return timestamp;
-        }
-
-        public Object[] getMessageArguments() {
-            Object[] copy = new Object[messageArguments.length];
-            System.arraycopy(messageArguments, 0, copy, 0, messageArguments.length);
-            return copy;
-        }
-    }
 }
