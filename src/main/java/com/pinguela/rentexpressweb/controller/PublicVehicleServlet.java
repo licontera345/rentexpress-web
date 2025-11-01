@@ -157,16 +157,34 @@ public class PublicVehicleServlet extends HttpServlet {
                     : Collections.emptyList();
 
             request.setAttribute(VehicleConstants.ATTR_VEHICLES, vehicles);
-            request.setAttribute(VehicleConstants.ATTR_RESULTS, results);
-            request.setAttribute(VehicleConstants.ATTR_TOTAL_RESULTS,
-                    results != null ? results.getTotalRecords() : Integer.valueOf(vehicles.size()));
-            if (results != null) {
-                request.setAttribute(VehicleConstants.ATTR_RESULTS_FROM_ROW, Integer.valueOf(results.getFromRow()));
-                request.setAttribute(VehicleConstants.ATTR_RESULTS_TO_ROW, Integer.valueOf(results.getToRow()));
-            } else {
-                request.setAttribute(VehicleConstants.ATTR_RESULTS_FROM_ROW, Integer.valueOf(0));
-                request.setAttribute(VehicleConstants.ATTR_RESULTS_TO_ROW, Integer.valueOf(0));
+            Integer totalRecords = results != null ? results.getTotalRecords() : null;
+            if (totalRecords == null) {
+                totalRecords = Integer.valueOf(vehicles.size());
             }
+
+            request.setAttribute(VehicleConstants.ATTR_RESULTS, results);
+            request.setAttribute(VehicleConstants.ATTR_TOTAL_RESULTS, totalRecords);
+
+            int fromRow = 0;
+            int toRow = 0;
+            if (!vehicles.isEmpty()) {
+                int currentPage = pageAttribute != null ? pageAttribute.intValue() : 1;
+                int currentSize = sizeAttribute != null ? sizeAttribute.intValue() : vehicles.size();
+                if (currentPage < 1) {
+                    currentPage = 1;
+                }
+                if (currentSize < 1) {
+                    currentSize = vehicles.size();
+                }
+                fromRow = ((currentPage - 1) * currentSize) + 1;
+                toRow = fromRow + vehicles.size() - 1;
+                if (toRow > totalRecords.intValue()) {
+                    toRow = totalRecords.intValue();
+                }
+            }
+
+            request.setAttribute(VehicleConstants.ATTR_RESULTS_FROM_ROW, Integer.valueOf(fromRow));
+            request.setAttribute(VehicleConstants.ATTR_RESULTS_TO_ROW, Integer.valueOf(toRow));
         } catch (RentexpresException ex) {
             LOGGER.error("Error retrieving vehicles by criteria", ex);
             request.setAttribute(AppConstants.ATTR_FLASH_ERROR, ex.getMessage());
