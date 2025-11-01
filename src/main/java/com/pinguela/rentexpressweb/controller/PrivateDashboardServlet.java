@@ -22,6 +22,8 @@ public class PrivateDashboardServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
         Object currentUser = SessionManager.get(request, AppConstants.ATTR_CURRENT_USER);
         if (currentUser == null) {
             response.sendRedirect(request.getContextPath() + Views.PUBLIC_LOGIN);

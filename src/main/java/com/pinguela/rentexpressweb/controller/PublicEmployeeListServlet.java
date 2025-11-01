@@ -18,6 +18,8 @@ public class PublicEmployeeListServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
         request.setAttribute(EmployeeConstants.ATTR_EMPLOYEES, Collections.emptyList());
         request.getRequestDispatcher(Views.PUBLIC_EMPLOYEE_LIST).forward(request, response);
     }

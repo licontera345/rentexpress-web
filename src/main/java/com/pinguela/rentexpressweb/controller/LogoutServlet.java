@@ -20,6 +20,8 @@ public class LogoutServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
         SessionManager.invalidate(request);
         Cookie cookie = CookieManager.getCookie(request, AppConstants.COOKIE_REMEMBER_USER);
         if (cookie != null) {
@@ -30,6 +32,8 @@ public class LogoutServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
         doGet(request, response);
     }
 }

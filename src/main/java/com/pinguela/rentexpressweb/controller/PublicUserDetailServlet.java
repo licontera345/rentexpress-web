@@ -17,6 +17,8 @@ public class PublicUserDetailServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
         request.setAttribute(UserConstants.ATTR_SELECTED_USER, request.getParameter(UserConstants.PARAM_USER_ID));
         request.getRequestDispatcher(Views.PUBLIC_USER_DETAIL).forward(request, response);
     }

@@ -31,6 +31,8 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
         if (request.getAttribute(AppConstants.ATTR_LOGIN_EMAIL) == null) {
             Cookie remembered = CookieManager.getCookie(request, AppConstants.COOKIE_REMEMBER_USER);
             if (remembered != null) {
@@ -42,6 +44,8 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
         Map<String, String> errors = new LinkedHashMap<String, String>();
 
         String email = normalize(request.getParameter(UserConstants.PARAM_EMAIL));

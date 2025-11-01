@@ -17,7 +17,10 @@ public class PublicEmployeeDetailServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.setAttribute(EmployeeConstants.ATTR_SELECTED_EMPLOYEE, request.getParameter(EmployeeConstants.PARAM_EMPLOYEE_ID));
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+        request.setAttribute(EmployeeConstants.ATTR_SELECTED_EMPLOYEE,
+                request.getParameter(EmployeeConstants.PARAM_EMPLOYEE_ID));
         request.getRequestDispatcher(Views.PUBLIC_EMPLOYEE_DETAIL).forward(request, response);
     }
 }
