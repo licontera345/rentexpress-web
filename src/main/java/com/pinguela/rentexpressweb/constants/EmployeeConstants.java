@@ -1,7 +1,8 @@
 package com.pinguela.rentexpressweb.constants;
 
 /**
- * Constantes específicas para los listados y detalles públicos de empleados.
+ * Constantes específicas para los listados y detalles de empleados en
+ * pantallas públicas y privadas.
  */
 public final class EmployeeConstants {
 
