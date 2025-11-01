@@ -45,6 +45,12 @@ public class LegacyDateUtilsTest {
     }
 
     @Test
+    public void toDateShouldParseTimestampStringsWithExtraSpaces() {
+        Date converted = LegacyDateUtils.toDate(" 2023-08-16T10:15:30 ");
+        assertEquals(Timestamp.valueOf("2023-08-16 10:15:30").getTime(), converted.getTime());
+    }
+
+    @Test
     public void toDateShouldReturnNullWhenStringIsInvalid() {
         assertNull(LegacyDateUtils.toDate("invalid"));
     }
