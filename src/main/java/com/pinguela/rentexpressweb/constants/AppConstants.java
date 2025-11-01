@@ -28,6 +28,9 @@ public final class AppConstants {
 
     public static final String COOKIE_REMEMBER_USER = "rememberUser";
 
+    public static final String PATH_PRIVATE_ROOT = "/private/";
+    public static final String ROUTE_PRIVATE_HOME = "/app/home";
+
     public static final String CONTEXT_REGISTERED_USERS = "rentexpress.registeredUsers";
     public static final String CONTEXT_CREDENTIALS = "rentexpress.credentials";
     public static final String CONTEXT_KNOWN_EMAILS = "rentexpress.knownEmails";

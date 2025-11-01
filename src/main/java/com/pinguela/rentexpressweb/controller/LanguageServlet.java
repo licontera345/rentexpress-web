@@ -21,7 +21,6 @@ public class LanguageServlet extends HttpServlet {
 
     private static final List<String> SUPPORTED_LANGUAGES = Arrays.asList("es", "en", "fr");
     private static final int ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
-    private static final String HOME_ROUTE = "/app/home";
     private static final String MESSAGE_LANGUAGE_UPDATED = "Idioma actualizado correctamente.";
     private static final String MESSAGE_LANGUAGE_UNSUPPORTED = "El idioma seleccionado no está disponible.";
 
@@ -47,7 +46,7 @@ public class LanguageServlet extends HttpServlet {
         if (referer != null && !referer.trim().isEmpty()) {
             response.sendRedirect(referer);
         } else {
-            response.sendRedirect(request.getContextPath() + HOME_ROUTE);
+            response.sendRedirect(request.getContextPath() + AppConstants.ROUTE_PRIVATE_HOME);
         }
     }
 
