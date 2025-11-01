@@ -7,6 +7,13 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.pinguela.rentexpres.exception.RentexpresException;
+import com.pinguela.rentexpres.model.EmployeeDTO;
+import com.pinguela.rentexpres.model.UserDTO;
+import com.pinguela.rentexpres.service.EmployeeService;
+import com.pinguela.rentexpres.service.UserService;
+import com.pinguela.rentexpres.service.impl.EmployeeServiceImpl;
+import com.pinguela.rentexpres.service.impl.UserServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.UserConstants;
 import com.pinguela.rentexpressweb.security.CookieManager;
@@ -28,6 +35,16 @@ public class LoginServlet extends HttpServlet {
     private static final Logger LOGGER = LogManager.getLogger(LoginServlet.class);
     private static final String KEY_ERROR_EMAIL_REQUIRED = "error.validation.emailRequired";
     private static final String KEY_ERROR_PASSWORD_REQUIRED = "error.validation.passwordRequired";
+
+    private transient UserService userService;
+    private transient EmployeeService employeeService;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        this.userService = new UserServiceImpl();
+        this.employeeService = new EmployeeServiceImpl();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -66,20 +83,37 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-        LOGGER.info("Usuario {} autenticado", email);
-        SessionManager.set(request, AppConstants.ATTR_CURRENT_USER, email);
-        SessionManager.remove(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
-
-        if (remember) {
-            CookieManager.addCookie(response, AppConstants.COOKIE_REMEMBER_USER, email, 7);
-        } else {
-            Cookie cookie = CookieManager.getCookie(request, AppConstants.COOKIE_REMEMBER_USER);
-            if (cookie != null) {
-                CookieManager.removeCookie(response, AppConstants.COOKIE_REMEMBER_USER);
+        try {
+            UserDTO user = userService.authenticate(email, password);
+            if (user != null) {
+                LOGGER.info("User {} authenticated successfully", email);
+                SessionManager.set(request, AppConstants.ATTR_CURRENT_USER, user);
+                SessionManager.remove(request, AppConstants.ATTR_CURRENT_EMPLOYEE);
+                handleRememberCookie(request, response, remember, email);
+                response.sendRedirect(request.getContextPath() + Views.PRIVATE_USER_HOME);
+                return;
             }
-        }
 
-        response.sendRedirect(request.getContextPath() + Views.PRIVATE_USER_HOME);
+            EmployeeDTO employee = employeeService.autenticar(email, password);
+            if (employee != null) {
+                LOGGER.info("Employee {} authenticated successfully", email);
+                SessionManager.set(request, AppConstants.ATTR_CURRENT_EMPLOYEE, employee);
+                SessionManager.remove(request, AppConstants.ATTR_CURRENT_USER);
+                handleRememberCookie(request, response, remember, email);
+                response.sendRedirect(request.getContextPath() + Views.PRIVATE_USER_HOME);
+                return;
+            }
+
+            errors.put(UserConstants.PARAM_EMAIL, MessageResolver.getMessage(request, "error.login.invalidCredentials"));
+            request.setAttribute(AppConstants.ATTR_FORM_ERRORS, errors);
+            request.setAttribute(AppConstants.ATTR_LOGIN_EMAIL, email);
+            request.getRequestDispatcher(Views.PUBLIC_LOGIN).forward(request, response);
+        } catch (RentexpresException ex) {
+            LOGGER.error("Error during authentication for {}", email, ex);
+            request.setAttribute(AppConstants.ATTR_FLASH_ERROR, ex.getMessage());
+            request.setAttribute(AppConstants.ATTR_LOGIN_EMAIL, email);
+            request.getRequestDispatcher(Views.PUBLIC_LOGIN).forward(request, response);
+        }
     }
 
     private String normalize(String value) {
@@ -88,5 +122,16 @@ public class LoginServlet extends HttpServlet {
         }
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private void handleRememberCookie(HttpServletRequest request, HttpServletResponse response, boolean remember, String email) {
+        if (remember) {
+            CookieManager.addCookie(response, AppConstants.COOKIE_REMEMBER_USER, email, 7);
+        } else {
+            Cookie cookie = CookieManager.getCookie(request, AppConstants.COOKIE_REMEMBER_USER);
+            if (cookie != null) {
+                CookieManager.removeCookie(response, AppConstants.COOKIE_REMEMBER_USER);
+            }
+        }
     }
 }

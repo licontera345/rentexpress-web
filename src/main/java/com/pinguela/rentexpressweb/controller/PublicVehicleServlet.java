@@ -5,6 +5,16 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.pinguela.rentexpres.exception.RentexpresException;
+import com.pinguela.rentexpres.model.Results;
+import com.pinguela.rentexpres.model.VehicleCriteria;
+import com.pinguela.rentexpres.model.VehicleDTO;
+import com.pinguela.rentexpres.service.VehicleService;
+import com.pinguela.rentexpres.service.impl.VehicleServiceImpl;
+import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.VehicleConstants;
 import com.pinguela.rentexpressweb.util.Views;
 
@@ -18,12 +28,14 @@ import jakarta.servlet.http.HttpServletResponse;
 public class PublicVehicleServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
+    private static final Logger LOGGER = LogManager.getLogger(PublicVehicleServlet.class);
+
     private transient VehicleService vehicleService;
 
     @Override
     public void init() throws ServletException {
         super.init();
-        this.vehicleService = new VehicleServiceStub();
+        this.vehicleService = new VehicleServiceImpl();
     }
 
     @Override
@@ -31,38 +43,56 @@ public class PublicVehicleServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
 
-        VehicleSearchCriteria criteria = buildCriteria(request);
-        List<?> vehicles = vehicleService.findByCriteria(criteria);
+        VehicleCriteria criteria = buildCriteria(request);
 
-        request.setAttribute("search", criteria.getSearch());
-        request.setAttribute("categoryId", toString(criteria.getCategoryId()));
-        request.setAttribute("status", criteria.getStatus());
-        request.setAttribute("priceMin", toString(criteria.getPriceMin()));
-        request.setAttribute("priceMax", toString(criteria.getPriceMax()));
-        request.setAttribute("availableOnly", criteria.isAvailableOnly());
-        request.setAttribute(VehicleConstants.ATTR_VEHICLES, vehicles);
+        try {
+            Results<VehicleDTO> results = vehicleService.findByCriteria(criteria);
+            List<VehicleDTO> vehicles = results != null && results.getResults() != null ? results.getResults()
+                    : Collections.emptyList();
+
+            request.setAttribute(VehicleConstants.ATTR_VEHICLES, vehicles);
+            request.setAttribute(VehicleConstants.ATTR_RESULTS, results);
+            request.setAttribute(VehicleConstants.ATTR_TOTAL_RESULTS,
+                    results != null ? results.getTotalRecords() : Integer.valueOf(vehicles.size()));
+        } catch (RentexpresException ex) {
+            LOGGER.error("Error retrieving vehicles by criteria", ex);
+            request.setAttribute(AppConstants.ATTR_FLASH_ERROR, ex.getMessage());
+            request.setAttribute(VehicleConstants.ATTR_VEHICLES, Collections.emptyList());
+        }
+
+        request.setAttribute("search", request.getParameter(VehicleConstants.PARAM_SEARCH));
+        request.setAttribute("categoryId", request.getParameter(VehicleConstants.PARAM_CATEGORY));
+        request.setAttribute("status", request.getParameter(VehicleConstants.PARAM_STATUS));
+        request.setAttribute("priceMin", request.getParameter(VehicleConstants.PARAM_MIN_PRICE));
+        request.setAttribute("priceMax", request.getParameter(VehicleConstants.PARAM_MAX_PRICE));
 
         request.getRequestDispatcher(Views.PUBLIC_VEHICLE_LIST).forward(request, response);
     }
 
-    private VehicleSearchCriteria buildCriteria(HttpServletRequest request) {
-        VehicleSearchCriteria criteria = new VehicleSearchCriteria();
-        criteria.setSearch(trimToNull(request.getParameter(VehicleConstants.PARAM_SEARCH)));
-        criteria.setCategoryId(parseLong(request.getParameter(VehicleConstants.PARAM_CATEGORY)));
-        criteria.setStatus(trimToNull(request.getParameter(VehicleConstants.PARAM_STATUS)));
-        criteria.setPriceMin(parseBigDecimal(request.getParameter(VehicleConstants.PARAM_MIN_PRICE)));
-        criteria.setPriceMax(parseBigDecimal(request.getParameter(VehicleConstants.PARAM_MAX_PRICE)));
-        criteria.setAvailableOnly(request.getParameter(VehicleConstants.PARAM_ONLY_AVAILABLE) != null);
+    private VehicleCriteria buildCriteria(HttpServletRequest request) {
+        VehicleCriteria criteria = new VehicleCriteria();
+        String search = trimToNull(request.getParameter(VehicleConstants.PARAM_SEARCH));
+        if (search != null) {
+            criteria.setBrand(search);
+            criteria.setModel(search);
+        }
+        criteria.setCategoryId(parseInteger(request.getParameter(VehicleConstants.PARAM_CATEGORY)));
+        criteria.setVehicleStatusId(parseInteger(request.getParameter(VehicleConstants.PARAM_STATUS)));
+        criteria.setDailyPriceMin(parseBigDecimal(request.getParameter(VehicleConstants.PARAM_MIN_PRICE)));
+        criteria.setDailyPriceMax(parseBigDecimal(request.getParameter(VehicleConstants.PARAM_MAX_PRICE)));
+        criteria.setPageNumber(parseInteger(request.getParameter(VehicleConstants.PARAM_PAGE)));
+        criteria.setPageSize(parseInteger(request.getParameter(VehicleConstants.PARAM_PAGE_SIZE)));
+        criteria.normalize();
         return criteria;
     }
 
-    private Long parseLong(String value) {
+    private Integer parseInteger(String value) {
         String normalized = trimToNull(value);
         if (normalized == null) {
             return null;
         }
         try {
-            return Long.valueOf(normalized);
+            return Integer.valueOf(normalized);
         } catch (NumberFormatException ex) {
             return null;
         }
@@ -88,75 +118,4 @@ public class PublicVehicleServlet extends HttpServlet {
         return trimmed.isEmpty() ? null : trimmed;
     }
 
-    private String toString(Object value) {
-        return value == null ? null : value.toString();
-    }
-
-    private interface VehicleService {
-        List<?> findByCriteria(VehicleSearchCriteria criteria);
-    }
-
-    private static final class VehicleServiceStub implements VehicleService {
-        @Override
-        public List<?> findByCriteria(VehicleSearchCriteria criteria) {
-            return Collections.emptyList();
-        }
-    }
-
-    private static final class VehicleSearchCriteria {
-        private String search;
-        private Long categoryId;
-        private String status;
-        private BigDecimal priceMin;
-        private BigDecimal priceMax;
-        private boolean availableOnly;
-
-        String getSearch() {
-            return search;
-        }
-
-        void setSearch(String search) {
-            this.search = search;
-        }
-
-        Long getCategoryId() {
-            return categoryId;
-        }
-
-        void setCategoryId(Long categoryId) {
-            this.categoryId = categoryId;
-        }
-
-        String getStatus() {
-            return status;
-        }
-
-        void setStatus(String status) {
-            this.status = status;
-        }
-
-        BigDecimal getPriceMin() {
-            return priceMin;
-        }
-
-        void setPriceMin(BigDecimal priceMin) {
-            this.priceMin = priceMin;
-        }
-
-        BigDecimal getPriceMax() {
-            return priceMax;
-        }
-
-        void setPriceMax(BigDecimal priceMax) {
-            this.priceMax = priceMax;
-        }
-
-        boolean isAvailableOnly() {
-            return availableOnly;
-        }
-
-        void setAvailableOnly(boolean availableOnly) {
-            this.availableOnly = availableOnly;
-        }
-    }
 }
