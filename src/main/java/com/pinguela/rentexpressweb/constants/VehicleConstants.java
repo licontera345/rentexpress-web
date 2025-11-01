@@ -13,7 +13,9 @@ public final class VehicleConstants {
     public static final String PARAM_MODEL = "model";
     public static final String PARAM_CATEGORY = "categoryId";
     public static final String PARAM_MIN_PRICE = "priceMin";
+    public static final String PARAM_MIN_PRICE_ALT = "minPrice";
     public static final String PARAM_MAX_PRICE = "priceMax";
+    public static final String PARAM_MAX_PRICE_ALT = "maxPrice";
     public static final String PARAM_SORT = "sort";
     public static final String PARAM_HEADQUARTERS = "headquarters";
     public static final String PARAM_PICKUP_DATE = "pickupDate";
@@ -22,10 +24,12 @@ public final class VehicleConstants {
     public static final String PARAM_RETURN_TIME = "returnTime";
     public static final String PARAM_ONLY_AVAILABLE = "availableOnly";
     public static final String PARAM_STATUS = "status";
+    public static final String PARAM_STATUS_ID = "statusId";
     public static final String PARAM_MIN_YEAR = "minYear";
     public static final String PARAM_MAX_YEAR = "maxYear";
     public static final String PARAM_PAGE = "page";
     public static final String PARAM_PAGE_SIZE = "pageSize";
+    public static final String PARAM_PAGE_SIZE_ALIAS = "size";
     public static final String PARAM_VEHICLE_ID = "vehicleId";
 
     public static final String VALUE_SORT_PRICE_ASC = "priceAsc";
