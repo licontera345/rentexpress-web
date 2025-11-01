@@ -1,7 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<fmt:message key="${requestScope.pageTitle}" var="resolvedWelcomeTitle" />
+<fmt:message key="common.home.pageTitle" var="resolvedWelcomeTitle" />
 <c:set var="pageTitle" value="${resolvedWelcomeTitle}" scope="request" />
 <%@ include file="/common/header.jsp" %>
 <c:if test="${not empty flashSuccess}">
