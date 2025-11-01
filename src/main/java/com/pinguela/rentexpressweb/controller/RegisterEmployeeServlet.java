@@ -101,6 +101,24 @@ public class RegisterEmployeeServlet extends HttpServlet {
             employee.setActiveStatus(Boolean.TRUE);
             employeeService.create(employee);
 
+            EmployeeDTO persisted = null;
+            try {
+                persisted = employeeService.findByEmail(email);
+            } catch (RentexpresException reloadEx) {
+                LOGGER.error("Unable to reload employee by email {} after registration", email, reloadEx);
+            }
+            if (persisted == null && employee.getEmployeeId() != null) {
+                try {
+                    persisted = employeeService.findById(employee.getEmployeeId());
+                } catch (RentexpresException reloadEx) {
+                    LOGGER.error("Unable to reload employee {} after registration", employee.getEmployeeId(), reloadEx);
+                }
+            }
+            if (persisted != null
+                    && SessionManager.get(request, AppConstants.ATTR_CURRENT_EMPLOYEE) instanceof EmployeeDTO) {
+                SessionManager.set(request, AppConstants.ATTR_CURRENT_EMPLOYEE, persisted);
+            }
+
             SessionManager.set(request, AppConstants.ATTR_FLASH_SUCCESS,
                     MessageResolver.getMessage(request, KEY_FLASH_SUCCESS));
             response.sendRedirect(request.getContextPath() + Views.PUBLIC_LOGIN);
