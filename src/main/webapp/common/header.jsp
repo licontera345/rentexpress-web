@@ -109,7 +109,9 @@
                     <c:otherwise>
                         <div class="d-flex gap-2">
                             <a class="btn btn-outline-brand" href="${ctx}/login"><fmt:message key="common.navigation.login" /></a>
-                            <a class="btn btn-brand" href="${ctx}/app/users/register"><fmt:message key="common.navigation.register" /></a>
+                            <a href="${pageContext.request.contextPath}/app/users/register" class="btn btn-primary">
+                                <fmt:message key="common.nav.createAccount" />
+                            </a>
                         </div>
                     </c:otherwise>
                 </c:choose>

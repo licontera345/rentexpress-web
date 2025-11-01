@@ -22,11 +22,15 @@ public class ForgotPasswordServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
         request.getRequestDispatcher(Views.PUBLIC_FORGOT_PASSWORD).forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
         Map<String, String> errors = new LinkedHashMap<String, String>();
         String email = normalize(request.getParameter(UserConstants.PARAM_EMAIL));
         if (email == null) {

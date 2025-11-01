@@ -26,6 +26,8 @@ public class PrivateReservationServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
         if (SessionManager.get(request, AppConstants.ATTR_CURRENT_USER) == null) {
             response.sendRedirect(request.getContextPath() + Views.PUBLIC_LOGIN);
             return;
@@ -35,6 +37,8 @@ public class PrivateReservationServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
         if (SessionManager.get(request, AppConstants.ATTR_CURRENT_USER) == null) {
             response.sendRedirect(request.getContextPath() + Views.PUBLIC_LOGIN);
             return;

@@ -27,6 +27,8 @@ public class LanguageServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
         String requestedLanguage = request.getParameter(AppConstants.PARAM_LANGUAGE);
         if (requestedLanguage != null) {
             String normalized = requestedLanguage.toLowerCase(Locale.ROOT);
@@ -46,15 +48,17 @@ public class LanguageServlet extends HttpServlet {
             }
         }
         String referer = request.getHeader("Referer");
-        if (referer != null && !referer.trim().isEmpty()) {
+        if (referer != null && !referer.isEmpty()) {
             response.sendRedirect(referer);
         } else {
-            response.sendRedirect(request.getContextPath() + AppConstants.ROUTE_PRIVATE_HOME);
+            response.sendRedirect(request.getContextPath() + "/public/home");
         }
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
         doPost(request, response);
     }
 }

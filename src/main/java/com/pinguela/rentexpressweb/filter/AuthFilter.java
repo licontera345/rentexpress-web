@@ -14,6 +14,7 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 public class AuthFilter implements Filter {
 
@@ -34,25 +35,28 @@ public class AuthFilter implements Filter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
         String contextPath = httpRequest.getContextPath();
-        String path = httpRequest.getRequestURI().substring(contextPath.length());
+        String uri = httpRequest.getRequestURI();
+        String relativeUri = uri.substring(contextPath.length());
 
-        if (requiresAuthentication(path)) {
+        boolean isPublicPath = relativeUri.contains("/login")
+                || relativeUri.contains("/users/register")
+                || relativeUri.contains("/employees/register")
+                || relativeUri.contains("/public/")
+                || relativeUri.contains("/app/settings/language");
+
+        boolean requiresAuth = relativeUri.startsWith(AppConstants.PATH_APP_ROOT)
+                || relativeUri.startsWith(AppConstants.PATH_PRIVATE_ROOT);
+
+        if (!isPublicPath && requiresAuth) {
+            HttpSession session = httpRequest.getSession(false);
             Object currentUser = SessionManager.get(httpRequest, AppConstants.ATTR_CURRENT_USER);
-            if (currentUser == null) {
+            if (session == null || currentUser == null) {
                 httpResponse.sendRedirect(contextPath + Views.PUBLIC_LOGIN);
                 return;
             }
         }
 
         chain.doFilter(request, response);
-    }
-
-    private boolean requiresAuthentication(String path) {
-        if (path == null) {
-            return false;
-        }
-        return path.startsWith(AppConstants.PATH_PRIVATE_ROOT)
-                || path.startsWith(AppConstants.PATH_APP_ROOT);
     }
 
     @Override

@@ -18,6 +18,8 @@ public class PublicUserListServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
         request.setAttribute(UserConstants.ATTR_USERS, Collections.emptyList());
         request.getRequestDispatcher(Views.PUBLIC_USER_LIST).forward(request, response);
     }
