@@ -3,7 +3,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <fmt:setLocale value="${not empty sessionScope.appLocale ? sessionScope.appLocale : pageContext.request.locale}" scope="session" />
 <fmt:setBundle basename="i18n.Messages" />
-<fmt:message key="nav.brand" var="brandName" />
+<fmt:message key="common.navigation.brand" var="brandName" />
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 <c:set var="currentUserDto" value="${sessionScope.currentUser}" />
 <c:set var="currentUserEmail" value="${empty currentUserDto ? null : currentUserDto.email}" />
@@ -42,7 +42,7 @@
 <header class="bg-white shadow-sm">
     <nav class="navbar navbar-expand-lg navbar-light container py-3">
         <a class="navbar-brand fw-bold text-brand" href="${ctx}${homePath}">
-            <i class="bi bi-geo-alt-fill me-2"></i><fmt:message key="nav.brand" />
+            <i class="bi bi-geo-alt-fill me-2"></i><fmt:message key="common.navigation.brand" />
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,10 +50,10 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link" href="${ctx}${homePath}"><fmt:message key="nav.home" /></a></li>
-                <li class="nav-item"><a class="nav-link" href="${ctx}/public/vehicles"><fmt:message key="nav.catalog" /></a></li>
+                <li class="nav-item"><a class="nav-link" href="${ctx}${homePath}"><fmt:message key="common.navigation.home" /></a></li>
+                <li class="nav-item"><a class="nav-link" href="${ctx}/public/vehicles"><fmt:message key="common.navigation.catalog" /></a></li>
                 <c:if test="${not empty currentEmployee}">
-                    <li class="nav-item"><a class="nav-link" href="${ctx}/app/rentals/private"><fmt:message key="nav.rentals" /></a></li>
+                    <li class="nav-item"><a class="nav-link" href="${ctx}/app/rentals/private"><fmt:message key="common.navigation.rentals" /></a></li>
                 </c:if>
             </ul>
             <div class="d-flex flex-wrap align-items-center gap-3">
@@ -67,16 +67,16 @@
                     </c:when>
                 </c:choose>
                 <form class="d-flex align-items-center gap-2 language-switcher" method="post" action="${ctx}/app/settings/language">
-                    <span class="text-muted small fw-semibold text-uppercase"><fmt:message key="nav.language.label" /></span>
+                    <span class="text-muted small fw-semibold text-uppercase"><fmt:message key="common.navigation.language.label" /></span>
                     <span class="fi ${currentFlag} rounded-circle"></span>
                     <select class="form-select form-select-sm language-select" name="lang" onchange="this.form.submit()">
-                        <option value="es" ${htmlLang eq 'es' ? 'selected' : ''}><fmt:message key="nav.language.es" /></option>
-                        <option value="en" ${htmlLang eq 'en' ? 'selected' : ''}><fmt:message key="nav.language.en" /></option>
-                        <option value="fr" ${htmlLang eq 'fr' ? 'selected' : ''}><fmt:message key="nav.language.fr" /></option>
+                        <option value="es" ${htmlLang eq 'es' ? 'selected' : ''}><fmt:message key="common.navigation.language.es" /></option>
+                        <option value="en" ${htmlLang eq 'en' ? 'selected' : ''}><fmt:message key="common.navigation.language.en" /></option>
+                        <option value="fr" ${htmlLang eq 'fr' ? 'selected' : ''}><fmt:message key="common.navigation.language.fr" /></option>
                     </select>
                     <noscript>
                         <button type="submit" class="btn btn-sm btn-outline-secondary">
-                            <fmt:message key="nav.language.submit" />
+                            <fmt:message key="common.navigation.language.submit" />
                         </button>
                     </noscript>
                 </form>
@@ -84,23 +84,23 @@
                     <c:when test="${not empty currentUserEmail}">
                         <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-2">
                             <span class="text-muted small fw-semibold">
-                                <fmt:message key="nav.welcomeUser">
+                                <fmt:message key="common.navigation.welcomeUser">
                                     <fmt:param value="${displayName}" />
                                 </fmt:message>
                             </span>
                             <div class="d-flex gap-2">
                                 <a class="btn btn-outline-brand" href="${ctx}/app/home">
                                     <i class="bi bi-speedometer me-2"></i>
-                                    <fmt:message key="nav.dashboard" />
+                                    <fmt:message key="common.navigation.dashboard" />
                                 </a>
                                 <a class="btn btn-outline-secondary" href="${ctx}/app/users/private">
                                     <i class="bi bi-person-circle me-2"></i>
-                                    <fmt:message key="nav.profile" />
+                                    <fmt:message key="common.navigation.profile" />
                                 </a>
                                 <form method="post" action="${ctx}/logout" class="d-inline">
                                     <button type="submit" class="btn btn-brand">
                                         <i class="bi bi-box-arrow-right me-2"></i>
-                                        <fmt:message key="nav.logout" />
+                                        <fmt:message key="common.navigation.logout" />
                                     </button>
                                 </form>
                             </div>
@@ -108,8 +108,8 @@
                     </c:when>
                     <c:otherwise>
                         <div class="d-flex gap-2">
-                            <a class="btn btn-outline-brand" href="${ctx}/login"><fmt:message key="nav.login" /></a>
-                            <a class="btn btn-brand" href="${ctx}/app/users/register"><fmt:message key="nav.register" /></a>
+                            <a class="btn btn-outline-brand" href="${ctx}/login"><fmt:message key="common.navigation.login" /></a>
+                            <a class="btn btn-brand" href="${ctx}/app/users/register"><fmt:message key="common.navigation.register" /></a>
                         </div>
                     </c:otherwise>
                 </c:choose>

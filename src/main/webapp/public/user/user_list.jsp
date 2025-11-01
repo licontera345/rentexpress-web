@@ -1,16 +1,16 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ include file="/common/header.jsp" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<fmt:message key="public.user.list.filters.search.placeholder" var="userSearchPlaceholder" />
+<fmt:message key="user.public.list.filters.search.placeholder" var="userSearchPlaceholder" />
 <section class="mb-4">
     <div class="row g-4">
         <div class="col-lg-4">
             <div class="card card-common">
-                <div class="card-header"><fmt:message key="public.user.list.filters.title" /></div>
+                <div class="card-header"><fmt:message key="user.public.list.filters.title" /></div>
                 <div class="card-body">
                     <form method="get" action="${ctx}/public/users">
                         <div class="mb-3">
-                            <label for="search" class="form-label"><fmt:message key="public.user.list.filters.search.label" /></label>
+                            <label for="search" class="form-label"><fmt:message key="user.public.list.filters.search.label" /></label>
                             <input type="text" class="form-control" id="search" name="search"
                                    placeholder="${userSearchPlaceholder}" value="${search}" />
                         </div>
@@ -29,16 +29,16 @@
                             <label for="active" class="form-label"><fmt:message key="common.field.status" /></label>
                             <select class="form-select" id="active" name="active">
                                 <option value="all" ${selectedActive == 'all' ? 'selected' : ''}><fmt:message key="common.option.all" /></option>
-                                <option value="active" ${selectedActive == 'active' ? 'selected' : ''}><fmt:message key="status.active.plural" /></option>
-                                <option value="inactive" ${selectedActive == 'inactive' ? 'selected' : ''}><fmt:message key="status.inactive.plural" /></option>
+                                <option value="active" ${selectedActive == 'active' ? 'selected' : ''}><fmt:message key="common.status.active.plural" /></option>
+                                <option value="inactive" ${selectedActive == 'inactive' ? 'selected' : ''}><fmt:message key="common.status.inactive.plural" /></option>
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label for="sort" class="form-label"><fmt:message key="public.user.list.filters.sort.label" /></label>
+                            <label for="sort" class="form-label"><fmt:message key="user.public.list.filters.sort.label" /></label>
                             <select class="form-select" id="sort" name="sort">
-                                <option value="createdDesc" ${selectedSort == 'createdDesc' ? 'selected' : ''}><fmt:message key="public.user.list.filters.sort.recent" /></option>
-                                <option value="nameAsc" ${selectedSort == 'nameAsc' ? 'selected' : ''}><fmt:message key="public.user.list.filters.sort.name" /></option>
-                                <option value="roleAsc" ${selectedSort == 'roleAsc' ? 'selected' : ''}><fmt:message key="public.user.list.filters.sort.role" /></option>
+                                <option value="createdDesc" ${selectedSort == 'createdDesc' ? 'selected' : ''}><fmt:message key="user.public.list.filters.sort.recent" /></option>
+                                <option value="nameAsc" ${selectedSort == 'nameAsc' ? 'selected' : ''}><fmt:message key="user.public.list.filters.sort.name" /></option>
+                                <option value="roleAsc" ${selectedSort == 'roleAsc' ? 'selected' : ''}><fmt:message key="user.public.list.filters.sort.role" /></option>
                             </select>
                         </div>
                         <input type="hidden" name="size" value="${size}" />
@@ -55,23 +55,23 @@
         </div>
         <div class="col-lg-8">
             <div class="card card-common mb-4">
-                <div class="card-header"><fmt:message key="public.user.list.metrics.title" /></div>
+                <div class="card-header"><fmt:message key="user.public.list.metrics.title" /></div>
                 <div class="card-body">
                     <div class="row text-center">
                         <div class="col-6 col-md-3">
-                            <div class="metric-label"><fmt:message key="public.user.list.metrics.results" /></div>
+                            <div class="metric-label"><fmt:message key="user.public.list.metrics.results" /></div>
                             <div class="metric-value">${total}</div>
                         </div>
                         <div class="col-6 col-md-3">
-                            <div class="metric-label"><fmt:message key="public.user.list.metrics.active" /></div>
+                            <div class="metric-label"><fmt:message key="user.public.list.metrics.active" /></div>
                             <div class="metric-value text-success">${totalActive}</div>
                         </div>
                         <div class="col-6 col-md-3 mt-3 mt-md-0">
-                            <div class="metric-label"><fmt:message key="public.user.list.metrics.inactive" /></div>
+                            <div class="metric-label"><fmt:message key="user.public.list.metrics.inactive" /></div>
                             <div class="metric-value text-danger">${totalInactive}</div>
                         </div>
                         <div class="col-6 col-md-3 mt-3 mt-md-0">
-                            <div class="metric-label"><fmt:message key="public.user.list.metrics.lastRegistration" /></div>
+                            <div class="metric-label"><fmt:message key="user.public.list.metrics.lastRegistration" /></div>
                             <div class="metric-value">${lastRegistration}</div>
                         </div>
                     </div>
@@ -93,7 +93,7 @@
                     <div class="card card-common">
                         <div class="card-body text-center text-muted">
                             <i class="bi bi-people display-6 d-block mb-2"></i>
-                            <fmt:message key="public.user.list.empty" />
+                            <fmt:message key="user.public.list.empty" />
                         </div>
                     </div>
                 </c:when>
@@ -122,7 +122,7 @@
                                         <td class="d-none d-md-table-cell">${roleNames[user.roleId]}</td>
                                         <td class="d-none d-md-table-cell">
                                             <span class="badge ${user.activeStatus ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'}">
-                                                <fmt:message key="${user.activeStatus ? 'status.active' : 'status.inactive'}" />
+                                                <fmt:message key="${user.activeStatus ? 'common.status.active' : 'common.status.inactive'}" />
                                             </span>
                                         </td>
                                         <td class="text-end">

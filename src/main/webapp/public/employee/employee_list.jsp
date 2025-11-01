@@ -6,13 +6,13 @@
     <div class="row g-4">
         <div class="col-lg-4">
             <div class="card card-common">
-                <div class="card-header"><fmt:message key="public.employee.list.filters.title" /></div>
+                <div class="card-header"><fmt:message key="employee.public.list.filters.title" /></div>
                 <div class="card-body">
                     <form method="get" action="${ctx}/public/employees">
                         <div class="mb-3">
-                            <label for="search" class="form-label"><fmt:message key="public.employee.list.filters.search.label" /></label>
+                            <label for="search" class="form-label"><fmt:message key="employee.public.list.filters.search.label" /></label>
                             <input type="text" class="form-control" id="search" name="search"
-                                   placeholder="<fmt:message key="public.employee.list.filters.search.placeholder" />" value="${filters.search}" />
+                                   placeholder="<fmt:message key="employee.public.list.filters.search.placeholder" />" value="${filters.search}" />
                         </div>
                         <div class="mb-3">
                             <label for="role" class="form-label"><fmt:message key="common.field.role" /></label>
@@ -40,16 +40,16 @@
                             <label for="active" class="form-label"><fmt:message key="common.field.status" /></label>
                             <select class="form-select" id="active" name="active">
                                 <option value="all" ${selectedEmployeeActive == 'all' ? 'selected' : ''}><fmt:message key="common.option.all" /></option>
-                                <option value="active" ${selectedEmployeeActive == 'active' ? 'selected' : ''}><fmt:message key="status.active.plural" /></option>
-                                <option value="inactive" ${selectedEmployeeActive == 'inactive' ? 'selected' : ''}><fmt:message key="status.inactive.plural" /></option>
+                                <option value="active" ${selectedEmployeeActive == 'active' ? 'selected' : ''}><fmt:message key="common.status.active.plural" /></option>
+                                <option value="inactive" ${selectedEmployeeActive == 'inactive' ? 'selected' : ''}><fmt:message key="common.status.inactive.plural" /></option>
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label for="sort" class="form-label"><fmt:message key="public.employee.list.filters.sort.label" /></label>
+                            <label for="sort" class="form-label"><fmt:message key="employee.public.list.filters.sort.label" /></label>
                             <select class="form-select" id="sort" name="sort">
-                                <option value="createdDesc" ${selectedEmployeeSort == 'createdDesc' ? 'selected' : ''}><fmt:message key="public.employee.list.filters.sort.recent" /></option>
-                                <option value="nameAsc" ${selectedEmployeeSort == 'nameAsc' ? 'selected' : ''}><fmt:message key="public.employee.list.filters.sort.name" /></option>
-                                <option value="hqAsc" ${selectedEmployeeSort == 'hqAsc' ? 'selected' : ''}><fmt:message key="public.employee.list.filters.sort.headquarters" /></option>
+                                <option value="createdDesc" ${selectedEmployeeSort == 'createdDesc' ? 'selected' : ''}><fmt:message key="employee.public.list.filters.sort.recent" /></option>
+                                <option value="nameAsc" ${selectedEmployeeSort == 'nameAsc' ? 'selected' : ''}><fmt:message key="employee.public.list.filters.sort.name" /></option>
+                                <option value="hqAsc" ${selectedEmployeeSort == 'hqAsc' ? 'selected' : ''}><fmt:message key="employee.public.list.filters.sort.headquarters" /></option>
                             </select>
                         </div>
                         <div class="d-flex gap-2">
@@ -65,23 +65,23 @@
         </div>
         <div class="col-lg-8">
             <div class="card card-common mb-4">
-                <div class="card-header"><fmt:message key="public.employee.list.metrics.title" /></div>
+                <div class="card-header"><fmt:message key="employee.public.list.metrics.title" /></div>
                 <div class="card-body">
                     <div class="row text-center">
                         <div class="col-6 col-md-3">
-                            <div class="metric-label"><fmt:message key="public.employee.list.metrics.results" /></div>
+                            <div class="metric-label"><fmt:message key="employee.public.list.metrics.results" /></div>
                             <div class="metric-value">${pagination.total}</div>
                         </div>
                         <div class="col-6 col-md-3">
-                            <div class="metric-label"><fmt:message key="public.employee.list.metrics.active" /></div>
+                            <div class="metric-label"><fmt:message key="employee.public.list.metrics.active" /></div>
                             <div class="metric-value text-success">${employeeSummary.active}</div>
                         </div>
                         <div class="col-6 col-md-3 mt-3 mt-md-0">
-                            <div class="metric-label"><fmt:message key="public.employee.list.metrics.inactive" /></div>
+                            <div class="metric-label"><fmt:message key="employee.public.list.metrics.inactive" /></div>
                             <div class="metric-value text-danger">${employeeSummary.inactive}</div>
                         </div>
                         <div class="col-6 col-md-3 mt-3 mt-md-0">
-                            <div class="metric-label"><fmt:message key="public.employee.list.metrics.headquarters" /></div>
+                            <div class="metric-label"><fmt:message key="employee.public.list.metrics.headquarters" /></div>
                             <div class="metric-value">${employeeSummary.headquarters}</div>
                         </div>
                     </div>
@@ -103,7 +103,7 @@
                     <div class="card card-common">
                         <div class="card-body text-center text-muted">
                             <i class="bi bi-person-workspace display-6 d-block mb-2"></i>
-                            <fmt:message key="public.employee.list.empty" />
+                            <fmt:message key="employee.public.list.empty" />
                         </div>
                     </div>
                 </c:when>
@@ -134,7 +134,7 @@
                                         <td class="d-none d-lg-table-cell">${employeeHeadquartersNames[employee.headquartersId]}</td>
                                         <td>
                                             <span class="badge ${employee.activeStatus ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'}">
-                                                <fmt:message key="${employee.activeStatus ? 'status.active' : 'status.inactive'}" />
+                                                <fmt:message key="${employee.activeStatus ? 'common.status.active' : 'common.status.inactive'}" />
                                             </span>
                                         </td>
                                         <td class="text-end">

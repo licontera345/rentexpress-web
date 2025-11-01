@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Locale;
 
 import com.pinguela.rentexpressweb.constants.AppConstants;
+import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.SessionManager;
 
 import jakarta.servlet.ServletException;
@@ -21,8 +22,8 @@ public class LanguageServlet extends HttpServlet {
 
     private static final List<String> SUPPORTED_LANGUAGES = Arrays.asList("es", "en", "fr");
     private static final int ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
-    private static final String MESSAGE_LANGUAGE_UPDATED = "Idioma actualizado correctamente.";
-    private static final String MESSAGE_LANGUAGE_UNSUPPORTED = "El idioma seleccionado no está disponible.";
+    private static final String KEY_FLASH_SUCCESS = "common.language.flash.success";
+    private static final String KEY_FLASH_ERROR = "common.language.flash.error";
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -31,7 +32,8 @@ public class LanguageServlet extends HttpServlet {
             String normalized = requestedLanguage.toLowerCase(Locale.ROOT);
             if (SUPPORTED_LANGUAGES.contains(normalized)) {
                 SessionManager.set(request, AppConstants.ATTR_LOCALE, normalized);
-                SessionManager.set(request, AppConstants.ATTR_FLASH_SUCCESS, MESSAGE_LANGUAGE_UPDATED);
+                SessionManager.set(request, AppConstants.ATTR_FLASH_SUCCESS,
+                        MessageResolver.getMessage(request, KEY_FLASH_SUCCESS));
                 Cookie localeCookie = new Cookie(AppConstants.ATTR_LOCALE, normalized);
                 localeCookie.setPath(request.getContextPath().isEmpty() ? "/" : request.getContextPath());
                 localeCookie.setMaxAge(ONE_YEAR_SECONDS);
@@ -39,7 +41,8 @@ public class LanguageServlet extends HttpServlet {
                 localeCookie.setSecure(request.isSecure());
                 response.addCookie(localeCookie);
             } else {
-                SessionManager.set(request, AppConstants.ATTR_FLASH_ERROR, MESSAGE_LANGUAGE_UNSUPPORTED);
+                SessionManager.set(request, AppConstants.ATTR_FLASH_ERROR,
+                        MessageResolver.getMessage(request, KEY_FLASH_ERROR));
             }
         }
         String referer = request.getHeader("Referer");

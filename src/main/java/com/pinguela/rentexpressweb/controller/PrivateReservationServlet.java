@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.ReservationConstants;
+import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.SessionManager;
 import com.pinguela.rentexpressweb.util.Views;
 
@@ -18,7 +19,10 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet("/app/reservations/create")
 public class PrivateReservationServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    private static final String MESSAGE_RESERVATION_CREATED = "Reserva creada correctamente.";
+    private static final String KEY_FLASH_SUCCESS = "reservation.flash.success";
+    private static final String KEY_ERROR_VEHICLE_REQUIRED = "error.validation.vehicleRequired";
+    private static final String KEY_ERROR_START_REQUIRED = "error.validation.startDateRequired";
+    private static final String KEY_ERROR_END_REQUIRED = "error.validation.endDateRequired";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -43,17 +47,20 @@ public class PrivateReservationServlet extends HttpServlet {
         String endDate = normalize(request.getParameter(ReservationConstants.PARAM_END_DATE));
 
         if (vehicleId == null) {
-            errors.put(ReservationConstants.PARAM_VEHICLE_ID, "Debes seleccionar un vehículo válido.");
+            errors.put(ReservationConstants.PARAM_VEHICLE_ID,
+                    MessageResolver.getMessage(request, KEY_ERROR_VEHICLE_REQUIRED));
         } else {
             form.put(ReservationConstants.PARAM_VEHICLE_ID, vehicleId);
         }
         if (startDate == null) {
-            errors.put(ReservationConstants.PARAM_START_DATE, "Introduce una fecha de inicio válida.");
+            errors.put(ReservationConstants.PARAM_START_DATE,
+                    MessageResolver.getMessage(request, KEY_ERROR_START_REQUIRED));
         } else {
             form.put(ReservationConstants.PARAM_START_DATE, startDate);
         }
         if (endDate == null) {
-            errors.put(ReservationConstants.PARAM_END_DATE, "Introduce una fecha de devolución válida.");
+            errors.put(ReservationConstants.PARAM_END_DATE,
+                    MessageResolver.getMessage(request, KEY_ERROR_END_REQUIRED));
         } else {
             form.put(ReservationConstants.PARAM_END_DATE, endDate);
         }
@@ -65,7 +72,8 @@ public class PrivateReservationServlet extends HttpServlet {
             return;
         }
 
-        SessionManager.set(request, AppConstants.ATTR_FLASH_SUCCESS, MESSAGE_RESERVATION_CREATED);
+        SessionManager.set(request, AppConstants.ATTR_FLASH_SUCCESS,
+                MessageResolver.getMessage(request, KEY_FLASH_SUCCESS));
         response.sendRedirect(request.getContextPath() + Views.PRIVATE_RESERVATION_SUCCESS);
     }
 

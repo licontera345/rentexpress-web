@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.UserConstants;
+import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.SessionManager;
 import com.pinguela.rentexpressweb.util.Views;
 
@@ -18,7 +19,11 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet("/app/users/register")
 public class RegisterUserServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    private static final String MESSAGE_REGISTERED = "Cuenta creada correctamente. Inicia sesión para continuar.";
+    private static final String KEY_FLASH_SUCCESS = "register.user.flash.success";
+    private static final String KEY_ERROR_EMAIL_REQUIRED = "error.validation.emailRequired";
+    private static final String KEY_ERROR_PASSWORD_REQUIRED = "error.validation.passwordRequired";
+    private static final String KEY_ERROR_CONFIRM_REQUIRED = "error.validation.confirmPasswordRequired";
+    private static final String KEY_ERROR_PASSWORD_MISMATCH = "error.validation.passwordMismatch";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -35,17 +40,18 @@ public class RegisterUserServlet extends HttpServlet {
         String confirmPassword = normalize(request.getParameter(UserConstants.PARAM_CONFIRM_PASSWORD));
 
         if (email == null) {
-            errors.put(UserConstants.PARAM_EMAIL, "El correo electrónico es obligatorio.");
+            errors.put(UserConstants.PARAM_EMAIL, MessageResolver.getMessage(request, KEY_ERROR_EMAIL_REQUIRED));
         } else {
             form.put(UserConstants.PARAM_EMAIL, email);
         }
         if (password == null) {
-            errors.put(UserConstants.PARAM_PASSWORD, "La contraseña es obligatoria.");
+            errors.put(UserConstants.PARAM_PASSWORD, MessageResolver.getMessage(request, KEY_ERROR_PASSWORD_REQUIRED));
         }
         if (confirmPassword == null) {
-            errors.put(UserConstants.PARAM_CONFIRM_PASSWORD, "Confirma la contraseña.");
+            errors.put(UserConstants.PARAM_CONFIRM_PASSWORD, MessageResolver.getMessage(request, KEY_ERROR_CONFIRM_REQUIRED));
         } else if (password != null && !password.equals(confirmPassword)) {
-            errors.put(UserConstants.PARAM_CONFIRM_PASSWORD, "Las contraseñas no coinciden.");
+            errors.put(UserConstants.PARAM_CONFIRM_PASSWORD,
+                    MessageResolver.getMessage(request, KEY_ERROR_PASSWORD_MISMATCH));
         }
 
         if (!errors.isEmpty()) {
@@ -55,7 +61,8 @@ public class RegisterUserServlet extends HttpServlet {
             return;
         }
 
-        SessionManager.set(request, AppConstants.ATTR_FLASH_SUCCESS, MESSAGE_REGISTERED);
+        SessionManager.set(request, AppConstants.ATTR_FLASH_SUCCESS,
+                MessageResolver.getMessage(request, KEY_FLASH_SUCCESS));
         response.sendRedirect(request.getContextPath() + Views.PUBLIC_LOGIN);
     }
 
