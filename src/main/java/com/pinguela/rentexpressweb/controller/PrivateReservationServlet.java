@@ -1,21 +1,15 @@
 package com.pinguela.rentexpressweb.controller;
-
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.ReservationDTO;
 import com.pinguela.rentexpres.model.UserDTO;
 import com.pinguela.rentexpres.model.VehicleDTO;
-import com.pinguela.rentexpres.model.VehicleStatusDTO;
 import com.pinguela.rentexpres.service.ReservationService;
 import com.pinguela.rentexpres.service.VehicleService;
 import com.pinguela.rentexpres.service.VehicleStatusService;
@@ -27,13 +21,11 @@ import com.pinguela.rentexpressweb.constants.ReservationConstants;
 import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.SessionManager;
 import com.pinguela.rentexpressweb.util.Views;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 @WebServlet("/app/reservations/create")
 public class PrivateReservationServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
@@ -41,13 +33,11 @@ public class PrivateReservationServlet extends HttpServlet {
     private static final String KEY_ERROR_VEHICLE_REQUIRED = "error.validation.vehicleRequired";
     private static final String KEY_ERROR_START_REQUIRED = "error.validation.startDateRequired";
     private static final String KEY_ERROR_END_REQUIRED = "error.validation.endDateRequired";
-
+    private static final String KEY_ERROR_RESERVATION_CREATE = "error.reservation.createFailed";
     private static final Logger LOGGER = LogManager.getLogger(PrivateReservationServlet.class);
-
     private transient VehicleService vehicleService;
     private transient ReservationService reservationService;
     private transient VehicleStatusService vehicleStatusService;
-
     @Override
     public void init() throws ServletException {
         super.init();
@@ -55,7 +45,6 @@ public class PrivateReservationServlet extends HttpServlet {
         this.reservationService = new ReservationServiceImpl();
         this.vehicleStatusService = new VehicleStatusServiceImpl();
     }
-
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
@@ -65,8 +54,8 @@ public class PrivateReservationServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + Views.PUBLIC_LOGIN);
             return;
         }
-
-        Integer vehicleId = parseInteger(request.getParameter(ReservationConstants.PARAM_VEHICLE_ID));
+        Integer vehicleId = ReservationServletHelper
+                .parseInteger(request.getParameter(ReservationConstants.PARAM_VEHICLE_ID));
         if (vehicleId != null) {
             try {
                 VehicleDTO vehicle = vehicleService.findById(vehicleId);
@@ -78,7 +67,6 @@ public class PrivateReservationServlet extends HttpServlet {
         }
         request.getRequestDispatcher(Views.PUBLIC_VEHICLE_DETAIL).forward(request, response);
     }
-
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
@@ -90,11 +78,12 @@ public class PrivateReservationServlet extends HttpServlet {
         }
         Map<String, String> errors = new LinkedHashMap<String, String>();
         Map<String, String> form = new LinkedHashMap<String, String>();
-
-        String vehicleId = normalize(request.getParameter(ReservationConstants.PARAM_VEHICLE_ID));
-        String startDate = normalize(request.getParameter(ReservationConstants.PARAM_START_DATE));
-        String endDate = normalize(request.getParameter(ReservationConstants.PARAM_END_DATE));
-
+        String vehicleId = ReservationServletHelper
+                .normalize(request.getParameter(ReservationConstants.PARAM_VEHICLE_ID));
+        String startDate = ReservationServletHelper
+                .normalize(request.getParameter(ReservationConstants.PARAM_START_DATE));
+        String endDate = ReservationServletHelper
+                .normalize(request.getParameter(ReservationConstants.PARAM_END_DATE));
         if (vehicleId == null) {
             errors.put(ReservationConstants.PARAM_VEHICLE_ID,
                     MessageResolver.getMessage(request, KEY_ERROR_VEHICLE_REQUIRED));
@@ -113,15 +102,13 @@ public class PrivateReservationServlet extends HttpServlet {
         } else {
             form.put(ReservationConstants.PARAM_END_DATE, endDate);
         }
-
-        LocalDate start = parseDate(startDate);
-        LocalDate end = parseDate(endDate);
+        LocalDate start = ReservationServletHelper.parseDate(startDate);
+        LocalDate end = ReservationServletHelper.parseDate(endDate);
         if (start != null && end != null && start.isAfter(end)) {
             errors.put(ReservationConstants.PARAM_END_DATE,
                     MessageResolver.getMessage(request, "error.validation.invalidDateRange"));
         }
-
-        Integer vehicleIdentifier = vehicleId != null ? parseInteger(vehicleId) : null;
+        Integer vehicleIdentifier = vehicleId != null ? ReservationServletHelper.parseInteger(vehicleId) : null;
         VehicleDTO vehicle = null;
         if (vehicleIdentifier != null && errors.isEmpty()) {
             try {
@@ -129,7 +116,7 @@ public class PrivateReservationServlet extends HttpServlet {
                 if (vehicle == null) {
                     errors.put(ReservationConstants.PARAM_VEHICLE_ID,
                             MessageResolver.getMessage(request, "error.validation.vehicleNotFound"));
-                } else if (!isVehicleAvailable(request, vehicle)) {
+                } else if (!ReservationServletHelper.isVehicleAvailable(request, vehicle, vehicleStatusService)) {
                     errors.put(ReservationConstants.PARAM_VEHICLE_ID,
                             MessageResolver.getMessage(request, "error.validation.vehicleUnavailable"));
                 }
@@ -138,38 +125,60 @@ public class PrivateReservationServlet extends HttpServlet {
                 errors.put(ReservationConstants.PARAM_VEHICLE_ID, ex.getMessage());
             }
         }
-
         if (!errors.isEmpty()) {
             request.setAttribute(ReservationConstants.ATTR_RESERVATION_ERRORS, errors);
             request.setAttribute(ReservationConstants.ATTR_RESERVATION_FORM, form);
             request.getRequestDispatcher(Views.PUBLIC_VEHICLE_DETAIL).forward(request, response);
             return;
         }
-
         try {
             ReservationDTO reservation = new ReservationDTO();
             reservation.setVehicleId(vehicleIdentifier);
             reservation.setUserId(currentUser.getUserId());
-            reservation.setStartDate(toDateTime(start));
-            reservation.setEndDate(toDateTime(end));
+            reservation.setStartDate(ReservationServletHelper.toDateTime(start));
+            reservation.setEndDate(ReservationServletHelper.toDateTime(end));
             reservation.setReservationStatusId(Integer.valueOf(1));
-
-            boolean created = reservationService.create(reservation);
-            if (created && vehicle != null) {
-                Integer reservedStatusId = resolveVehicleStatusId(request, "Reservado", "Reserved");
-                if (reservedStatusId != null) {
+            Integer reservedStatusId = ReservationServletHelper.resolveVehicleStatusId(request, vehicleStatusService,
+                    "Reservado", "Reserved");
+            if (reservedStatusId == null) {
+                errors.put(ReservationConstants.PARAM_VEHICLE_ID,
+                        MessageResolver.getMessage(request, "error.validation.vehicleUnavailable"));
+                request.setAttribute(ReservationConstants.ATTR_RESERVATION_ERRORS, errors);
+                request.setAttribute(ReservationConstants.ATTR_RESERVATION_FORM, form);
+                request.getRequestDispatcher(Views.PUBLIC_VEHICLE_DETAIL).forward(request, response);
+                return;
+            }
+            Integer previousStatusId = vehicle != null ? vehicle.getVehicleStatusId() : null;
+            boolean statusChanged = false;
+            try {
+                if (vehicle != null) {
                     vehicle.setVehicleStatusId(reservedStatusId);
+                    vehicleService.update(vehicle);
+                    statusChanged = true;
+                }
+                boolean created = reservationService.create(reservation);
+                if (!created) {
+                    throw new RentexpresException(MessageResolver.getMessage(request, KEY_ERROR_RESERVATION_CREATE));
+                }
+                SessionManager.set(request, AppConstants.ATTR_FLASH_SUCCESS,
+                        MessageResolver.getMessage(request, KEY_FLASH_SUCCESS));
+                response.sendRedirect(request.getContextPath() + Views.PRIVATE_RESERVATION_SUCCESS);
+            } catch (RentexpresException ex) {
+                if (statusChanged && vehicle != null) {
                     try {
+                        vehicle.setVehicleStatusId(previousStatusId);
                         vehicleService.update(vehicle);
-                    } catch (RentexpresException ex) {
-                        LOGGER.error("Failed to update vehicle status to reserved for vehicle {}", vehicleIdentifier, ex);
+                    } catch (RentexpresException rollbackEx) {
+                        LOGGER.error("Failed to rollback vehicle status for vehicle {}", vehicleIdentifier, rollbackEx);
                     }
                 }
+                LOGGER.error("Error creating reservation", ex);
+                errors.put(AppConstants.ATTR_FLASH_ERROR, ex.getMessage());
+                request.setAttribute(AppConstants.ATTR_FLASH_ERROR, ex.getMessage());
+                request.setAttribute(ReservationConstants.ATTR_RESERVATION_ERRORS, errors);
+                request.setAttribute(ReservationConstants.ATTR_RESERVATION_FORM, form);
+                request.getRequestDispatcher(Views.PUBLIC_VEHICLE_DETAIL).forward(request, response);
             }
-
-            SessionManager.set(request, AppConstants.ATTR_FLASH_SUCCESS,
-                    MessageResolver.getMessage(request, KEY_FLASH_SUCCESS));
-            response.sendRedirect(request.getContextPath() + Views.PRIVATE_RESERVATION_SUCCESS);
         } catch (RentexpresException ex) {
             LOGGER.error("Error creating reservation", ex);
             errors.put(AppConstants.ATTR_FLASH_ERROR, ex.getMessage());
@@ -178,82 +187,5 @@ public class PrivateReservationServlet extends HttpServlet {
             request.setAttribute(ReservationConstants.ATTR_RESERVATION_FORM, form);
             request.getRequestDispatcher(Views.PUBLIC_VEHICLE_DETAIL).forward(request, response);
         }
-    }
-
-    private String normalize(String value) {
-        if (value == null) {
-            return null;
-        }
-        String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
-    }
-
-    private LocalDate parseDate(String value) {
-        if (value == null) {
-            return null;
-        }
-        try {
-            return LocalDate.parse(value);
-        } catch (Exception ex) {
-            return null;
-        }
-    }
-
-    private LocalDateTime toDateTime(LocalDate date) {
-        return date != null ? date.atStartOfDay() : null;
-    }
-
-    private Integer parseInteger(String value) {
-        if (value == null) {
-            return null;
-        }
-        try {
-            return Integer.valueOf(value.trim());
-        } catch (NumberFormatException ex) {
-            return null;
-        }
-    }
-
-    private boolean isVehicleAvailable(HttpServletRequest request, VehicleDTO vehicle) throws RentexpresException {
-        if (vehicle == null) {
-            return false;
-        }
-        Integer availableStatusId = resolveVehicleStatusId(request, "Disponible", "Available");
-        Integer statusId = vehicle.getVehicleStatusId();
-        if (availableStatusId != null && availableStatusId.equals(statusId)) {
-            return true;
-        }
-        if (statusId != null && statusId.intValue() == 1) {
-            return true;
-        }
-        VehicleStatusDTO status = vehicle.getVehicleStatus();
-        if (status != null && status.getStatusName() != null) {
-            String normalized = status.getStatusName().trim().toLowerCase(Locale.ROOT);
-            if (normalized.equals("disponible") || normalized.equals("available")) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private Integer resolveVehicleStatusId(HttpServletRequest request, String... desiredNames) throws RentexpresException {
-        Locale locale = request != null ? request.getLocale() : null;
-        String iso = locale != null ? locale.toLanguageTag() : null;
-        List<VehicleStatusDTO> statuses = vehicleStatusService.findAll(iso);
-        if (statuses == null || statuses.isEmpty()) {
-            return null;
-        }
-        for (VehicleStatusDTO status : statuses) {
-            if (status == null || status.getStatusName() == null) {
-                continue;
-            }
-            String normalized = status.getStatusName().trim().toLowerCase(Locale.ROOT);
-            for (String desired : desiredNames) {
-                if (desired != null && normalized.equals(desired.toLowerCase(Locale.ROOT))) {
-                    return status.getVehicleStatusId();
-                }
-            }
-        }
-        return null;
     }
 }

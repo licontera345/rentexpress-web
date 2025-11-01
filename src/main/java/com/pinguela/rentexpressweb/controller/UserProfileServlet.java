@@ -109,9 +109,15 @@ public class UserProfileServlet extends HttpServlet {
 
         try {
             userService.update(updated);
-            SessionManager.set(request, AppConstants.ATTR_CURRENT_USER, updated);
-            request.setAttribute(AppConstants.ATTR_FLASH_SUCCESS,
-                    MessageResolver.getMessage(request, "profile.update.success"));
+            UserDTO refreshed = userService.findById(currentUser.getUserId());
+            if (refreshed != null) {
+                SessionManager.set(request, AppConstants.ATTR_CURRENT_USER, refreshed);
+                request.setAttribute(AppConstants.ATTR_FLASH_SUCCESS,
+                        MessageResolver.getMessage(request, "profile.update.success"));
+            } else {
+                request.setAttribute(AppConstants.ATTR_FLASH_ERROR,
+                        MessageResolver.getMessage(request, "user.profile.loadError"));
+            }
         } catch (RentexpresException ex) {
             LOGGER.error("Error updating user profile {}", currentUser.getUserId(), ex);
             request.setAttribute(AppConstants.ATTR_FLASH_ERROR, ex.getMessage());

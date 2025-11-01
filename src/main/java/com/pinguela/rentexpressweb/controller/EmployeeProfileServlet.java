@@ -103,9 +103,15 @@ public class EmployeeProfileServlet extends HttpServlet {
 
         try {
             employeeService.update(updated);
-            SessionManager.set(request, AppConstants.ATTR_CURRENT_EMPLOYEE, updated);
-            request.setAttribute(AppConstants.ATTR_FLASH_SUCCESS,
-                    MessageResolver.getMessage(request, "profile.update.success"));
+            EmployeeDTO refreshed = employeeService.findById(currentEmployee.getEmployeeId());
+            if (refreshed != null) {
+                SessionManager.set(request, AppConstants.ATTR_CURRENT_EMPLOYEE, refreshed);
+                request.setAttribute(AppConstants.ATTR_FLASH_SUCCESS,
+                        MessageResolver.getMessage(request, "profile.update.success"));
+            } else {
+                request.setAttribute(AppConstants.ATTR_FLASH_ERROR,
+                        MessageResolver.getMessage(request, "employee.profile.loadError"));
+            }
         } catch (RentexpresException ex) {
             LOGGER.error("Error updating employee profile {}", currentEmployee.getEmployeeId(), ex);
             request.setAttribute(AppConstants.ATTR_FLASH_ERROR, ex.getMessage());
