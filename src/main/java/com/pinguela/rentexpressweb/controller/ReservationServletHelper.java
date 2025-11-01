@@ -10,6 +10,9 @@ import com.pinguela.rentexpres.model.VehicleDTO;
 import com.pinguela.rentexpres.model.VehicleStatusDTO;
 import com.pinguela.rentexpres.service.VehicleStatusService;
 
+import com.pinguela.rentexpressweb.constants.AppConstants;
+import com.pinguela.rentexpressweb.util.SessionManager;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 final class ReservationServletHelper {
@@ -75,25 +78,67 @@ final class ReservationServletHelper {
 
     static Integer resolveVehicleStatusId(HttpServletRequest request, VehicleStatusService vehicleStatusService,
             String... desiredNames) throws RentexpresException {
-        List<VehicleStatusDTO> statuses = vehicleStatusService.findAll();
+        String language = resolveLanguage(request);
+        List<VehicleStatusDTO> statuses = vehicleStatusService.findAll(language);
         if (statuses == null || statuses.isEmpty()) {
             return null;
         }
+        boolean reservedRequested = false;
+        if (desiredNames != null) {
+            for (String desired : desiredNames) {
+                if (desired != null && desired.trim().equalsIgnoreCase("RESERVADO")) {
+                    reservedRequested = true;
+                    break;
+                }
+            }
+        }
+        VehicleStatusDTO reservedStatus = null;
         for (VehicleStatusDTO status : statuses) {
             if (status == null || status.getStatusName() == null) {
                 continue;
             }
             String statusName = status.getStatusName().trim();
+            if (statusName.isEmpty()) {
+                continue;
+            }
             if (statusName.equalsIgnoreCase("RESERVADO")) {
-                return status.getVehicleStatusId();
+                reservedStatus = status;
+                if (reservedRequested) {
+                    return reservedStatus.getVehicleStatusId();
+                }
             }
             String normalized = statusName.toLowerCase(Locale.ROOT);
-            for (String desired : desiredNames) {
-                if (desired != null && normalized.equals(desired.toLowerCase(Locale.ROOT))) {
-                    return status.getVehicleStatusId();
+            if (desiredNames != null) {
+                for (String desired : desiredNames) {
+                    if (desired != null && normalized.equals(desired.toLowerCase(Locale.ROOT))) {
+                        return status.getVehicleStatusId();
+                    }
                 }
             }
         }
+        if (reservedRequested && reservedStatus != null) {
+            return reservedStatus.getVehicleStatusId();
+        }
         return null;
+    }
+
+    private static String resolveLanguage(HttpServletRequest request) {
+        Object storedLocale = SessionManager.get(request, AppConstants.ATTR_LOCALE);
+        if (storedLocale instanceof String) {
+            String languageTag = ((String) storedLocale).trim();
+            if (!languageTag.isEmpty()) {
+                Locale locale = Locale.forLanguageTag(languageTag);
+                if (!locale.getLanguage().isEmpty()) {
+                    return locale.getLanguage();
+                }
+                return languageTag;
+            }
+        } else if (storedLocale instanceof Locale) {
+            Locale locale = (Locale) storedLocale;
+            if (!locale.getLanguage().isEmpty()) {
+                return locale.getLanguage();
+            }
+        }
+        return "es";
     }
 }
