@@ -5,12 +5,15 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <c:set var="vehicles" value="${vehicles}" />
-<c:set var="searchValue" value="${search}" />
-<c:set var="selectedCategoryId" value="${categoryId}" />
-<c:set var="selectedStatus" value="${status}" />
-<c:set var="selectedMinPrice" value="${priceMin}" />
-<c:set var="selectedMaxPrice" value="${priceMax}" />
-<c:set var="onlyAvailableFlag" value="${availableOnly}" />
+<c:set var="filters" value="${vehicleFilters}" />
+<c:set var="searchValue" value="${filters.search}" />
+<c:set var="selectedCategoryId" value="${filters.categoryId}" />
+<c:set var="selectedStatus" value="${filters.status}" />
+<c:set var="selectedMinPrice" value="${filters.priceMin}" />
+<c:set var="selectedMaxPrice" value="${filters.priceMax}" />
+<c:set var="onlyAvailableFlag" value="${filters.availableOnly}" />
+<c:set var="categories" value="${vehicleCategories}" />
+<c:set var="statuses" value="${vehicleStatuses}" />
 <c:set var="totalResults" value="${fn:length(vehicles)}" />
 
 <fmt:message key="vehicle.catalog.filter.search.placeholder" var="searchPlaceholder" />
