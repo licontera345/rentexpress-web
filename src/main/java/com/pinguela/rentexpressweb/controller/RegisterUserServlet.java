@@ -4,6 +4,13 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.pinguela.rentexpres.exception.RentexpresException;
+import com.pinguela.rentexpres.model.UserDTO;
+import com.pinguela.rentexpres.service.UserService;
+import com.pinguela.rentexpres.service.impl.UserServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.UserConstants;
 import com.pinguela.rentexpressweb.util.MessageResolver;
@@ -24,6 +31,16 @@ public class RegisterUserServlet extends HttpServlet {
     private static final String KEY_ERROR_PASSWORD_REQUIRED = "error.validation.passwordRequired";
     private static final String KEY_ERROR_CONFIRM_REQUIRED = "error.validation.confirmPasswordRequired";
     private static final String KEY_ERROR_PASSWORD_MISMATCH = "error.validation.passwordMismatch";
+
+    private static final Logger LOGGER = LogManager.getLogger(RegisterUserServlet.class);
+
+    private transient UserService userService;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        this.userService = new UserServiceImpl();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -65,9 +82,24 @@ public class RegisterUserServlet extends HttpServlet {
             return;
         }
 
-        SessionManager.set(request, AppConstants.ATTR_FLASH_SUCCESS,
-                MessageResolver.getMessage(request, KEY_FLASH_SUCCESS));
-        response.sendRedirect(request.getContextPath() + Views.PUBLIC_LOGIN);
+        try {
+            UserDTO user = new UserDTO();
+            user.setEmail(email);
+            user.setPassword(password);
+            user.setActiveStatus(Boolean.TRUE);
+            userService.create(user);
+
+            SessionManager.set(request, AppConstants.ATTR_FLASH_SUCCESS,
+                    MessageResolver.getMessage(request, KEY_FLASH_SUCCESS));
+            response.sendRedirect(request.getContextPath() + Views.PUBLIC_LOGIN);
+        } catch (RentexpresException ex) {
+            LOGGER.error("Error registering user {}", email, ex);
+            errors.put(AppConstants.ATTR_FLASH_ERROR, ex.getMessage());
+            request.setAttribute(AppConstants.ATTR_FORM_ERRORS, errors);
+            request.setAttribute(AppConstants.ATTR_FORM_DATA, form);
+            request.setAttribute(AppConstants.ATTR_FLASH_ERROR, ex.getMessage());
+            request.getRequestDispatcher(Views.PUBLIC_REGISTER_USER).forward(request, response);
+        }
     }
 
     private String normalize(String value) {
