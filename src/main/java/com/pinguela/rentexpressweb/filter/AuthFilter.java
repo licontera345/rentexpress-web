@@ -51,7 +51,8 @@ public class AuthFilter implements Filter {
         if (path == null) {
             return false;
         }
-        return path.startsWith(AppConstants.PATH_PRIVATE_ROOT);
+        return path.startsWith(AppConstants.PATH_PRIVATE_ROOT)
+                || path.startsWith(AppConstants.PATH_APP_ROOT);
     }
 
     @Override
