@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.UserConstants;
+import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.SessionManager;
 import com.pinguela.rentexpressweb.util.Views;
 
@@ -18,7 +19,8 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet("/app/users/private")
 public class PrivateProfileServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    private static final String MESSAGE_PROFILE_UPDATED = "Perfil actualizado correctamente.";
+    private static final String KEY_FLASH_SUCCESS = "user.profile.flash.success";
+    private static final String KEY_ERROR_FULL_NAME_REQUIRED = "error.validation.fullNameRequired";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -42,7 +44,8 @@ public class PrivateProfileServlet extends HttpServlet {
         String phone = normalize(request.getParameter(UserConstants.PARAM_PHONE));
 
         if (fullName == null) {
-            errors.put(UserConstants.PARAM_FULL_NAME, "El nombre completo es obligatorio.");
+            errors.put(UserConstants.PARAM_FULL_NAME,
+                    MessageResolver.getMessage(request, KEY_ERROR_FULL_NAME_REQUIRED));
         } else {
             form.put(UserConstants.PARAM_FULL_NAME, fullName);
         }
@@ -57,7 +60,8 @@ public class PrivateProfileServlet extends HttpServlet {
             return;
         }
 
-        SessionManager.set(request, AppConstants.ATTR_FLASH_SUCCESS, MESSAGE_PROFILE_UPDATED);
+        SessionManager.set(request, AppConstants.ATTR_FLASH_SUCCESS,
+                MessageResolver.getMessage(request, KEY_FLASH_SUCCESS));
         response.sendRedirect(request.getContextPath() + Views.PRIVATE_USER_PROFILE);
     }
 

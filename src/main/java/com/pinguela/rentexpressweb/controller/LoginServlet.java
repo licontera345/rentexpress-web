@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.UserConstants;
 import com.pinguela.rentexpressweb.security.CookieManager;
+import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.SessionManager;
 import com.pinguela.rentexpressweb.util.Views;
 
@@ -25,6 +26,8 @@ public class LoginServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     private static final Logger LOGGER = LogManager.getLogger(LoginServlet.class);
+    private static final String KEY_ERROR_EMAIL_REQUIRED = "error.validation.emailRequired";
+    private static final String KEY_ERROR_PASSWORD_REQUIRED = "error.validation.passwordRequired";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -46,10 +49,10 @@ public class LoginServlet extends HttpServlet {
         boolean remember = request.getParameter(AppConstants.PARAM_REMEMBER_ME) != null;
 
         if (email == null) {
-            errors.put(UserConstants.PARAM_EMAIL, "El correo electrónico es obligatorio.");
+            errors.put(UserConstants.PARAM_EMAIL, MessageResolver.getMessage(request, KEY_ERROR_EMAIL_REQUIRED));
         }
         if (password == null) {
-            errors.put(UserConstants.PARAM_PASSWORD, "La contraseña es obligatoria.");
+            errors.put(UserConstants.PARAM_PASSWORD, MessageResolver.getMessage(request, KEY_ERROR_PASSWORD_REQUIRED));
         }
 
         if (!errors.isEmpty()) {
