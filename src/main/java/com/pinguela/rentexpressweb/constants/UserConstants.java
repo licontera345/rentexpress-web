@@ -26,7 +26,7 @@ public final class UserConstants {
     public static final String ROLE_NAME_CUSTOMER = "Customer";
     public static final String ROLE_NAME_CUSTOMER_ES = "Cliente";
     public static final String ROLE_NAME_CUSTOMER_EN = "Client";
-    public static final String ROLE_NAME_CUSTOMER_USER = "User";
+    public static final String ROLE_NAME_USER = "User";
     public static final String ROLE_NAME_CUSTOMER_CODE = "CLIENT";
 
     public static final int ROLE_ID_CUSTOMER_FALLBACK = 3;
