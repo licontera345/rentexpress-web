@@ -11,6 +11,7 @@ import com.pinguela.rentexpres.exception.RentexpresException;
 import com.pinguela.rentexpres.model.RentalCriteria;
 import com.pinguela.rentexpres.model.RentalDTO;
 import com.pinguela.rentexpres.model.ReservationDTO;
+import com.pinguela.rentexpres.model.Results;
 import com.pinguela.rentexpres.service.RentalService;
 import com.pinguela.rentexpres.service.ReservationService;
 import com.pinguela.rentexpres.service.impl.RentalServiceImpl;
@@ -54,7 +55,7 @@ public class PrivateRentalServlet extends HttpServlet {
         RentalCriteria criteria = new RentalCriteria();
         try {
             List<RentalDTO> rentals = Collections.emptyList();
-            var results = rentalService.findByCriteria(criteria);
+            Results<RentalDTO> results = rentalService.findByCriteria(criteria);
             if (results != null && results.getResults() != null) {
                 rentals = results.getResults();
             }

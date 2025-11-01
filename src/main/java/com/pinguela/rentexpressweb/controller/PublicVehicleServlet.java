@@ -82,7 +82,6 @@ public class PublicVehicleServlet extends HttpServlet {
         criteria.setDailyPriceMax(parseBigDecimal(request.getParameter(VehicleConstants.PARAM_MAX_PRICE)));
         criteria.setPageNumber(parseInteger(request.getParameter(VehicleConstants.PARAM_PAGE)));
         criteria.setPageSize(parseInteger(request.getParameter(VehicleConstants.PARAM_PAGE_SIZE)));
-        criteria.normalize();
         return criteria;
     }
 

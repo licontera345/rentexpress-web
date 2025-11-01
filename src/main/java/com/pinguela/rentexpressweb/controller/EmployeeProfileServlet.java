@@ -48,13 +48,13 @@ public class EmployeeProfileServlet extends HttpServlet {
             return;
         }
         try {
-            EmployeeDTO reloaded = employeeService.findById(currentEmployee.getEmployeeId());
+            EmployeeDTO reloaded = employeeService.findById(currentEmployee.getId());
             if (reloaded != null) {
                 SessionManager.set(request, AppConstants.ATTR_CURRENT_EMPLOYEE, reloaded);
                 currentEmployee = reloaded;
             }
         } catch (RentexpresException ex) {
-            LOGGER.error("Error loading employee profile {}", currentEmployee.getEmployeeId(), ex);
+            LOGGER.error("Error loading employee profile {}", currentEmployee.getId(), ex);
             request.setAttribute(AppConstants.ATTR_FLASH_ERROR, ex.getMessage());
         }
         request.setAttribute(EmployeeConstants.ATTR_EMPLOYEE_PROFILE, currentEmployee);
@@ -95,7 +95,7 @@ public class EmployeeProfileServlet extends HttpServlet {
         }
 
         EmployeeDTO updated = new EmployeeDTO();
-        updated.setEmployeeId(currentEmployee.getEmployeeId());
+        updated.setId(currentEmployee.getId());
         updated.setEmployeeName(fullName);
         updated.setFirstName(fullName);
         updated.setPhone(phone);
@@ -103,7 +103,7 @@ public class EmployeeProfileServlet extends HttpServlet {
 
         try {
             employeeService.update(updated);
-            EmployeeDTO refreshed = employeeService.findById(currentEmployee.getEmployeeId());
+            EmployeeDTO refreshed = employeeService.findById(currentEmployee.getId());
             if (refreshed != null) {
                 SessionManager.set(request, AppConstants.ATTR_CURRENT_EMPLOYEE, refreshed);
                 request.setAttribute(AppConstants.ATTR_FLASH_SUCCESS,
@@ -113,7 +113,7 @@ public class EmployeeProfileServlet extends HttpServlet {
                         MessageResolver.getMessage(request, "employee.profile.loadError"));
             }
         } catch (RentexpresException ex) {
-            LOGGER.error("Error updating employee profile {}", currentEmployee.getEmployeeId(), ex);
+            LOGGER.error("Error updating employee profile {}", currentEmployee.getId(), ex);
             request.setAttribute(AppConstants.ATTR_FLASH_ERROR, ex.getMessage());
         }
 

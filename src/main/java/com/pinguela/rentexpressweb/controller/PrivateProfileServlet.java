@@ -56,7 +56,7 @@ public class PrivateProfileServlet extends HttpServlet {
                             MessageResolver.getMessage(request, "user.profile.loadError"));
                 }
             } else if (currentEmployee != null) {
-                EmployeeDTO reloaded = employeeService.findById(currentEmployee.getEmployeeId());
+                EmployeeDTO reloaded = employeeService.findById(currentEmployee.getId());
                 if (reloaded != null) {
                     SessionManager.set(request, AppConstants.ATTR_CURRENT_EMPLOYEE, reloaded);
                     currentEmployee = reloaded;
@@ -141,13 +141,13 @@ public class PrivateProfileServlet extends HttpServlet {
         }
         if (currentEmployee != null) {
             EmployeeDTO updatedEmployee = new EmployeeDTO();
-            updatedEmployee.setEmployeeId(currentEmployee.getEmployeeId());
+            updatedEmployee.setId(currentEmployee.getId());
             updatedEmployee.setEmployeeName(fullName);
             updatedEmployee.setFirstName(fullName);
             updatedEmployee.setPhone(phone);
             updatedEmployee.setEmail(currentEmployee.getEmail());
             employeeService.update(updatedEmployee);
-            EmployeeDTO refreshed = employeeService.findById(currentEmployee.getEmployeeId());
+            EmployeeDTO refreshed = employeeService.findById(currentEmployee.getId());
             if (refreshed == null) {
                 return false;
             }
@@ -165,7 +165,7 @@ public class PrivateProfileServlet extends HttpServlet {
             account.put("fullName", resolveFullName(fullName, user.getFirstName(), user.getLastName1(), user.getLastName2()));
             account.put("phone", phone != null ? phone : user.getPhone());
         } else if (employee != null) {
-            account.put("id", employee.getEmployeeId());
+            account.put("id", employee.getId());
             account.put("email", employee.getEmail());
             account.put("fullName",
                     fullName != null ? fullName : (employee.getEmployeeName() != null ? employee.getEmployeeName() : employee.getFirstName()));

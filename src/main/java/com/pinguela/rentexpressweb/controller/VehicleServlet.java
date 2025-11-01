@@ -53,7 +53,6 @@ public class VehicleServlet extends HttpServlet {
         criteria.setCategoryId(parseInteger(request.getParameter(VehicleConstants.PARAM_CATEGORY)));
         criteria.setBrand(trimToNull(request.getParameter(VehicleConstants.PARAM_BRAND)));
         criteria.setModel(trimToNull(request.getParameter(VehicleConstants.PARAM_MODEL)));
-        criteria.normalize();
 
         try {
             Results<VehicleDTO> results = vehicleService.findByCriteria(criteria);
