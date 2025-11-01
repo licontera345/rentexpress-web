@@ -75,9 +75,7 @@ final class ReservationServletHelper {
 
     static Integer resolveVehicleStatusId(HttpServletRequest request, VehicleStatusService vehicleStatusService,
             String... desiredNames) throws RentexpresException {
-        Locale locale = request != null ? request.getLocale() : null;
-        String iso = locale != null ? locale.toLanguageTag() : null;
-        List<VehicleStatusDTO> statuses = vehicleStatusService.findAll(iso);
+        List<VehicleStatusDTO> statuses = vehicleStatusService.findAll();
         if (statuses == null || statuses.isEmpty()) {
             return null;
         }
@@ -85,7 +83,11 @@ final class ReservationServletHelper {
             if (status == null || status.getStatusName() == null) {
                 continue;
             }
-            String normalized = status.getStatusName().trim().toLowerCase(Locale.ROOT);
+            String statusName = status.getStatusName().trim();
+            if (statusName.equalsIgnoreCase("RESERVADO")) {
+                return status.getVehicleStatusId();
+            }
+            String normalized = statusName.toLowerCase(Locale.ROOT);
             for (String desired : desiredNames) {
                 if (desired != null && normalized.equals(desired.toLowerCase(Locale.ROOT))) {
                     return status.getVehicleStatusId();

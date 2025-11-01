@@ -103,16 +103,9 @@ public class RegisterEmployeeServlet extends HttpServlet {
 
             EmployeeDTO persisted = null;
             try {
-                persisted = employeeService.findByEmail(email);
+                persisted = employeeService.findById(employee.getId());
             } catch (RentexpresException reloadEx) {
-                LOGGER.error("Unable to reload employee by email {} after registration", email, reloadEx);
-            }
-            if (persisted == null && employee.getEmployeeId() != null) {
-                try {
-                    persisted = employeeService.findById(employee.getEmployeeId());
-                } catch (RentexpresException reloadEx) {
-                    LOGGER.error("Unable to reload employee {} after registration", employee.getEmployeeId(), reloadEx);
-                }
+                LOGGER.error("Unable to reload employee {} after registration", employee.getId(), reloadEx);
             }
             if (persisted != null
                     && SessionManager.get(request, AppConstants.ATTR_CURRENT_EMPLOYEE) instanceof EmployeeDTO) {
