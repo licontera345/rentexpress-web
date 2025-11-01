@@ -151,6 +151,9 @@ public class PublicVehicleServlet extends HttpServlet {
         request.setAttribute(VehicleConstants.PARAM_PAGE_SIZE, sizeAttribute);
         request.setAttribute(VehicleConstants.PARAM_PAGE_SIZE_ALIAS, sizeAttribute);
 
+        request.setAttribute(VehicleConstants.ATTR_AVAILABLE_CATEGORIES, Collections.emptyList());
+        request.setAttribute(VehicleConstants.ATTR_AVAILABLE_STATUSES, Collections.emptyList());
+
         try {
             Results<VehicleDTO> results = vehicleService.findByCriteria(criteria, pageAttribute, sizeAttribute);
             List<VehicleDTO> vehicles = results != null && results.getResults() != null ? results.getResults()

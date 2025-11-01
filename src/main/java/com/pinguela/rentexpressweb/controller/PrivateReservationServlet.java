@@ -2,6 +2,7 @@ package com.pinguela.rentexpressweb.controller;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
@@ -18,6 +19,7 @@ import com.pinguela.rentexpres.service.impl.VehicleServiceImpl;
 import com.pinguela.rentexpres.service.impl.VehicleStatusServiceImpl;
 import com.pinguela.rentexpressweb.constants.AppConstants;
 import com.pinguela.rentexpressweb.constants.ReservationConstants;
+import com.pinguela.rentexpressweb.constants.VehicleConstants;
 import com.pinguela.rentexpressweb.util.MessageResolver;
 import com.pinguela.rentexpressweb.util.SessionManager;
 import com.pinguela.rentexpressweb.util.Views;
@@ -54,16 +56,22 @@ public class PrivateReservationServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + Views.PUBLIC_LOGIN);
             return;
         }
+        prepareReservationForm(request);
+        request.setAttribute(VehicleConstants.ATTR_SELECTED_CATEGORY_NAME, null);
+        request.setAttribute(VehicleConstants.ATTR_RELATED_VEHICLES, Collections.emptyList());
         Integer vehicleId = ReservationServletHelper
                 .parseInteger(request.getParameter(ReservationConstants.PARAM_VEHICLE_ID));
         if (vehicleId != null) {
             try {
                 VehicleDTO vehicle = vehicleService.findById(vehicleId);
-                request.setAttribute(ReservationConstants.ATTR_PARAM_VEHICLE_ID, vehicle);
+                request.setAttribute(VehicleConstants.ATTR_SELECTED_VEHICLE, vehicle);
             } catch (RentexpresException ex) {
                 LOGGER.error("Unable to load vehicle {} for reservation form", vehicleId, ex);
                 request.setAttribute(AppConstants.ATTR_FLASH_ERROR, ex.getMessage());
+                request.setAttribute(VehicleConstants.ATTR_SELECTED_VEHICLE, null);
             }
+        } else {
+            request.setAttribute(VehicleConstants.ATTR_SELECTED_VEHICLE, null);
         }
         request.getRequestDispatcher(Views.PUBLIC_VEHICLE_DETAIL).forward(request, response);
     }
@@ -76,6 +84,7 @@ public class PrivateReservationServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + Views.PUBLIC_LOGIN);
             return;
         }
+        prepareReservationForm(request);
         Map<String, String> errors = new LinkedHashMap<String, String>();
         Map<String, String> form = new LinkedHashMap<String, String>();
         String vehicleId = ReservationServletHelper
@@ -125,6 +134,7 @@ public class PrivateReservationServlet extends HttpServlet {
                 errors.put(ReservationConstants.PARAM_VEHICLE_ID, ex.getMessage());
             }
         }
+        request.setAttribute(VehicleConstants.ATTR_SELECTED_VEHICLE, vehicle);
         if (!errors.isEmpty()) {
             request.setAttribute(ReservationConstants.ATTR_RESERVATION_ERRORS, errors);
             request.setAttribute(ReservationConstants.ATTR_RESERVATION_FORM, form);
@@ -186,6 +196,28 @@ public class PrivateReservationServlet extends HttpServlet {
             request.setAttribute(ReservationConstants.ATTR_RESERVATION_ERRORS, errors);
             request.setAttribute(ReservationConstants.ATTR_RESERVATION_FORM, form);
             request.getRequestDispatcher(Views.PUBLIC_VEHICLE_DETAIL).forward(request, response);
+        }
+    }
+
+    private void prepareReservationForm(HttpServletRequest request) {
+        request.setAttribute(ReservationConstants.ATTR_PARAM_VEHICLE_ID, ReservationConstants.PARAM_VEHICLE_ID);
+        request.setAttribute(ReservationConstants.ATTR_PARAM_START_DATE, ReservationConstants.PARAM_START_DATE);
+        request.setAttribute(ReservationConstants.ATTR_PARAM_END_DATE, ReservationConstants.PARAM_END_DATE);
+        request.setAttribute(ReservationConstants.ATTR_PARAM_PICKUP_HEADQUARTERS,
+                ReservationConstants.PARAM_PICKUP_HEADQUARTERS);
+        request.setAttribute(ReservationConstants.ATTR_PARAM_RETURN_HEADQUARTERS,
+                ReservationConstants.PARAM_RETURN_HEADQUARTERS);
+        if (request.getAttribute(ReservationConstants.ATTR_HEADQUARTERS) == null) {
+            request.setAttribute(ReservationConstants.ATTR_HEADQUARTERS, Collections.emptyList());
+        }
+        if (request.getAttribute(ReservationConstants.ATTR_RESERVATION_FORM) == null) {
+            request.setAttribute(ReservationConstants.ATTR_RESERVATION_FORM, Collections.emptyMap());
+        }
+        if (request.getAttribute(ReservationConstants.ATTR_RESERVATION_ERRORS) == null) {
+            request.setAttribute(ReservationConstants.ATTR_RESERVATION_ERRORS, Collections.emptyList());
+        }
+        if (request.getAttribute(VehicleConstants.ATTR_RELATED_VEHICLES) == null) {
+            request.setAttribute(VehicleConstants.ATTR_RELATED_VEHICLES, Collections.emptyList());
         }
     }
 }
