@@ -26,6 +26,17 @@
     <!--
     <Manager pathname="SESSIONS.ser" />
     -->
-<Resource auth="Container" driverClassName="com.mysql.cj.jdbc.Driver" factory="org.apache.tomcat.jdbc.pool.DataSourceFactory" maxActive="20" maxIdle="10" maxWait="10000" name="jdbc/rentexpresDS" password="abc123." type="javax.sql.DataSource" url="jdbc:mysql://localhost:3306/rentexpres?serverTimezone=UTC" username="root"/>
+    
+<Resource auth="Container" 
+          driverClassName="com.mysql.cj.jdbc.Driver" 
+          factory="org.apache.tomcat.jdbc.pool.DataSourceFactory" 
+          maxActive="20"
+    maxIdle="10"
+    maxWait="10000"
+    name="jdbc/rentexpresDS" 
+    password="abc123."
+    type="javax.sql.DataSource" 
+    url="jdbc:mysql://localhost:3306/rentexpres?serverTimezone=UTC" 
+    username="root"/>
 		
 </Context>
