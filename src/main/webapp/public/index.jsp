@@ -1,9 +1,30 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ include file="/common/header.jsp" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+
+<%-- ============================================
+     CONFIGURACIÓN
+     ============================================ --%>
+<fmt:setLocale value="${sessionScope.appLocale != null ? sessionScope.appLocale : pageContext.request.locale}" scope="session" />
+<fmt:setBundle basename="i18n.Messages" scope="session" />
+
+<%-- Variables de contexto y datos --%>
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
+<c:set var="featuredVehicles" value="${requestScope.featuredVehicles}" />
+<c:set var="featuredVehicleImages" value="${requestScope.featuredVehicleImages}" />
+
+<%-- Mensajes precargados --%>
 <fmt:message var="homeHeroImageAlt" key="home.hero.image.alt" />
 <fmt:message var="vehicleCurrencySymbol" key="vehicle.catalog.pricing.currency" />
+
+<%-- ============================================
+     ENCABEZADO
+     ============================================ --%>
+<%@ include file="/common/header.jsp" %>
+
+<%-- ============================================
+     HERO
+     ============================================ --%>
 <section id="hero" class="py-6 py-lg-7">
     <div class="container">
         <div class="hero-section shadow-soft">
@@ -59,6 +80,9 @@
     </div>
 </section>
 
+<%-- ============================================
+     BENEFICIOS DESTACADOS
+     ============================================ --%>
 <section class="py-6 bg-white">
     <div class="container">
         <header class="section-header text-center mb-5">
@@ -101,6 +125,9 @@
     </div>
 </section>
 
+<%-- ============================================
+     VEHÍCULOS DESTACADOS
+     ============================================ --%>
 <section id="destacados" class="py-6">
     <div class="container">
         <div class="row align-items-center mb-4">
@@ -115,9 +142,6 @@
                 </a>
             </div>
         </div>
-
-        <c:set var="featuredVehicles" value="${requestScope.featuredVehicles}" />
-        <c:set var="featuredVehicleImages" value="${requestScope.featuredVehicleImages}" />
 
         <c:choose>
             <c:when test="${not empty featuredVehicles}">
@@ -216,6 +240,9 @@
     </div>
 </section>
 
+<%-- ============================================
+     PREGUNTAS FRECUENTES
+     ============================================ --%>
 <section id="faq" class="py-6 bg-white">
     <div class="container">
         <div class="row g-5 align-items-center">
