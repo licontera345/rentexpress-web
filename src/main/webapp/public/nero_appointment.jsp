@@ -10,7 +10,7 @@
 <head>
   <meta charset="UTF-8" />
   <title><fmt:message key="nero.appointment.title" /></title>
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css" />
+  <link rel="stylesheet" href="<c:url value='/css/main.css' />" />
 </head>
 <body>
   <%@ include file="/common/header.jsp" %>
@@ -36,7 +36,7 @@
       </div>
     </c:if>
 
-    <form method="post" action="${pageContext.request.contextPath}/consumesapi">
+    <form method="post" action="<c:url value='/consumesapi' />">
       <input type="hidden" name="action" value="create_appointment" />
 
       <label for="headquartersId"><fmt:message key="nero.appointment.headquarters" /></label>
