@@ -222,12 +222,21 @@
             <div class="col-lg-5">
                 <h2 class="fw-bold mb-3"><fmt:message key="home.faq.title" /></h2>
                 <p class="text-muted mb-4"><fmt:message key="home.faq.subtitle" /></p>
-                <p class="nero-faq mb-4">
-                    ¿Tuviste un percance con tu mascota u otra mientras conduces?
-                    <a href="${pageContext.request.contextPath}/public/nero_login.jsp">
-                        Reserva una cita con NeroVeterinaria
-                    </a>.
-                </p>
+                <div class="nero-cta-card mb-4">
+                    <div class="nero-cta-icon">
+                        <i class="bi bi-shield-plus"></i>
+                    </div>
+                    <div>
+                        <p class="mb-1 fw-semibold text-uppercase text-primary small">Atención en ruta</p>
+                        <p class="nero-faq mb-3">
+                            ¿Tuviste un percance con tu mascota u otra mientras conduces? Reserva una cita con NeroVeterinaria.
+                        </p>
+                        <a class="btn btn-primary nero-cta-btn" href="${pageContext.request.contextPath}/public/nero_login.jsp">
+                            <span>Ir al login de Nero</span>
+                            <i class="bi bi-arrow-right-short"></i>
+                        </a>
+                    </div>
+                </div>
                 <div class="d-flex align-items-center gap-3">
                     <div class="feature-icon m-0"><i class="bi bi-chat-dots"></i></div>
                     <div>

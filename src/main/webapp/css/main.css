@@ -2123,6 +2123,38 @@ main {
     margin-bottom: 0;
 }
 
+.nero-cta-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: 1.25rem;
+    border: 1px solid rgba(var(--rentexpress-primary-rgb), 0.15);
+    background: linear-gradient(120deg, rgba(var(--rentexpress-primary-rgb), 0.08), #fff 70%);
+    box-shadow: 0 10px 30px rgba(var(--rentexpress-text-rgb), 0.08);
+}
+
+.nero-cta-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(var(--rentexpress-primary-rgb), 0.12);
+    color: var(--rentexpress-primary);
+    font-size: 1.25rem;
+}
+
+.nero-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 600;
+    padding-inline: 1.25rem;
+    box-shadow: 0 10px 30px rgba(var(--rentexpress-primary-rgb), 0.35);
+}
+
 .accordion-button:not(.collapsed) {
     color: var(--rentexpress-primary);
     background-color: rgba(var(--rentexpress-primary-rgb), 0.08);
