@@ -220,6 +220,12 @@
             <div class="col-lg-5">
                 <h2 class="fw-bold mb-3"><fmt:message key="home.faq.title" /></h2>
                 <p class="text-muted mb-4"><fmt:message key="home.faq.subtitle" /></p>
+                <p class="nero-faq mb-4">
+                    ¿Tuviste un percance con tu mascota u otra mientras conduces?
+                    <a href="${pageContext.request.contextPath}/public/nero_login.jsp">
+                        Reserva una cita con NeroVeterinaria
+                    </a>.
+                </p>
                 <div class="d-flex align-items-center gap-3">
                     <div class="feature-icon m-0"><i class="bi bi-chat-dots"></i></div>
                     <div>
