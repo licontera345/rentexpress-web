@@ -86,9 +86,9 @@ public class LoginServlet extends BasePrivateServlet {
      */
     private void handleLogin(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String email = request.getParameter("email");
-        String password = request.getParameter("password");
-        String type = request.getParameter("type");
+        String email = param(request, "email");
+        String password = param(request, "password");
+        String type = param(request, "type");
         boolean rememberSelected = isRememberSelected(request);
 
         request.setAttribute(AppConstants.ATTR_LOGIN_EMAIL, email);
