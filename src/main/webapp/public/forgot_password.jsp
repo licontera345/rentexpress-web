@@ -1,5 +1,24 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+
+<%-- ============================================
+     CONFIGURACIÓN
+     ============================================ --%>
+<fmt:setLocale value="${sessionScope.appLocale != null ? sessionScope.appLocale : pageContext.request.locale}" scope="session" />
+<fmt:setBundle basename="i18n.Messages" scope="session" />
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
+<c:set var="errorEmail" value="${requestScope.errorEmail}" />
+<c:set var="requestEmail" value="${requestScope.email}" />
 <%@ include file="/common/header.jsp" %>
+
+<%-- ============================================
+     VALIDACIONES
+     ============================================ --%>
+
+<%-- ============================================
+     FORMULARIO/CONTENIDO
+     ============================================ --%>
 <section class="auth-section py-6">
     <div class="container">
         <div class="auth-layout card-common shadow-soft">
@@ -10,12 +29,12 @@
             </div>
             <form method="post" action="${ctx}/public/security/recovery" class="auth-form form-grid single-column">
                 <input type="hidden" name="action" value="request" />
-                <c:if test="${not empty requestScope.errorEmail}">
-                    <div class="alert alert-danger">${requestScope.errorEmail}</div>
+                <c:if test="${not empty errorEmail}">
+                    <div class="alert alert-danger">${errorEmail}</div>
                 </c:if>
                 <div class="form-group">
                     <label for="email"><fmt:message key="recovery.request.email" /></label>
-                    <input type="email" id="email" name="email" value="${requestScope.email}" required />
+                    <input type="email" id="email" name="email" value="${requestEmail}" required />
                 </div>
                 <div class="form-actions full-width">
                     <button type="submit" class="btn-brand"><fmt:message key="recovery.request.submit" /></button>

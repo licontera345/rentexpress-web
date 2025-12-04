@@ -1,5 +1,13 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ include file="/common/header.jsp" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+
+<%-- ============================================
+     CONFIGURACIÓN
+     ============================================ --%>
+<fmt:setLocale value="${sessionScope.appLocale != null ? sessionScope.appLocale : pageContext.request.locale}" scope="session" />
+<fmt:setBundle basename="i18n.Messages" scope="session" />
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
 <c:set var="cartVehicle" value="${requestScope.reservationCartVehicle}" />
 <c:set var="headquarters" value="${requestScope.headquarters}" />
 <c:set var="formStartDate" value="${requestScope.reservationParamStartDate}" />
@@ -12,7 +20,18 @@
 <fmt:message var="reservationHeadquartersHint" key="reservation.form.help.headquarters" />
 <fmt:message var="reservationSubmitLabel" key="reservation.form.submit" />
 <fmt:message var="reservationSubmitDisabled" key="reservation.form.submit.disabled" />
+<%@ include file="/common/header.jsp" %>
 
+<%-- ============================================
+     VALIDACIONES
+     ============================================ --%>
+<c:set var="flashSuccess" value="${requestScope.flashSuccess}" />
+<c:set var="flashInfo" value="${requestScope.flashInfo}" />
+<c:set var="flashError" value="${requestScope.flashError}" />
+
+<%-- ============================================
+     FORMULARIO/CONTENIDO
+     ============================================ --%>
 <section class="reservation-section py-6">
     <div class="container">
         <header class="catalog-header">

@@ -3,6 +3,8 @@
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <%@ taglib prefix="fn"  uri="jakarta.tags.functions" %>
 
+<c:set var="renderLayoutShell" value="${renderLayoutShell == false ? false : true}" />
+
 <%-- Contexto y i18n --%>
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 <c:set var="activeLocale" value="${sessionScope.appLocale}" />

@@ -1,6 +1,25 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ include file="/common/header.jsp" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+
+<%-- ============================================
+     CONFIGURACIÓN
+     ============================================ --%>
+<fmt:setLocale value="${sessionScope.appLocale != null ? sessionScope.appLocale : pageContext.request.locale}" scope="session" />
+<fmt:setBundle basename="i18n.Messages" scope="session" />
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
 <c:set var="vehicle" value="${requestScope.vehicle}" />
+<c:set var="errors" value="${requestScope.errors}" />
+<c:set var="errorGeneral" value="${requestScope.errorGeneral}" />
+<%@ include file="/common/header.jsp" %>
+
+<%-- ============================================
+     VALIDACIONES
+     ============================================ --%>
+
+<%-- ============================================
+     FORMULARIO/CONTENIDO
+     ============================================ --%>
 <section class="private-section py-6">
     <div class="container narrow">
         <header class="page-header">
@@ -17,10 +36,9 @@
             </h2>
             <p class="page-subtitle"><fmt:message key="vehicle.manage.filters.title" /></p>
         </header>
-        <c:if test="${not empty requestScope.errorGeneral}">
-            <div class="alert alert-danger">${requestScope.errorGeneral}</div>
+        <c:if test="${not empty errorGeneral}">
+            <div class="alert alert-danger">${errorGeneral}</div>
         </c:if>
-        <c:set var="errors" value="${requestScope.errors}" />
         <c:if test="${errors != null and not errors.isEmpty()}">
             <div class="alert alert-danger" role="alert">
                 <c:forEach var="entry" items="${errors.all}">

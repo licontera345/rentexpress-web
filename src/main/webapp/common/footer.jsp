@@ -2,6 +2,8 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
+<c:set var="renderLayoutShell" value="${renderLayoutShell == false ? false : true}" />
+
 <c:if test="${empty ctx}">
     <c:set var="ctx" value="${pageContext.request.contextPath}" />
 </c:if>
