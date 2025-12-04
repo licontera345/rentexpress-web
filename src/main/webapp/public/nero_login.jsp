@@ -10,7 +10,7 @@
 <head>
   <meta charset="UTF-8" />
   <title><fmt:message key="nero.login.title" /></title>
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css" />
+  <link rel="stylesheet" href="<c:url value='/css/main.css' />" />
 </head>
 <body>
   <%@ include file="/common/header.jsp" %>
@@ -19,7 +19,7 @@
     <h1><fmt:message key="nero.login.heading" /></h1>
     <p><fmt:message key="nero.login.description" /></p>
 
-    <form method="post" action="${pageContext.request.contextPath}/consumesapi">
+    <form method="post" action="<c:url value='/consumesapi' />">
       <label for="email"><fmt:message key="nero.login.email" /></label>
       <input type="email" id="email" name="email" required />
 

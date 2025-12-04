@@ -273,7 +273,7 @@
                         <p class="nero-faq mb-3">
                             ¿Tuviste un percance con tu mascota u otra mientras conduces? Reserva una cita con NeroVeterinaria.
                         </p>
-                        <a class="btn btn-primary nero-cta-btn" href="${pageContext.request.contextPath}/public/nero_login.jsp">
+                        <a class="btn btn-primary nero-cta-btn" href="<c:url value='/public/nero_login.jsp' />">
                             <span>Ir al login de Nero</span>
                             <i class="bi bi-arrow-right-short"></i>
                         </a>
