@@ -120,21 +120,21 @@
       <version>0.4</version>
     </dependency>
 
-    <!-- Jersey client (puedes dejar javax.ws.rs-api para el cliente) -->
+    <!-- Jersey client Jakarta -->
     <dependency>
       <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-client</artifactId>
-      <version>2.35</version>
+      <version>3.1.5</version>
     </dependency>
     <dependency>
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-json-jackson</artifactId>
-      <version>2.35</version>
+      <version>3.1.5</version>
     </dependency>
     <dependency>
-      <groupId>javax.ws.rs</groupId>
-      <artifactId>javax.ws.rs-api</artifactId>
-      <version>2.1.1</version>
+      <groupId>jakarta.ws.rs</groupId>
+      <artifactId>jakarta.ws.rs-api</artifactId>
+      <version>3.1.0</version>
     </dependency>
 
     <!-- Tests -->
