@@ -940,6 +940,67 @@ footer .nav-link:focus {
     color: var(--rentexpress-muted);
 }
 
+.nero-appointment {
+    padding-block: clamp(2.5rem, 6vw, 4rem);
+}
+
+.appointment-layout {
+    display: grid;
+    gap: 1.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    align-items: start;
+}
+
+.appointment-info {
+    padding: 1.75rem;
+    background: linear-gradient(145deg, rgba(var(--rentexpress-primary-rgb), 0.07), rgba(var(--rentexpress-accent-rgb), 0.05));
+    border: 1px solid rgba(var(--rentexpress-primary-rgb), 0.14);
+}
+
+.appointment-title {
+    margin: 0 0 0.5rem;
+    font-size: 1.4rem;
+}
+
+.appointment-description {
+    margin: 0 0 1rem;
+    color: var(--rentexpress-muted);
+}
+
+.appointment-highlights {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.55rem;
+    color: var(--rentexpress-deep);
+    font-weight: 600;
+}
+
+.appointment-card {
+    padding: 1.85rem;
+    border: 1px solid rgba(var(--rentexpress-primary-rgb), 0.1);
+    box-shadow: 0 24px 50px rgba(var(--rentexpress-text-rgb), 0.12);
+}
+
+.appointment-card-title {
+    margin: 0 0 1rem;
+}
+
+.appointment-form {
+    display: grid;
+    gap: 1rem;
+}
+
+.appointment-form .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.85rem 1rem;
+}
+
+.appointment-form .form-label {
+    align-self: center;
+}
+
 .pagination-status {
     text-align: center;
     color: var(--rentexpress-muted);
