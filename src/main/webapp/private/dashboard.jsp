@@ -1,5 +1,18 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+
+<%-- ============================================
+     CONFIGURACIÓN
+     ============================================ --%>
+<fmt:setLocale value="${sessionScope.appLocale != null ? sessionScope.appLocale : pageContext.request.locale}" scope="session" />
+<fmt:setBundle basename="i18n.Messages" scope="session" />
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
 <%@ include file="/common/header.jsp" %>
+
+<%-- ============================================
+     FORMULARIO/CONTENIDO
+     ============================================ --%>
 <section class="private-section py-6">
     <div class="container">
         <header class="page-header">
