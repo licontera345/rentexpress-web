@@ -2,6 +2,8 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
+<c:set var="renderLayoutShell" value="${renderLayoutShell == false ? false : true}" />
+
 <c:if test="${empty ctx}">
     <c:set var="ctx" value="${pageContext.request.contextPath}" />
 </c:if>
@@ -87,5 +89,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
+<c:if test="${renderLayoutShell}">
 </body>
 </html>
+</c:if>
