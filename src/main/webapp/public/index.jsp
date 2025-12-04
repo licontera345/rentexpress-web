@@ -161,6 +161,9 @@
 
         <c:choose>
             <c:when test="${not empty featuredVehicles}">
+                <c:set var="defaultVehicleImageUrl"
+                       value="https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&amp;fit=crop&amp;w=1280&amp;q=80" />
+                <fmt:message key="home.featured.noImage" var="defaultVehicleImageAlt" />
                 <div id="carouselDestacados" class="carousel slide" data-bs-ride="carousel">
                     <div class="carousel-inner">
                         <c:forEach var="vehicle" items="${featuredVehicles}" varStatus="status">
@@ -174,11 +177,8 @@
                                             <img src="${vehicleImageUrl}" class="d-block w-100" alt="${vehicle.brand} ${vehicle.model}" />
                                         </c:when>
                                         <c:otherwise>
-                                            <div class="carousel-placeholder d-flex align-items-center justify-content-center">
-                                                <span class="text-muted small text-uppercase fw-semibold">
-                                                    <fmt:message key="home.featured.noImage" />
-                                                </span>
-                                            </div>
+                                            <img src="${defaultVehicleImageUrl}" class="d-block w-100"
+                                                 alt="${defaultVehicleImageAlt}" />
                                         </c:otherwise>
                                     </c:choose>
                                     <div class="carousel-caption text-start">
