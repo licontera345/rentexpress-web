@@ -1,5 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ include file="/common/header.jsp" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <fmt:message var="homeHeroImageAlt" key="home.hero.image.alt" />
 <fmt:message var="vehicleCurrencySymbol" key="vehicle.catalog.pricing.currency" />
 <section id="hero" class="py-6 py-lg-7">
