@@ -13,6 +13,7 @@
 </c:if>
 <fmt:setLocale value="${activeLocale}" scope="session" />
 <fmt:setBundle basename="i18n.Messages" scope="session" />
+<c:set var="emitDocument" value="${requestScope.skipDocumentLayout ne true}" scope="request" />
 
 <%-- Ruta actual para resaltar menú --%>
 <c:set var="currentPath" value="${pageContext.request.requestURI}" />
@@ -31,7 +32,7 @@
 <c:set var="isVeh"
        value="${fn:contains(currentPath, '/private/VehicleServlet') or fn:contains(currentPath, '/private/vehicle')}" />
 
-<c:if test="${renderLayoutShell}">
+<c:if test="${emitDocument}">
     <!DOCTYPE html>
     <html lang="${activeLocale}">
     <head>
