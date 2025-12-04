@@ -1,6 +1,16 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ include file="/common/header.jsp" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
+<%-- ============================================
+     CONFIGURACIÓN
+     ============================================ --%>
+<fmt:setLocale value="${sessionScope.appLocale != null ? sessionScope.appLocale : pageContext.request.locale}" scope="session" />
+<fmt:setBundle basename="i18n.Messages" scope="session" />
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
+<c:set var="provinces" value="${requestScope.provinces}" />
+<c:set var="cities" value="${requestScope.cities}" />
 <c:url var="citiesByProvinceUrl" value="/public/cities/by-province" />
 <fmt:message var="firstNamePlaceholder" key="register.firstName" />
 <fmt:message var="lastName1Placeholder" key="register.lastName1" />
@@ -16,6 +26,16 @@
 <fmt:message var="provinceLabel" key="register.province" />
 <fmt:message var="cityPlaceholder" key="register.city.placeholder" />
 <fmt:message var="cityLabel" key="register.city" />
+<%@ include file="/common/header.jsp" %>
+
+<%-- ============================================
+     VALIDACIONES
+     ============================================ --%>
+<c:set var="flashError" value="${requestScope.flashError}" />
+
+<%-- ============================================
+     FORMULARIO/CONTENIDO
+     ============================================ --%>
 
 <section class="auth-section register-section py-6">
   <div class="container">
@@ -33,8 +53,8 @@
           </ul>
         </div>
 
-        <c:if test="${not empty requestScope.flashError}">
-          <div class="alert alert-danger" role="alert">${requestScope.flashError}</div>
+        <c:if test="${not empty flashError}">
+          <div class="alert alert-danger" role="alert">${flashError}</div>
         </c:if>
         <form method="post" action="${ctx}/public/users/register" class="auth-form form-grid two-columns">
           <input type="text" name="firstName" class="input-field" placeholder="${firstNamePlaceholder}" required

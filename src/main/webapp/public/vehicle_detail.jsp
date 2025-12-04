@@ -1,11 +1,24 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ include file="/common/header.jsp" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+
+<%-- ============================================
+     CONFIGURACIÓN
+     ============================================ --%>
+<fmt:setLocale value="${sessionScope.appLocale != null ? sessionScope.appLocale : pageContext.request.locale}" scope="session" />
+<fmt:setBundle basename="i18n.Messages" scope="session" />
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
 <c:set var="vehicle" value="${requestScope.vehicle}" />
 <c:set var="cartVehicle"
     value="${not empty requestScope.cartVehicle ? requestScope.cartVehicle : sessionScope.reservationCartVehicle}" />
 <c:set var="categories" value="${requestScope.categories}" />
 <c:set var="headquarters" value="${requestScope.headquarters}" />
 <fmt:message var="vehicleMileageUnit" key="vehicle.catalog.feature.mileage.unit" />
+<%@ include file="/common/header.jsp" %>
+
+<%-- ============================================
+     FORMULARIO/CONTENIDO
+     ============================================ --%>
 <section class="detail-section py-6">
     <div class="container">
         <c:choose>
