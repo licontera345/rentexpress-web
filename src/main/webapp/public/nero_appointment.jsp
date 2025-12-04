@@ -15,44 +15,97 @@
 <body>
   <%@ include file="/common/header.jsp" %>
 
-  <main class="container">
-    <h1><fmt:message key="nero.appointment.heading" /></h1>
-
-    <p>
-      <fmt:message key="nero.appointment.welcome" />
-      <strong>${sessionScope.neroClientName}</strong>
-    </p>
-
-    <c:if test="${neroAppointmentSuccess}">
-      <div class="alert alert-success">
-        <fmt:message key="nero.appointment.success" />:
-        <strong>${neroAppointmentId}</strong>
+  <main class="container nero-appointment">
+    <header class="page-header">
+      <div class="page-heading">
+        <p class="pill"><fmt:message key="nero.login.heading" /></p>
+        <h1 class="page-title"><fmt:message key="nero.appointment.heading" /></h1>
+        <p class="page-subtitle">
+          <fmt:message key="nero.appointment.welcome" />
+          <strong>${sessionScope.neroClientName}</strong>
+        </p>
       </div>
-    </c:if>
+    </header>
 
-    <c:if test="${not empty neroAppointmentError}">
-      <div class="alert alert-danger">
-        ${neroAppointmentError}
+    <section class="appointment-layout">
+      <div class="appointment-info card surface">
+        <p class="section-eyebrow">Nero Assist</p>
+        <h2 class="appointment-title">
+          <fmt:message key="nero.appointment.title" />
+        </h2>
+        <p class="appointment-description">
+          Agenda rápidamente la revisión con nuestro equipo. Comparte el detalle del
+          incidente y obtén una confirmación inmediata de tu cita.
+        </p>
+        <ul class="appointment-highlights">
+          <li>Atención prioritaria para clientes Nero.</li>
+          <li>Fechas y horas ajustadas a tu disponibilidad.</li>
+          <li>Seguimiento y recordatorios automáticos.</li>
+        </ul>
       </div>
-    </c:if>
 
-    <form method="post" action="<c:url value='/consumesapi' />">
-      <input type="hidden" name="action" value="create_appointment" />
+      <div class="appointment-card card">
+        <h3 class="appointment-card-title">Completa los datos de tu cita</h3>
 
-      <label for="headquartersId"><fmt:message key="nero.appointment.headquarters" /></label>
-      <input type="text" id="headquartersId" name="headquartersId" required />
+        <c:if test="${neroAppointmentSuccess}">
+          <div class="alert alert-success">
+            <fmt:message key="nero.appointment.success" />:
+            <strong>${neroAppointmentId}</strong>
+          </div>
+        </c:if>
 
-      <label for="date"><fmt:message key="nero.appointment.date" /></label>
-      <input type="date" id="date" name="date" required />
+        <c:if test="${not empty neroAppointmentError}">
+          <div class="alert alert-danger">
+            ${neroAppointmentError}
+          </div>
+        </c:if>
 
-      <label for="time"><fmt:message key="nero.appointment.time" /></label>
-      <input type="time" id="time" name="time" required />
+        <form method="post" action="<c:url value='/consumesapi' />" class="appointment-form">
+          <input type="hidden" name="action" value="create_appointment" />
 
-      <label for="details"><fmt:message key="nero.appointment.details" /></label>
-      <textarea id="details" name="details" rows="3"></textarea>
+          <div class="form-grid">
+            <label for="headquartersId" class="form-label">
+              <fmt:message key="nero.appointment.headquarters" />
+            </label>
+            <input
+              type="text"
+              id="headquartersId"
+              name="headquartersId"
+              class="form-control"
+              placeholder="Ej: CDMX-01"
+              required
+            />
 
-      <button type="submit"><fmt:message key="nero.appointment.submit" /></button>
-    </form>
+            <label for="date" class="form-label">
+              <fmt:message key="nero.appointment.date" />
+            </label>
+            <input type="date" id="date" name="date" class="form-control" required />
+
+            <label for="time" class="form-label">
+              <fmt:message key="nero.appointment.time" />
+            </label>
+            <input type="time" id="time" name="time" class="form-control" required />
+
+            <label for="details" class="form-label">
+              <fmt:message key="nero.appointment.details" />
+            </label>
+            <textarea
+              id="details"
+              name="details"
+              rows="3"
+              class="form-control"
+              placeholder="Describe la situación para que podamos ayudarte mejor"
+            ></textarea>
+          </div>
+
+          <div class="form-actions full-width">
+            <button type="submit" class="btn btn-primary">
+              <fmt:message key="nero.appointment.submit" />
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
   </main>
 
   <%@ include file="/common/footer.jsp" %>
