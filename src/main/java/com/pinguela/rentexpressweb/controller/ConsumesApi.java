@@ -82,7 +82,7 @@ public class ConsumesApi extends HttpServlet {
         }
     }
 
-    private void handleLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void handleLogin(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
@@ -125,7 +125,8 @@ public class ConsumesApi extends HttpServlet {
                     session.setAttribute("neroClientName", name);
                     session.setAttribute("neroClientEmail", emailResponse);
 
-                    response.getWriter().append("Login Nero OK. Cliente: " + name + " (id=" + id + ")");
+                    request.setAttribute("neroAppointmentInfo", "Login Nero OK. Ahora puedes crear una cita.");
+                    forwardToAppointmentJsp(request, response);
                     return;
                 }
             } catch (IOException e) {
