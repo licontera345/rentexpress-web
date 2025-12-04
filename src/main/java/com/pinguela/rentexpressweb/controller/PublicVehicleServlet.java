@@ -127,6 +127,7 @@ public class PublicVehicleServlet extends BasePrivateServlet {
             req.setAttribute("criteria", c);
             req.setAttribute("results", results);
             req.setAttribute("vehicles", results.getResults());
+            req.setAttribute(AppConstants.ATTR_PAGINATION_BASE_PATH, req.getContextPath() + "/public/VehicleServlet");
 
             req.setAttribute("categories", categoryService.findAll(language));
             req.setAttribute("headquarters", headquartersService.findAll());
@@ -182,6 +183,7 @@ public class PublicVehicleServlet extends BasePrivateServlet {
             req.setAttribute("criteria", c);
             req.setAttribute("results", results);
             req.setAttribute("vehicles", results.getResults());
+            req.setAttribute(AppConstants.ATTR_PAGINATION_BASE_PATH, req.getContextPath() + "/public/VehicleServlet");
             req.setAttribute("categories", categoryService.findAll(language));
             req.setAttribute("headquarters", headquartersService.findAll());
             req.setAttribute("cartVehicle", SessionManager.getAttribute(req, ReservationConstants.ATTR_CART_VEHICLE));
