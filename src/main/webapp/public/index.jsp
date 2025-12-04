@@ -7,6 +7,7 @@
      ============================================ --%>
 <fmt:setLocale value="${sessionScope.appLocale != null ? sessionScope.appLocale : pageContext.request.locale}" scope="session" />
 <fmt:setBundle basename="i18n.Messages" scope="session" />
+<c:set var="skipDocumentLayout" value="true" scope="request" />
 
 <%-- Variables de contexto y datos --%>
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
@@ -14,17 +15,34 @@
 <c:set var="featuredVehicleImages" value="${requestScope.featuredVehicleImages}" />
 
 <%-- Mensajes precargados --%>
+<fmt:message var="pageTitle" key="layout.appName" />
 <fmt:message var="homeHeroImageAlt" key="home.hero.image.alt" />
 <fmt:message var="vehicleCurrencySymbol" key="vehicle.catalog.pricing.currency" />
 
-<%-- ============================================
-     ENCABEZADO
-     ============================================ --%>
-<%@ include file="/common/header.jsp" %>
+<!DOCTYPE html>
+<html lang="${sessionScope.appLocale != null ? sessionScope.appLocale : pageContext.request.locale}">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${pageTitle}</title>
 
-<%-- ============================================
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+          crossorigin="anonymous" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          rel="stylesheet" crossorigin="anonymous" />
+    <link rel="stylesheet" href="<c:url value='/css/main.css' />" />
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+<%@ include file="/common/header.jsp" %>
+<!-- ============================================
      HERO
-     ============================================ --%>
+     ============================================ -->
 <section id="hero" class="py-6 py-lg-7">
     <div class="container">
         <div class="hero-section shadow-soft">
@@ -79,10 +97,9 @@
         </div>
     </div>
 </section>
-
-<%-- ============================================
+<!-- ============================================
      BENEFICIOS DESTACADOS
-     ============================================ --%>
+     ============================================ -->
 <section class="py-6 bg-white">
     <div class="container">
         <header class="section-header text-center mb-5">
@@ -124,10 +141,9 @@
         </div>
     </div>
 </section>
-
-<%-- ============================================
+<!-- ============================================
      VEHÍCULOS DESTACADOS
-     ============================================ --%>
+     ============================================ -->
 <section id="destacados" class="py-6">
     <div class="container">
         <div class="row align-items-center mb-4">
@@ -239,10 +255,9 @@
         </c:choose>
     </div>
 </section>
-
-<%-- ============================================
+<!-- ============================================
      PREGUNTAS FRECUENTES
-     ============================================ --%>
+     ============================================ -->
 <section id="faq" class="py-6 bg-white">
     <div class="container">
         <div class="row g-5 align-items-center">
@@ -316,3 +331,12 @@
     </div>
 </section>
 <jsp:include page="/common/footer.jsp" />
+
+<script>
+    window.ctx = '${ctx}';
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+</body>
+</html>
