@@ -2,9 +2,15 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
+
+<%-- ============================================
+     CONFIGURACIÓN
+     ============================================ --%>
 <fmt:setLocale value="${sessionScope.appLocale != null ? sessionScope.appLocale : pageContext.request.locale}" scope="session" />
 <fmt:setBundle basename="i18n.Messages" scope="session" />
-<%@ include file="/common/header.jsp" %>
+
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
+<c:set var="renderLayoutShell" value="false" />
 <c:set var="criteria" value="${requestScope.criteria}" />
 <c:set var="results" value="${requestScope.results}" />
 <c:set var="vehicles"
@@ -17,6 +23,7 @@
        value="${not empty results and not empty results.totalPages ? results.totalPages : 1}" />
 <c:set var="pageSize"
        value="${not empty results and not empty results.pageSize ? results.pageSize : 9}" />
+<c:set var="hasData" value="${not empty vehicles}" />
 <c:set var="categories" value="${requestScope.categories}" />
 <c:set var="headquarters" value="${requestScope.headquarters}" />
 <c:set var="selectedCategoryId" value="${not empty criteria ? criteria.categoryId : null}" />
@@ -36,14 +43,48 @@
 <c:set var="cartVehicle"
        value="${not empty requestScope.cartVehicle ? requestScope.cartVehicle : sessionScope.reservationCartVehicle}"
        scope="request" />
+
+<fmt:message var="pageTitle" key="vehicle.public.catalog.pageTitle" />
+<fmt:message var="filterTitle" key="vehicle.catalog.filter.title" />
 <fmt:message var="searchPlaceholder" key="vehicle.catalog.filter.search.placeholder" />
+
+<!DOCTYPE html>
+<html lang="${sessionScope.appLocale}">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${pageTitle}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+          crossorigin="anonymous" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          rel="stylesheet" crossorigin="anonymous" />
+    <link rel="stylesheet" href="<c:url value='/css/main.css' />" />
+
+    <script>
+        window.catalogConfig = {
+            ctx: '${ctx}',
+            currentPage: ${currentPage},
+            totalPages: ${totalPages},
+            pageSize: ${pageSize},
+            hasData: ${hasData}
+        };
+    </script>
+</head>
+<body class="d-flex flex-column min-vh-100">
+<%@ include file="/common/header.jsp" %>
 
 <section class="catalog-section py-6">
     <div class="container">
         <header class="catalog-header">
             <span class="section-eyebrow"><fmt:message key="vehicle.catalog.header.title" /></span>
             <div class="catalog-heading">
-                <h2 class="section-heading"><fmt:message key="vehicle.public.catalog.pageTitle" /></h2>
+                <h2 class="section-heading">${pageTitle}</h2>
                 <p class="catalog-summary">
                     <fmt:message key="vehicle.catalog.header.summary">
                         <fmt:param value="${totalResults}" />
@@ -52,11 +93,14 @@
             </div>
         </header>
 
+        <%-- ============================================
+             FILTROS
+             ============================================ --%>
         <div class="catalog-layout">
             <aside class="catalog-sidebar">
                 <form method="get" action="${ctx}/public/VehicleServlet" class="catalog-filter-card card-common shadow-soft">
                     <input type="hidden" name="action" value="filterVehicles" />
-                    <h3 class="filter-title"><fmt:message key="vehicle.catalog.filter.title" /></h3>
+                    <h3 class="filter-title">${filterTitle}</h3>
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="search"><fmt:message key="vehicle.catalog.filter.search" /></label>
@@ -205,6 +249,9 @@
                 </c:if>
             </aside>
 
+            <%-- ============================================
+                 LISTA
+                 ============================================ --%>
             <div class="catalog-results">
                 <c:if test="${not empty requestScope.flashSuccess}">
                     <div class="alert alert-success">${requestScope.flashSuccess}</div>
@@ -218,7 +265,7 @@
 
                 <div class="vehicle-grid">
                     <c:choose>
-                        <c:when test="${not empty vehicles}">
+                        <c:when test="${hasData}">
                             <c:forEach var="vehicle" items="${vehicles}">
                                 <c:set var="cardVehicle" value="${vehicle}" scope="request" />
                                 <jsp:include page="/public/vehicleCard.jsp" />
@@ -236,7 +283,10 @@
                     </c:choose>
                 </div>
 
-                <c:if test="${totalPages gt 1}">
+                <%-- ============================================
+                     PAGINACIÓN
+                     ============================================ --%>
+                <c:if test="${hasData and totalPages gt 1}">
                     <c:set var="paginationCurrentPage" value="${currentPage}" scope="request" />
                     <c:set var="paginationTotalPages" value="${totalPages}" scope="request" />
                     <jsp:include page="/public/pagination.jsp" />
@@ -247,7 +297,7 @@
         </div>
     </div>
 </section>
-<%@ include file="/common/footer.jsp" %>
+
 <script>
 (() => {
     const input = document.getElementById('search');
@@ -283,3 +333,7 @@
     });
 })();
 </script>
+
+<%@ include file="/common/footer.jsp" %>
+</body>
+</html>
