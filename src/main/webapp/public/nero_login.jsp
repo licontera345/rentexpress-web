@@ -64,6 +64,12 @@
             </div>
             <div class="auth-badge">V.2</div>
           </div>
+          
+          <c:if test="${not empty loginError}">
+            <div class="alert alert-danger mt-3" role="alert">
+              ${loginError}
+            </div>
+          </c:if>
 
           <form method="post" action="<c:url value='/consumesapi' />" class="auth-form">
             <div class="form-group">
