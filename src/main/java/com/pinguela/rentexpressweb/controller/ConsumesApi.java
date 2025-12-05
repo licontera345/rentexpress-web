@@ -31,7 +31,6 @@ import jakarta.ws.rs.core.Response.Status;
 public class ConsumesApi extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-    // Asegúrate de que esta IP sea accesible:
     private static final String BASE_URI = "http://10.63.11.79:8080/neroveterinaria-rest/api";
 
     @Override
@@ -52,8 +51,6 @@ public class ConsumesApi extends HttpServlet {
             throws ServletException, IOException {
         
         String action = request.getParameter("action");
-
-        // Si 'action' es nulo, se asume que es el POST del formulario de login
         if (action == null) {
             handleLogin(request, response);
         } else if ("create_appointment".equals(action)) {
@@ -77,8 +74,6 @@ public class ConsumesApi extends HttpServlet {
         }
 
         Client client = ClientBuilder.newClient();
-        
-        // 1. CREAR EL JSON DE AUTENTICACIÓN
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode loginJson = mapper.createObjectNode();
         loginJson.put("email", email);
@@ -87,15 +82,13 @@ public class ConsumesApi extends HttpServlet {
         
         System.out.println("JSON de Login Enviado: " + jsonBody);
 
-        // 2. CONSTRUIR LA URL
         WebTarget webTarget = client
                 .target(BASE_URI)
-                .path("open") // <--- ¡AÑADIDO SEGÚN SU REQUERIMIENTO!
+                .path("open")
                 .path("client")
                 .path("authenticate") 
                 .queryParam("language", "es");
 
-        // 3. ENVIAR LA PETICIÓN POST CON EL CUERPO JSON
         Invocation.Builder invocationBuilder = webTarget.request(MediaType.APPLICATION_JSON);
         Response apiResponse = invocationBuilder.post(
                 Entity.entity(jsonBody, MediaType.APPLICATION_JSON)
@@ -107,7 +100,6 @@ public class ConsumesApi extends HttpServlet {
         System.out.println("Authenticate status: " + status);
         System.out.println("Raw Response authenticate: " + jsonResponse);
 
-        // 4. PROCESAR RESPUESTA
         if (status == Status.OK.getStatusCode()) {
             try {
                 JsonNode rootNode = mapper.readTree(jsonResponse);
@@ -133,7 +125,6 @@ public class ConsumesApi extends HttpServlet {
             }
         }
 
-        // Si el login falla o hay error
         request.setAttribute("loginError", "Credenciales incorrectas o error en la autenticación con Nero API.");
         RequestDispatcher dispatcher = request.getRequestDispatcher("/public/nero_login.jsp");
         dispatcher.forward(request, response);
@@ -232,11 +223,9 @@ public class ConsumesApi extends HttpServlet {
         appointmentJson.put("dateTime", finalDateTimeIso); 
         appointmentJson.put("clientId", neroClientId); 
         appointmentJson.put("headquartersId", Integer.parseInt(headquartersIdParam));
-        appointmentJson.put("statusAppointmentId", 1); 
-        
+        appointmentJson.put("statusAppointmentId", 1);         
         appointmentJson.put("userId", 1); 
-        appointmentJson.put("animalId", 249); 
-        
+        appointmentJson.put("animalId", 249);         
         appointmentJson.put("clientName", neroClientName);
         appointmentJson.put("clientLastName1", neroClientLastName1);
         appointmentJson.put("animalName", "MASCOTA_POR_DEFECTO");
@@ -302,7 +291,6 @@ public class ConsumesApi extends HttpServlet {
         private int id;
         private String name;
         private String localityName;
-        // Getters y Setters
         public int getId() { return id; }
         public void setId(int id) { this.id = id; }
         public String getName() { return name; }
